@@ -1,11 +1,9 @@
-name := "read-the-markdown"
+import play.Project._
 
-version := "1.0-SNAPSHOT"
+name := "computer-database"
 
-libraryDependencies ++= Seq(
-  jdbc,
-  anorm,
-  cache
-)     
+version := "1.0"
 
-play.Project.playScalaSettings
+libraryDependencies ++= Seq(jdbc, anorm)
+
+playScalaSettings
