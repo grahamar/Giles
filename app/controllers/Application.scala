@@ -1,112 +1,50 @@
 package controllers
 
-import play.api._
 import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
 
-import anorm._
-
+import settings._
 import views._
-import models._
+import dao._
+import profile.simple._
 
 /**
  * Manage a database of computers
  */
-object Application extends Controller { 
-  
+object Application extends Controller {
+
   /**
    * This result directly redirect to the application home.
    */
-  val Home = Redirect(routes.Application.list(0, 2, ""))
-  
-  /**
-   * Describe the computer form (used in both edit and create screens).
-   */ 
-  val computerForm = Form(
-    mapping(
-      "id" -> ignored(NotAssigned:Pk[Long]),
-      "name" -> nonEmptyText,
-      "introduced" -> optional(date("yyyy-MM-dd")),
-      "discontinued" -> optional(date("yyyy-MM-dd")),
-      "company" -> optional(longNumber)
-    )(Computer.apply)(Computer.unapply)
-  )
-  
+  val Home = Redirect(routes.Application.index())
+
   // -- Actions
 
   /**
    * Handle default path requests, redirect to computers list
-   */  
-  def index = Action { Home }
-  
-  /**
-   * Display the paginated list of computers.
-   *
-   * @param page Current page number (starts from 0)
-   * @param orderBy Column to be sorted
-   * @param filter Filter applied on computer names
    */
-  def list(page: Int, orderBy: Int, filter: String) = Action { implicit request =>
-    Ok(html.list(
-      Computer.list(page = page, orderBy = orderBy, filter = ("%"+filter+"%")),
-      orderBy, filter
-    ))
-  }
-  
-  /**
-   * Display the 'edit form' of a existing Computer.
-   *
-   * @param id Id of the computer to edit
-   */
-  def edit(id: Long) = Action {
-    Computer.findById(id).map { computer =>
-      Ok(html.editForm(id, computerForm.fill(computer), Company.options))
-    }.getOrElse(NotFound)
-  }
-  
-  /**
-   * Handle the 'edit form' submission 
-   *
-   * @param id Id of the computer to edit
-   */
-  def update(id: Long) = Action { implicit request =>
-    computerForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(html.editForm(id, formWithErrors, Company.options)),
-      computer => {
-        Computer.update(id, computer)
-        Home.flashing("success" -> "Computer %s has been updated".format(computer.name))
+  def index = Action {
+    val query = (for {
+      u <- Global.dal.users
+      p <- Global.dal.projects
+      up <- Global.dal.userProjects if u.id === up.userId && p.id === up.projectId
+    } yield (u, p)).sortBy(_._2.updated.desc)
+
+    val projectsAndAuthors: Seq[(dao.Project, Seq[dao.User])] =
+      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+        query.take(10).list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
+    val recentlyUpgradedProjects = projectsAndAuthors.map((pa: (dao.Project, Seq[dao.User])) =>
+      ProjectWithAuthors(pa._1.name, pa._1.url, pa._1.created, pa._1.updated, pa._1.id, pa._2)
     )
+
+    Ok(html.index("", recentlyUpgradedProjects))
   }
-  
-  /**
-   * Display the 'new computer form'.
-   */
-  def create = Action {
-    Ok(html.createForm(computerForm, Company.options))
-  }
-  
-  /**
-   * Handle the 'new computer form' submission.
-   */
-  def save = Action { implicit request =>
-    computerForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(html.createForm(formWithErrors, Company.options)),
-      computer => {
-        Computer.insert(computer)
-        Home.flashing("success" -> "Computer %s has been created".format(computer.name))
-      }
-    )
-  }
-  
-  /**
-   * Handle computer deletion.
-   */
-  def delete(id: Long) = Action {
-    Computer.delete(id)
-    Home.flashing("success" -> "Computer has been deleted")
+
+  def projects = Action { Ok(html.projects("")) }
+
+  def search(filter: String) = Action { implicit request =>
+    Ok(html.projects(""))
   }
 
 }
-            
+

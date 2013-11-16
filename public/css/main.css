@@ -1,0 +1,42 @@
+html {
+    background: #eee;
+}
+
+header h1 {
+    padding: 0.4em 1.1em;
+    color: white;
+    font-weight: normal;
+    font-size: 24px;
+}
+
+#main {
+    position: relative;
+    padding: 5em 2em;
+    border-bottom: 1px solid #ccc;
+    min-height: 600px;
+}
+
+section#main form.rtm-search input.search-query {
+    height: 28px;
+    font-size: 15px;
+}
+
+#main form.rtm-search .btn-lg {
+    font-size: 17px;
+}
+
+tr.project {
+    background: none repeat scroll 0 0 #FFFFFF;
+}
+
+#wrap {
+    height: auto;
+    margin: 0 auto -60px;
+    min-height: 100%;
+    padding: 0 0 60px;
+}
+
+#footer {
+    background-color: #F5F5F5;
+    height: 60px;
+}
