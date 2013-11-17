@@ -1,0 +1,5 @@
+@(email: String)
+
+@import _root_.util.GravatarHelper
+
+<img src="@{GravatarHelper.urlForEmail(email)}" />

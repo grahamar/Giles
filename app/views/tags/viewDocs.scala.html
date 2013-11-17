@@ -1,0 +1,17 @@
+@(project: dao.Project)
+
+<div class="btn-group">
+    <button type="button" class="btn btn-info">View Docs</button>
+    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+        <span class="sr-only">Show Document Versions</span>
+    </button>
+    <ul class="dropdown-menu view-docs-dropdown" role="menu">
+        <li>
+            @helper.form(action=routes.Application.search(), 'role -> "form") {
+            <input type="search" id="searchbox" class="search-query form-control" name="f" placeholder="Search...">
+            }
+        </li>
+        <li><a href="/@project.url/docs/latest">latest</a></li>
+    </ul>
+</div>

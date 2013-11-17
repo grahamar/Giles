@@ -1,0 +1,46 @@
+@(user: dao.User, userProjects: Seq[dao.ProjectWithAuthors])
+
+@import tags._
+
+@main("") {
+<div id="profile-page" class="container" style="margin-top: 50px;">
+    <div id="profile-details" class="col-md-3">
+        <div class="col-md-10">
+            @gravatar(user.email)
+            <span class="divider col-md-1" style="width: 100%;"></span>
+            <h4>@user.firstName @user.lastName</h4>
+            <h5 class="text-muted">(@user.username)</h5>
+            @user.homepage.map{ hp =>
+            <span class="divider col-md-1" style="width: 100%;"></span>
+            <a href="@hp">@hp</a>
+            }
+            <!-- TODO
+            if user.homepage
+            divider
+            show homepage
+            -->
+        </div>
+    </div>
+    <div class="col-md-9 well">
+        <table class="projects table table-bordered">
+            <tbody>
+            @userProjects.map { project =>
+            <tr class="project">
+                <td>
+                    <a href="/@project.url"><strong>@project.name</strong></a>
+                    @if(!project.authors.isEmpty){
+                    (@{Html(project.authors.map { author =>
+                    <a class="text-muted" href="#">{author.username}</a>
+                    }.mkString(", "))})
+                    }
+                    <div class="pull-right">
+                        @viewDocs(project)
+                    </div>
+                </td>
+            </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+}

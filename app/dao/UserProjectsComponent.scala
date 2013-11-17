@@ -1,6 +1,6 @@
 package dao
 
-import scala.slick.lifted.Tag
+import scala.slick.lifted.{TableQuery, Tag}
 import profile.simple._
 import java.sql.Date
 
@@ -18,4 +18,4 @@ trait UserProjectsComponent { this: UserComponent with ProjectComponent =>
   val userProjects = TableQuery[UserProjects]
 }
 
-case class ProjectWithAuthors(name: String, url: String, created: Date, updated: Date, id: Option[Long], authors: Seq[User])
+case class ProjectWithAuthors(name: String, url: String, created: Date, updated: Date, id: Option[Long], authors: Seq[User]) extends Project

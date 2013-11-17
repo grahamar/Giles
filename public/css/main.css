@@ -40,3 +40,25 @@ tr.project {
     background-color: #F5F5F5;
     height: 60px;
 }
+
+#profile-page #profile-details img {
+    border-radius: 5px;
+    display: block;
+    padding-bottom: 4px;
+}
+
+#profile-page #profile-details .divider {
+    border: 1px solid #BFBFBF;
+    margin: 5px 0px;
+}
+
+.view-docs-dropdown {
+    padding: 2px;
+}
+
+.view-docs-dropdown li a {
+    color: #444444;
+    font-size: 16px;
+    padding-left: 5px;
+    text-decoration: underline;
+}

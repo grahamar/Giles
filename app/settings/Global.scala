@@ -21,10 +21,10 @@ object Global extends GlobalSettings {
 
       dal.create
 
-      val grahamar = insertUser(User("grahamar"))
+      val grahamar = insertUser(User("grahamar", "graham.a.r@gmail.com", Some("Graham"), Some("Rhodes"), Some("http://RedHogs.github.io")))
       val grahamarProjects = Seq.fill(20)(ProjectFactory(RandomStringUtils.randomAlphabetic(20)))
 
-      insertUser(User("aclery"))
+      insertUser(User("aclery", "alison.clery@gmail.com"))
 
       insertProject(ProjectFactory("Test Project 1"))
       val persistedProject = grahamarProjects.map(insertProject)

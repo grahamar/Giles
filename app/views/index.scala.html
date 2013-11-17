@@ -1,5 +1,7 @@
 @(currentFilter: String, recentlyUpdatedProjects: Seq[dao.ProjectWithAuthors])
 
+@import tags._
+
 @main(currentFilter) {
 <div class="container center" style="margin-top: 50px;">
     <div>
@@ -16,22 +18,11 @@
                 <tr class="project">
                     <td>
                         <a href="/@project.url"><strong>@project.name</strong></a>
-                        (@{Html(project.authors.map { author =>
+                        @{Html(project.authors.map { author =>
                         <a class="text-muted" href="#">{author.username}</a>
-                        }.mkString(", "))})
-                        <div class="btn-group pull-right">
-                            <button type="button" class="btn btn-info">View Docs</button>
-                            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
-                                <span class="caret"></span>
-                                <span class="sr-only">Toggle Dropdown</span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Another action</a></li>
-                                <li><a href="#">Something else here</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">Separated link</a></li>
-                            </ul>
+                        }.mkString("(",", ", ")"))}
+                        <div class="pull-right">
+                            @viewDocs(project)
                         </div>
                     </td>
                 </tr>
