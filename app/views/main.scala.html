@@ -1,4 +1,35 @@
-@(currentFilter: String)(content: Html)
+@(currentFilter: String, loginForm: Form[Option[dao.User]])(content: Html)(implicit flash: Flash, currentUser: Option[dao.User])
+
+@header = {
+@currentUser.map { loggedInUser =>
+<div class="navbar-collapse collapse">
+    <div class="navbar-right">
+        <a href="@routes.Application.dashboard" class="btn btn-primary navbar-btn" type="submit">Dashboard</a>
+        <a href="@auth.routes.Authenticator.logout" class="btn btn-primary navbar-btn" type="submit">Logout</a>
+    </div>
+</div>
+}.getOrElse {
+<div class="navbar-collapse collapse">
+    <div class="navbar-right">
+        @helper.form(action=auth.routes.Authenticator.authenticate, 'class -> "navbar-form") {
+        @loginForm.globalError.map { error =>
+        <p class="form-group text-danger">@error.message</p>
+        }
+        @flash.get("success").map { message =>
+        <p class="form-group text-success">@message</p>
+        }
+        <div class="form-group">
+            <input type="email" class="form-control" placeholder="Email" name="email" value='@loginForm("email").value'>
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" name="password" placeholder="Password">
+        </div>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        }
+    </div>
+</div>
+}
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -20,30 +51,32 @@
     </head>
     <body>
         <div id="wrap">
-            <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
-                <div class="navbar-header">
-                    <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle" type="button">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="#" class="navbar-brand" style="color: #FFF">Read The Markdown</a>
+                <div role="navigation" class="navbar navbar-inverse navbar-fixed-top">
+                    <div class="navbar-header">
+                        <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle" type="button">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a href="@routes.Application.index()" class="navbar-brand" style="color: #FFF">Read The Markdown</a>
+                    </div>
+                    @header
                 </div>
-                <div class="navbar-collapse collapse">
-                    <form class="navbar-form navbar-right">
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Email">
+                @currentUser.map { loggedInUser =>
+                <nav class="navbar navbar-user navbar-fixed-top" role="navigation" style="margin-top: 50px; margin-bottom: 50px">
+                    <div class="container">
+                        <div class="collapse navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="@routes.Application.dashboard">Projects</a></li>
+                                <li><a href="@routes.Application.importProject">Import project</a></li>
+                                <li><a href="@routes.Application.profile(loggedInUser.username)">Profile</a></li>
+                            </ul>
                         </div>
-                        <div class="form-group">
-                            <input type="password" class="form-control" placeholder="Password">
-                        </div>
-                        <button class="btn btn-primary" type="submit">Sign in</button>
-                    </form>
-                </div>
-            </div>
-
-            <div id="main">
+                    </div>
+                </nav>
+                }
+            <div id="main" style="padding: 120px 5px;">
                 <div class="container">
                     @helper.form(action=routes.Application.search(), 'class -> "rtm-search form-search", 'role -> "form") {
                     <div class="input-group">

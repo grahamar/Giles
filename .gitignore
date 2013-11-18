@@ -25,3 +25,5 @@ dist
 /out
 /RUNNING_PID
 /.settings
+/.builds
+/.git_checkouts

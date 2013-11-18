@@ -1,9 +1,9 @@
-@(currentFilter: String)
+@(projectsWithAuthors: Seq[dao.ProjectWithAuthors], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
 
-@main(currentFilter) {
-<div class="container center" style="margin-top: 50px;">
+@main("", loginForm) {
+<div class="container" style="margin-top: 50px;">
     <div class="row">
-
+        @tags.projects(projectsWithAuthors)
     </div>
 </div>
 }

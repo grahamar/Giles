@@ -18,4 +18,6 @@ trait UserProjectsComponent { this: UserComponent with ProjectComponent =>
   val userProjects = TableQuery[UserProjects]
 }
 
-case class ProjectWithAuthors(name: String, url: String, created: Date, updated: Date, id: Option[Long], authors: Seq[User]) extends Project
+case class ProjectWithAuthors(name: String, slug: String, url: String, tags: String, defaultBranch: ProjectBranch,
+                              defaultVersion: ProjectVersion, created: Date, updated: Date, id: Option[Long],
+                              authors: Seq[User]) extends Project

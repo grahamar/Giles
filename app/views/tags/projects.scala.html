@@ -1,0 +1,23 @@
+@(userProjects: Seq[dao.ProjectWithAuthors])
+
+<div class="well">
+    <table class="projects table table-bordered">
+        <tbody>
+        @userProjects.map { project =>
+        <tr class="project">
+            <td>
+                <a href="/@project.url"><strong>@project.name</strong></a>
+                @if(!project.authors.isEmpty){
+                (@{Html(project.authors.map { author =>
+                <a class="text-muted" href="#">{author.username}</a>
+                }.mkString(", "))})
+                }
+                <div class="pull-right">
+                    @viewDocs(project)
+                </div>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>

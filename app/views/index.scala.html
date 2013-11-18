@@ -1,8 +1,8 @@
-@(currentFilter: String, recentlyUpdatedProjects: Seq[dao.ProjectWithAuthors])
+@(recentlyUpdatedProjects: Seq[dao.ProjectWithAuthors], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
 
 @import tags._
 
-@main(currentFilter) {
+@main("", loginForm) {
 <div class="container center" style="margin-top: 50px;">
     <div>
         <h3>@Messages("home.list.recent.title")
@@ -10,29 +10,13 @@
         </h3>
     </div>
     <div class="row">
+        @Option(recentlyUpdatedProjects).map { prjs =>
+            @projects(prjs)
+        }.getOrElse {
         <div class="well">
-            @Option(recentlyUpdatedProjects).map { projects =>
-            <table class="projects table table-bordered">
-                <tbody>
-                @projects.map { project =>
-                <tr class="project">
-                    <td>
-                        <a href="/@project.url"><strong>@project.name</strong></a>
-                        @{Html(project.authors.map { author =>
-                        <a class="text-muted" href="#">{author.username}</a>
-                        }.mkString("(",", ", ")"))}
-                        <div class="pull-right">
-                            @viewDocs(project)
-                        </div>
-                    </td>
-                </tr>
-                }
-                </tbody>
-            </table>
-            }.getOrElse {
             <em>No recently updated projects :(</em>
-            }
         </div>
+        }
     </div>
 </div>
 }

@@ -9,9 +9,21 @@ header h1 {
     font-size: 24px;
 }
 
+.navbar-user {
+    background-color: #00538A;
+    border-color: #00538A;
+    background-image: linear-gradient(to bottom, #005C99 0px, #00538A 100%);
+    background-repeat: repeat-x;
+}
+.navbar-user li a {
+    color: #FFFFFF;
+}
+.navbar-user li a:hover, .navbar-user li a:focus {
+    background-color: #3375A1 !important;
+}
+
 #main {
     position: relative;
-    padding: 5em 2em;
     border-bottom: 1px solid #ccc;
     min-height: 600px;
 }
@@ -61,4 +73,11 @@ tr.project {
     font-size: 16px;
     padding-left: 5px;
     text-decoration: underline;
+}
+
+span.help-block {
+    color: #C09853;
+}
+span.help-inline {
+    color: #B94A48;
 }

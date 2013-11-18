@@ -1,0 +1,54 @@
+@(loginForm: Form[Option[dao.User]], createProjectForm: Form[ProjectImportData])(implicit flash: Flash, currentUser: Option[dao.User])
+
+@import helper.twitterBootstrap._
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 20px;">
+    <div class="row">
+    @currentUser.map { user =>
+        <h3>Import a project</h3>
+        @helper.form(action=routes.Application.createProject) {
+        @createProjectForm.globalError.map { error =>
+        <p class="form-group text-danger">@error.message</p>
+        }
+        @flash.get("success").map { message =>
+        <p class="form-group text-success">@message</p>
+        }
+        <button class="btn btn-primary" style="margin: 20px 0px;" type="submit">Create</button>
+        <div class="form-group">
+            @helper.input(createProjectForm("name"), '_label -> "Project Name") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Name" @toHtmlArgs(args)>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createProjectForm("repo"), '_label -> "Repository Url") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Repository Url" @toHtmlArgs(args)>
+            <small class="text-info">URL for your code (git). Ex. https://github.com/grahamar/read-the-markdown</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createProjectForm("tags"), '_label -> "Tags") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Comma Delimited Tags" @toHtmlArgs(args)>
+            <small class="text-info">A comma-separated list of tags.</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createProjectForm("default_branch"), '_label -> "Default Branch") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Default Branch" @toHtmlArgs(args)>
+            <small class="text-info">What branch "latest" points to. Leave empty to use the default value for your VCS (eg. trunk or master).</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createProjectForm("default_version"), '_label -> "Default Version") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Default Version (e.g. latest)" @toHtmlArgs(args)>
+            <small class="text-info">The version of your project that / redirects to</small>
+            }
+        </div>
+        <button class="btn btn-primary" type="submit">Create</button>
+        }
+        }.getOrElse {
+            <em>Please Login.</em>
+        }
+    </div>
+</div>
+}

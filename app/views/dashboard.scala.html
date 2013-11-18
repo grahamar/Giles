@@ -1,0 +1,16 @@
+@(userProjects: Seq[dao.ProjectWithAuthors], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+
+@import tags._
+
+@currentUser.map { user =>
+    @main("", loginForm) {
+    <div class="container" style="margin-top: 20px;">
+        <div>
+            <h3>My Projects</h3>
+        </div>
+        @projects(userProjects)
+    </div>
+    }
+}.getOrElse {
+    <span>Please Login</span>
+}
