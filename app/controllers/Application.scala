@@ -2,15 +2,24 @@ package controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
+import collection.JavaConverters._
 
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+import play.api.{Mode, Play}
+import play.api.libs.iteratee.Enumerator
 
 import views._
 import dao._
 import auth.{OptionalAuthUser, Authenticator, AuthConfigImpl}
 import build.DocsBuilderFactory
+import java.io.File
+import settings.Global
+import java.net.JarURLConnection
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
+import org.joda.time.DateTimeZone
+import play.api.libs.{MimeTypes, Codecs}
 
 /**
  * Manage a database of computers
@@ -74,6 +83,11 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   def projectCreated(project: SimpleProject)(implicit request: RequestHeader, currentUser: Option[User]): Future[SimpleResult] = {
     Future {
       val persistedProject = ProjectDAO.insertProject(project)
+      currentUser.map { usr =>
+        persistedProject.id.foreach( projId =>
+          usr.id.map(userId => ProjectDAO.insertUserProject(userId -> projId))
+        )
+      }
       val docsBuilder = DocsBuilderFactory.forProject(persistedProject)
       docsBuilder.initAndBuildProject(persistedProject)
     }

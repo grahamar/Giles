@@ -80,4 +80,10 @@ object ProjectDAO {
       Global.dal.insertProject(project)
     }
   }
+
+  def insertUserProject(userIdProjId: (Long, Long)) = {
+    Global.db.withSession{ implicit session: Session =>
+      Global.dal.userProjects.insert(userIdProjId)
+    }
+  }
 }

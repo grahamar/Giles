@@ -4,23 +4,23 @@
 
 # Default path will just redirect to the computer list
 
-GET     /                           controllers.Application.index
+GET     /                                                   controllers.Application.index
 
 # Authentication
-POST    /login                      auth.Authenticator.authenticate
-GET     /logout                     auth.Authenticator.logout
+POST    /login                                              auth.Authenticator.authenticate
+GET     /logout                                             auth.Authenticator.logout
 
-GET     /search                     controllers.Application.search(f ?= "")
+GET     /search                                             controllers.Application.search(f ?= "")
 
-GET     /projects                   controllers.Application.projects
+GET     /projects                                           controllers.Application.projects
 
-#GET    /project/{project}          controllers.Application.project(project)
+GET     /project/:projectSlug/:projectVersion/*file         controllers.ProjectController.project(projectSlug, projectVersion, file)
 
-GET     /dashboard                  controllers.Application.dashboard
-GET     /dashboard/import           controllers.Application.importProject
-POST    /dashboard/create           controllers.Application.createProject
+GET     /dashboard                                          controllers.Application.dashboard
+GET     /dashboard/import                                   controllers.Application.importProject
+POST    /dashboard/create                                   controllers.Application.createProject
 
-GET     /profile/*username          controllers.Application.profile(username)
+GET     /profile/*username                                  controllers.Application.profile(username)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                                       controllers.Assets.at(path="/public", file)
