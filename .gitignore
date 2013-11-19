@@ -27,3 +27,4 @@ dist
 /.settings
 /.builds
 /.git_checkouts
+/.index

@@ -15,19 +15,10 @@ import org.eclipse.jgit.internal.storage.file.FileRepository
 trait RepositoryService {
   def checkoutOrUpdate(project: Project, branch: ProjectBranch, version: ProjectVersion): Future[File]
   def cleanVersion(project: Project, version: ProjectVersion): Unit
-  def repositoryForProjectVersion(project: Project, version: ProjectVersion): File
 }
 
 trait GitRepositoryService extends RepositoryService {
-
-  lazy val gitCheckoutsDir: File = {
-    val checkoutDir = new File(Global.configuration.getString("git.checkouts.dir").getOrElse("./.git_checkouts"))
-    if(checkoutDir.exists() || checkoutDir.mkdirs()) {
-      checkoutDir
-    } else {
-      throw new FileNotFoundException
-    }
-  }
+  self: DirectoryHandler =>
 
   def checkoutOrUpdate(project: Project, branch: ProjectBranch, version: ProjectVersion): Future[File] = Future {
     val checkoutDir = repositoryForProjectVersion(project, version)
@@ -41,10 +32,6 @@ trait GitRepositoryService extends RepositoryService {
 
   def cleanVersion(project: Project, version: ProjectVersion): Unit = {
     Logger.info("Clean Version")
-  }
-
-  def repositoryForProjectVersion(project: Project, version: ProjectVersion): File = {
-    new File(gitCheckoutsDir, project.slug+File.separator+version.versionName)
   }
 
   private def updateRepo(repoDir: File): Git = {

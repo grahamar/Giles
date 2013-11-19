@@ -13,7 +13,7 @@ import play.api.libs.iteratee.Enumerator
 import views._
 import dao._
 import auth.{OptionalAuthUser, Authenticator, AuthConfigImpl}
-import build.DocsBuilderFactory
+import build.{ProjectSearchResult, DocsBuilderFactory}
 import java.io.File
 import settings.Global
 import java.net.JarURLConnection
@@ -55,7 +55,8 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   }
 
   def search(filter: String) = StackAction { implicit request =>
-    Ok(html.projects(UserDAO.projectsWithAuthors, Authenticator.loginForm))
+    val results: Seq[ProjectSearchResult] = DocsBuilderFactory.forSearching.search(filter)
+    Ok(html.search(results, Authenticator.loginForm))
   }
 
   def dashboard = StackAction { implicit request =>

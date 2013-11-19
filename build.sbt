@@ -14,7 +14,8 @@ libraryDependencies ++= Seq( jdbc,
     "jp.t2v"             %% "play2-auth"       % "0.11.0",
     "org.mindrot"        %  "jbcrypt"          % "0.3m",
     "net.databinder"     %% "pamflet-library"  % "0.5.0",
-    "commons-io"         %  "commons-io"       % "2.4"
+    "com.gilt"           %% "lib-lucene-sugar" % "0.2.0",
+    "net.sf.jtidy"       %  "jtidy"            % "r938"
 )
 
 playScalaSettings

@@ -13,7 +13,8 @@ import pamflet.{FileStorage, Produce}
 import com.typesafe.config.{Config, ConfigFactory}
 
 sealed trait DocsBuilder {
-  self: RepositoryService =>
+  self: DirectoryHandler with RepositoryService with DocsIndexer =>
+
   def clean(project: Project): Unit
   def build(project: Project): Unit
   def build(project: Project, version: ProjectVersion): Unit
@@ -22,16 +23,7 @@ sealed trait DocsBuilder {
 }
 
 trait PamfletDocsBuilder extends DocsBuilder {
-  self: RepositoryService =>
-
-  lazy val buildsDir: File = {
-    val buildDir = new File(Global.configuration.getString("build.dir").getOrElse("./.builds"))
-    if(buildDir.exists() || buildDir.mkdirs()) {
-      buildDir
-    } else {
-      throw new FileNotFoundException
-    }
-  }
+  self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
   def clean(project: Project): Unit = {
     Logger.info("Clean")
@@ -53,7 +45,7 @@ trait PamfletDocsBuilder extends DocsBuilder {
     for {
       checkoutDir <- checkoutOrUpdate(project, project.defaultBranch, project.defaultVersion)
       buildDir <- build(project, project.defaultVersion, checkoutDir)
-    } yield buildDir
+    } yield index(project, project.defaultVersion, buildDir)
   }
 
   private def build(project: Project, version: ProjectVersion, checkoutDir: File): Future[File] = Future {
@@ -73,10 +65,6 @@ trait PamfletDocsBuilder extends DocsBuilder {
       Logger.info("Config rtm.yaml not found in project root ["+checkoutDir.getAbsoluteFile+"]")
       new File(checkoutDir, Global.configuration.getString("default.docs.dir").getOrElse("docs"))
     }
-  }
-
-  private def buildDirForProjectVersion(project: Project, version: ProjectVersion): File = {
-    new File(buildsDir, project.slug+File.separator+version.versionName)
   }
 
 }
