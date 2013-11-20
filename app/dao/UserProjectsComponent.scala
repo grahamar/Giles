@@ -2,7 +2,7 @@ package dao
 
 import scala.slick.lifted.{TableQuery, Tag}
 import profile.simple._
-import java.sql.Date
+import java.sql.Timestamp
 
 trait UserProjectsComponent { this: UserComponent with ProjectComponent =>
 
@@ -19,5 +19,7 @@ trait UserProjectsComponent { this: UserComponent with ProjectComponent =>
 }
 
 case class ProjectWithAuthors(name: String, slug: String, url: String, tags: String, defaultBranch: ProjectBranch,
-                              defaultVersion: ProjectVersion, created: Date, updated: Date, id: Option[Long],
-                              authors: Seq[User]) extends Project
+                              defaultVersion: ProjectVersion, created: Timestamp, updated: Timestamp, id: Option[Long],
+                              authors: Seq[User]) extends Project with Ordered[ProjectWithAuthors] {
+  def compare(that: ProjectWithAuthors): Int = that.updated.compareTo(this.updated)
+}

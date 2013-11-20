@@ -1,0 +1,48 @@
+@(project: dao.ProjectWithAuthors, loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 20px;">
+    <div class="jumbotron">
+        <div class="container">
+            <h1>@project.name</h1>
+            <p>@if(!project.authors.isEmpty){
+            (@{Html(project.authors.map { author =>
+            val authorProfileLink = routes.Application.profile(author.username).toString
+            <a class="text-primary" href={authorProfileLink}>{author.username}</a>
+            }.mkString(", "))})
+            }</p>
+        </div>
+    </div>
+    <h3>Description</h3>
+    <p><!--TODO Project Description--></p>
+    <span class="divider col-md-1" style="margin-bottom: 20px;"></span>
+    <div>
+        <div class="col-md-9">
+            <form class="form-inline" role="form" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="sr-only" for="version">Build a version</label>
+                    <select id="version" class="form-control">
+                        <option>latest</option>
+                        <option><!--TODO older version example--></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Build</button>
+            </form>
+            <div class="well">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <!--TODO Versions Go Here-->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <!--TODO Project Details go here-->
+        </div>
+    </div>
+</div>
+}

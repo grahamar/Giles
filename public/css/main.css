@@ -59,9 +59,10 @@ tr.project {
     padding-bottom: 4px;
 }
 
-#profile-page #profile-details .divider {
+.divider {
     border: 1px solid #BFBFBF;
     margin: 5px 0px;
+    width: 100%;
 }
 
 .view-docs-dropdown {
@@ -80,4 +81,8 @@ span.help-block {
 }
 span.help-inline {
     color: #B94A48;
+}
+
+.highlight {
+    background-color: #FFFF00;
 }

@@ -2,24 +2,15 @@ package controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
-import collection.JavaConverters._
 
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
-import play.api.{Mode, Play}
-import play.api.libs.iteratee.Enumerator
 
 import views._
 import dao._
 import auth.{OptionalAuthUser, Authenticator, AuthConfigImpl}
 import build.{ProjectSearchResult, DocsBuilderFactory}
-import java.io.File
-import settings.Global
-import java.net.JarURLConnection
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
-import org.joda.time.DateTimeZone
-import play.api.libs.{MimeTypes, Codecs}
 
 /**
  * Manage a database of computers
@@ -56,7 +47,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
 
   def search(filter: String) = StackAction { implicit request =>
     val results: Seq[ProjectSearchResult] = DocsBuilderFactory.forSearching.search(filter)
-    Ok(html.search(results, Authenticator.loginForm))
+    Ok(html.search(results, filter, Authenticator.loginForm))
   }
 
   def dashboard = StackAction { implicit request =>
@@ -92,7 +83,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
       val docsBuilder = DocsBuilderFactory.forProject(persistedProject)
       docsBuilder.initAndBuildProject(persistedProject)
     }
-    Future.successful(Ok(html.importProject(Authenticator.loginForm, importProjectForm)).
+    Future.successful(Redirect(routes.Application.importProject).
       flashing("success" -> ("Successfully created project \""+project.name+"\"")))
   }
 

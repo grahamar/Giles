@@ -1,0 +1,58 @@
+@(createUserForm: Form[auth.UserData], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+
+@import helper.twitterBootstrap._
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 50px;">
+    <div class="row">
+        <h3>Sign Up</h3>
+        @helper.form(action=auth.routes.Authenticator.createUser) {
+        @createUserForm.globalError.map { error =>
+        <p class="form-group text-danger">@error.message</p>
+        }
+        @flash.get("success").map { message =>
+        <p class="form-group text-success">@message</p>
+        }
+        <button class="btn btn-primary" style="margin: 20px 0px;" type="submit">Submit</button>
+        <div class="form-group">
+            @helper.input(createUserForm("username"), '_label -> "Username") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Username" @toHtmlArgs(args)>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("email"), '_label -> "Email Address") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Email Address" @toHtmlArgs(args)>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("password"), '_label -> "Password") { (id, name, value, args) =>
+            <input type="password" name="@name" id="@id" class="form-control" @toHtmlArgs(args)>
+            <small class="text-info">Minimum password length of 8 characters.</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("rePassword"), '_label -> "Repeat password") { (id, name, value, args) =>
+            <input type="password" name="@name" id="@id" class="form-control" @toHtmlArgs(args)>
+            <small class="text-info">Minimum password length of 8 characters.</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("firstname"), '_label -> "First Name") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="First Name" @toHtmlArgs(args)>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("lastname"), '_label -> "Last Name") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Last Name" @toHtmlArgs(args)>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createUserForm("homepage"), '_label -> "Homepage") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Homepage" @toHtmlArgs(args)>
+            }
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+        }
+    </div>
+</div>
+}

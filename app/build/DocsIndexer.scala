@@ -2,12 +2,17 @@ package build
 
 import java.io._
 
+import math._
 import play.api.Logger
 
 import dao.{ProjectVersion, Project}
 import util.ResourceUtil
+import org.apache.lucene.search.TopScoreDocCollector
+import org.apache.lucene.index.FieldInfo.IndexOptions
+import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
+import java.net.URLEncoder
 
-case class ProjectSearchResult(projectSlug: String, projectVersion: String, path: String, score: Float) extends Ordered[ProjectSearchResult] {
+case class ProjectSearchResult(projectSlug: String, projectVersion: String, path: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
 }
 
@@ -56,22 +61,31 @@ trait LuceneDocsIndexer extends DocsIndexer {
   }
 
   def search(filter: String): Seq[ProjectSearchResult] = {
-    Logger.info("Searching for ["+filter+"]")
+    search(filter, "body") ++ search(filter, "title")
+  }
+
+  private def search(filter: String, field: String): Seq[ProjectSearchResult] = {
     val analyzer = new StandardAnalyzer(Version.LUCENE_43)
-    val bodyQuery = new QueryParser(Version.LUCENE_43, "body", analyzer).parse(filter)
-    val titleQuery = new QueryParser(Version.LUCENE_43, "title", analyzer).parse(filter)
+    val highlighter = new FastVectorHighlighter()
+    val query = new QueryParser(Version.LUCENE_43, field, analyzer).parse(filter)
     doWith(DirectoryReader.open(FSDirectory.open(indexDir))) { indexReader =>
       val indexSearcher = new IndexSearcher(indexReader)
-      val results = indexSearcher.search(titleQuery, 1000).scoreDocs ++ indexSearcher.search(bodyQuery, 1000).scoreDocs
+      val collector = TopScoreDocCollector.create(1000, true)
+      indexSearcher.search(query, collector)
+      val results = collector.topDocs().scoreDocs
+      val fieldQuery = highlighter.getFieldQuery(query)
       results.map { result =>
         val doc = indexSearcher.doc(result.doc)
-        ProjectSearchResult(doc.get("project"), doc.get("version"), doc.get("path"), result.score)
+        val hits: Seq[String] = highlighter.getBestFragments(fieldQuery, indexReader, result.doc, field, 200, 5).map { hit =>
+          "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
+        }
+        ProjectSearchResult(doc.get("project"), doc.get("version"), URLEncoder.encode(doc.get("path"), "UTF-8"), doc.get("path"), hits, result.score)
       }.sorted
     }
   }
 
   private def indexDirectory(project: Project, version: ProjectVersion, dataDir: File, index: IndexWriter): Unit = {
-    Logger.info("Indexing Directory ["+dataDir.getAbsoluteFile+"]")
+    Logger.debug("Indexing Directory ["+dataDir.getAbsoluteFile+"]")
     try {
       for (f <- dataDir.listFiles()) {
         if (f.isDirectory && !skipDirectory(f)) {
@@ -92,10 +106,9 @@ trait LuceneDocsIndexer extends DocsIndexer {
   private def indexFile(project: Project, version: ProjectVersion, f: File, index: IndexWriter): Unit = {
     try {
       if (!f.isHidden && !f.isDirectory && f.canRead && f.exists() && f.getName.endsWith(fileSuffix)) {
-        Logger.debug("Indexing File ["+f.getAbsoluteFile+"]")
         val filePath = f.getAbsolutePath.
           substring(indexDir.getAbsolutePath.length+project.slug.length+version.versionName.length+4)
-        ResourceUtil.doWith(new FileInputStream(f)) { stream =>
+        ResourceUtil.doWith(new InputStreamReader(new FileInputStream(f), "UTF-8")) { stream =>
           index.addDocument(getDocument(project, version, filePath, stream))
         }
       }
@@ -104,7 +117,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
     }
   }
 
-  private def getDocument(project: Project, version: ProjectVersion, filename: String, is: InputStream): Document = {
+  private def getDocument(project: Project, version: ProjectVersion, filename: String, is: InputStreamReader): Document = {
     val tidy = new Tidy()
     tidy.setQuiet(true)
     tidy.setShowWarnings(false)
@@ -113,7 +126,18 @@ trait LuceneDocsIndexer extends DocsIndexer {
     val rawDoc = Option(root.getDocumentElement)
 
     val doc = new org.apache.lucene.document.Document()
-    rawDoc.flatMap(getBody).foreach( body => doc.add(new TextField("body", new StringReader(body))))
+    rawDoc.flatMap(getBody).foreach { body =>
+      val fieldType = new FieldType()
+      fieldType.setIndexed(true)
+      fieldType.setStored(true)
+      fieldType.setStoreTermVectors(true)
+      fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS)
+      fieldType.setStoreTermVectorOffsets(true)
+      fieldType.setStoreTermVectorPayloads(true)
+      fieldType.setStoreTermVectorPositions(true)
+      fieldType.setTokenized(true)
+      doc.add(new Field("body", body, fieldType))
+    }
     rawDoc.flatMap(getTitle).foreach { title =>
       doc.add(new StringField("title", title, Store.YES))
       doc.add(new StringField("path", filename, Store.YES))

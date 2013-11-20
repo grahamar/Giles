@@ -8,6 +8,7 @@ import settings.Global
 sealed trait DirectoryHandler {
   def repositoryForProjectVersion(project: Project, version: ProjectVersion): File
   def buildDirForProjectVersion(project: Project, version: ProjectVersion): File
+  def buildDirForProjectVersion(projectSlug: String, projectVersion: String): File
   def indexDir: File
 }
 
@@ -45,7 +46,11 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
   }
 
   def buildDirForProjectVersion(project: Project, version: ProjectVersion): File = {
-    new File(buildsDir, project.slug+File.separator+version.versionName)
+    buildDirForProjectVersion(project.slug, version.versionName)
+  }
+
+  def buildDirForProjectVersion(projectSlug: String, projectVersion: String): File = {
+    new File(buildsDir, projectSlug+File.separator+projectVersion)
   }
 
   def indexDir: File = luceneIndexDir

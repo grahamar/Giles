@@ -2,8 +2,7 @@ package dao
 
 import scala.slick.lifted.Tag
 import profile.simple._
-import com.google.common.base.CaseFormat
-import java.sql.Date
+import java.sql.Timestamp
 import settings.Global
 
 case class ProjectBranch(branchName: String) extends AnyVal
@@ -16,8 +15,8 @@ trait Project {
   val tags: String
   val defaultBranch: ProjectBranch
   val defaultVersion: ProjectVersion
-  val created: Date
-  val updated: Date
+  val created: Timestamp
+  val updated: Timestamp
   val id: Option[Long]
 }
 
@@ -27,8 +26,8 @@ case class SimpleProject(name: String,
                          tags: String = "",
                          defaultBranch: ProjectBranch = ProjectHelper.defaultProjectBranch,
                          defaultVersion: ProjectVersion = ProjectHelper.defaultProjectVersion,
-                         created: Date = new Date(System.currentTimeMillis),
-                         updated: Date = new Date(System.currentTimeMillis),
+                         created: Timestamp = new Timestamp(System.currentTimeMillis),
+                         updated: Timestamp = new Timestamp(System.currentTimeMillis),
                          id: Option[Long] = None) extends Project
 
 object ProjectHelper {
@@ -57,8 +56,8 @@ trait ProjectComponent { this: UserProjectsComponent =>
     def tags = column[String]("PROJ_TAGS", O.NotNull)
     def defaultBranch = column[ProjectBranch]("PROJ_DFLT_BRANCH", O.NotNull)
     def defaultVersion = column[ProjectVersion]("PROJ_DFLT_VERSION", O.NotNull)
-    def created = column[Date]("PROJ_CREATED", O.NotNull)
-    def updated = column[Date]("PROJ_UPDATED", O.NotNull)
+    def created = column[Timestamp]("PROJ_CREATED", O.NotNull)
+    def updated = column[Timestamp]("PROJ_UPDATED", O.NotNull)
     def authors = userProjects.filter(_.projectId === id).flatMap(_.userFK)
 
     def * = (name, slug, url, tags, defaultBranch, defaultVersion, created, updated, id.?) <> (SimpleProject.tupled, SimpleProject.unapply _)
@@ -85,5 +84,19 @@ object ProjectDAO {
     Global.db.withSession{ implicit session: Session =>
       Global.dal.userProjects.insert(userIdProjId)
     }
+  }
+
+  def findBySlug(projectSlug: String): Option[ProjectWithAuthors] = {
+    val query = (for {
+      u <- Global.dal.users
+      p <- Global.dal.projects if p.slug === projectSlug
+      up <- Global.dal.userProjects if u.id === up.userId && p.id === up.projectId
+    } yield (u, p)).sortBy(_._2.updated.desc)
+
+    val projectAndAuthors: Option[(dao.SimpleProject, Seq[dao.User])] =
+      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+        query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq.headOption
+      }
+    UserDAO.mapProjectWithAuthors(projectAndAuthors)
   }
 }

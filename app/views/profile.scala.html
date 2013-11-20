@@ -7,11 +7,11 @@
     <div id="profile-details" class="col-md-3">
         <div class="col-md-10">
             @gravatar(user.email)
-            <span class="divider col-md-1" style="width: 100%;"></span>
+            <span class="divider col-md-1"></span>
             <h4>@user.firstName @user.lastName</h4>
             <h5 class="text-muted">(@user.username)</h5>
             @user.homepage.map{ hp =>
-            <span class="divider col-md-1" style="width: 100%;"></span>
+            <span class="divider col-md-1"></span>
             <a href="@hp">@hp</a>
             }
             <!-- TODO
@@ -27,7 +27,7 @@
             @userProjects.map { project =>
             <tr class="project">
                 <td>
-                    <a href="/@project.url"><strong>@project.name</strong></a>
+                    <a href='@routes.ProjectController.project(project.slug)'><strong>@project.name</strong></a>
                     @if(!project.authors.isEmpty){
                     (@{Html(project.authors.map { author =>
                     <a class="text-muted" href="#">{author.username}</a>

@@ -6,13 +6,15 @@
         @userProjects.map { project =>
         <tr class="project">
             <td>
-                <a href='@routes.ProjectController.project(project.slug, "latest", "Pamflet.html")'><strong>@project.name</strong></a>
+                <a href='@routes.ProjectController.project(project.slug)'><strong>@project.name</strong></a>
                 @if(!project.authors.isEmpty){
                 (@{Html(project.authors.map { author =>
-                <a class="text-muted" href="#">{author.username}</a>
+                val authorProfileLink = routes.Application.profile(author.username).toString
+                <a class="text-muted" href={authorProfileLink}>{author.username}</a>
                 }.mkString(", "))})
                 }
                 <div class="pull-right">
+                    @util.TemplateUtil.displayTimeSince(project.updated)
                     @viewDocs(project)
                 </div>
             </td>

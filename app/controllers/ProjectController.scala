@@ -1,7 +1,6 @@
 package controllers
 
-import java.io.File
-import java.net.JarURLConnection
+import java.io.{FileInputStream, File}
 
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -13,11 +12,13 @@ import play.api.Play.current
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.{MimeTypes, Codecs}
 
-import auth.{OptionalAuthUser, AuthConfigImpl}
-import settings.Global
+import views._
+import auth.{Authenticator, OptionalAuthUser, AuthConfigImpl}
 import util.ResourceUtil
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import org.joda.time.DateTimeZone
+import build.DocsBuilderFactory
+import dao.ProjectDAO
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -34,36 +35,23 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   private val parsableTimezoneCode = " " + timeZoneCode
 
   // -- ETags handling
-  // TODO this is horrible, could get very large!!
+  // FIXME this is horrible, could get very large!!
   private val etags = new java.util.concurrent.ConcurrentHashMap[String, String]().asScala
 
-  private def etagFor(resource: java.net.URL): Option[String] = {
-    etags.get(resource.toExternalForm).filter(_ => Play.isProd).orElse {
-      val maybeEtag = lastModifiedFor(resource).map(_ + " -> " + resource.toExternalForm).map("\"" + Codecs.sha1(_) + "\"")
-      maybeEtag.foreach(etags.put(resource.toExternalForm, _))
+  private def etagFor(resource: File): Option[String] = {
+    etags.get(resource.getAbsolutePath).filter(_ => Play.isProd).orElse {
+      val maybeEtag = lastModifiedFor(resource).map(_ + " -> " + resource.getAbsolutePath).map("\"" + Codecs.sha1(_) + "\"")
+      maybeEtag.foreach(etags.put(resource.getAbsolutePath, _))
       maybeEtag
     }
   }
 
   private val lastModifieds = new java.util.concurrent.ConcurrentHashMap[String, String]().asScala
 
-  private def lastModifiedFor(resource: java.net.URL): Option[String] = {
-    lastModifieds.get(resource.toExternalForm).filter(_ => Play.isProd).orElse {
-      val maybeLastModified = resource.getProtocol match {
-        case "file" => Some(df.print({ new java.util.Date(new java.io.File(resource.getPath).lastModified).getTime }))
-        case "jar" => {
-          resource.getPath.split('!').drop(1).headOption.flatMap { fileNameInJar =>
-            Option(resource.openConnection)
-              .collect { case c: JarURLConnection => c }
-              .flatMap(c => Option(c.getJarFile.getJarEntry(fileNameInJar.drop(1))))
-              .map(_.getTime)
-              .filterNot(_ == 0)
-              .map(lastModified => df.print({ new java.util.Date(lastModified) }.getTime))
-          }
-        }
-        case _ => None
-      }
-      maybeLastModified.foreach(lastModifieds.put(resource.toExternalForm, _))
+  private def lastModifiedFor(resource: File): Option[String] = {
+    lastModifieds.get(resource.getAbsolutePath).filter(_ => Play.isProd).orElse {
+      val maybeLastModified = Some(df.print({ new java.util.Date(resource.lastModified).getTime }))
+      maybeLastModified.foreach(lastModifieds.put(resource.getAbsolutePath, _))
       maybeLastModified
     }
   }
@@ -83,12 +71,30 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
     case _: Exception => None
   }
 
-  def project(projectSlug: String, projectVersion: String, restOfPath: String) = StackAction { implicit request =>
-    val path = Global.configuration.getString("build.dir").getOrElse("./.builds")
-    val file = projectSlug + "/" + projectVersion + "/" + restOfPath
+  def project(projectSlug: String) = StackAction { implicit request =>
+    val maybeUser = loggedIn
+    ProjectDAO.findBySlug(projectSlug).map { project =>
+      maybeUser.foreach { currentUser =>
+        if(project.authors.contains(currentUser)) {
+          Redirect(routes.ProjectController.editProject(projectSlug))
+        }
+      }
+      Ok(html.project(project, Authenticator.loginForm))
+    }.getOrElse(NotFound)
+  }
+
+  def editProject(projectSlug: String) = StackAction { implicit request =>
+    ProjectDAO.findBySlug(projectSlug).map { project =>
+      Ok(html.project(project, Authenticator.loginForm))
+    }.getOrElse(NotFound)
+  }
+
+  def projectDocs(projectSlug: String, projectVersion: String, restOfPath: String) = StackAction { implicit request =>
+    val path = DocsBuilderFactory.docsBuilder.buildDirForProjectVersion(projectSlug, projectVersion)
+    val file = restOfPath
     val resourceName = path + "/" + file
 
-    if (new File(resourceName).isDirectory || !new File(resourceName).getCanonicalPath.startsWith(new File(path).getCanonicalPath)) {
+    if (new File(resourceName).isDirectory || !new File(resourceName).getCanonicalPath.startsWith(path.getCanonicalPath)) {
       Logger.warn("Resource Not Found. It's either a directory or not found in the builds directory.")
       NotFound
     } else {
@@ -104,13 +110,13 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       }
 
       resource.map {
-        case (url, _) if new File(url.getFile).isDirectory => {
+        case (fileResource, _) if fileResource.isDirectory => {
           NotFound
         }
 
-        case (url, isGzipped) => {
+        case (fileResource, isGzipped) => {
           lazy val (length, resourceData) = {
-            val stream = url.openStream()
+            val stream = new FileInputStream(fileResource)
             try {
               (stream.available, Enumerator.fromStream(stream))
             } catch {
@@ -123,10 +129,10 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
             NotFound
           } else {
             request.headers.get(IF_NONE_MATCH).flatMap { ifNoneMatch =>
-              etagFor(url).filter(_ == ifNoneMatch)
+              etagFor(fileResource).filter(_ == ifNoneMatch)
             }.map(_ => NotModified).getOrElse {
               request.headers.get(IF_MODIFIED_SINCE).flatMap(parseDate).flatMap { ifModifiedSince =>
-                lastModifiedFor(url).flatMap(parseDate).filterNot(lastModified => lastModified.after(ifModifiedSince))
+                lastModifiedFor(fileResource).flatMap(parseDate).filterNot(lastModified => lastModified.after(ifModifiedSince))
               }.map(_ => NotModified.withHeaders(
                 DATE -> df.print({ new java.util.Date }.getTime))).getOrElse {
                 // Prepare a streamed response
@@ -146,8 +152,8 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
                 }
 
                 // Add Etag if we are able to compute it
-                val taggedResponse = etagFor(url).map(etag => gzippedResponse.withHeaders(ETAG -> etag)).getOrElse(gzippedResponse)
-                val lastModifiedResponse = lastModifiedFor(url).map(lastModified => taggedResponse.withHeaders(LAST_MODIFIED -> lastModified)).getOrElse(taggedResponse)
+                val taggedResponse = etagFor(fileResource).map(etag => gzippedResponse.withHeaders(ETAG -> etag)).getOrElse(gzippedResponse)
+                val lastModifiedResponse = lastModifiedFor(fileResource).map(lastModified => taggedResponse.withHeaders(LAST_MODIFIED -> lastModified)).getOrElse(taggedResponse)
 
                 // Add Cache directive if configured
                 lastModifiedResponse.withHeaders(CACHE_CONTROL -> {

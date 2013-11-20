@@ -1,6 +1,6 @@
 package dao
 
-import java.sql.Date
+import java.sql.Timestamp
 
 import scala.slick.lifted.Tag
 import profile.simple._
@@ -15,7 +15,7 @@ case class User(username: String,
                 firstName: Option[String] = None,
                 lastName: Option[String] = None,
                 homepage: Option[String] = None,
-                joined: Date = new Date(new java.util.Date().getTime),
+                joined: Timestamp = new Timestamp(new java.util.Date().getTime),
                 salt: Option[String] = None,
                 id: Option[Long] = None)
 
@@ -28,7 +28,7 @@ trait UserComponent { this: UserProjectsComponent =>
     def firstName = column[Option[String]]("USR_FIRSTNAME")
     def lastName = column[Option[String]]("USR_LASTNAME")
     def homepage = column[Option[String]]("USR_HOMEPAGE")
-    def joined = column[Date]("USR_JOINED", O.NotNull)
+    def joined = column[Timestamp]("USR_JOINED", O.NotNull)
     def salt = column[Option[String]]("USR_SALT", O.NotNull)
     def project = userProjects.filter(_.userId === id).flatMap(_.projectFK)
 
@@ -75,7 +75,7 @@ object UserDAO {
       Global.db.withSession{ implicit session: dao.profile.backend.Session =>
         query.take(limit).list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
-    mapProjectWithAuthors(projectsAndAuthors)
+    mapProjectWithAuthors(projectsAndAuthors).sorted
   }
 
   def findById(id: Long): Option[User] = {
@@ -120,9 +120,23 @@ object UserDAO {
     findByEmail(email).filter{user => user.salt.exists(salt => BCrypt.checkpw(password, user.password))}
   }
 
-  private def mapProjectWithAuthors(projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])]): Seq[ProjectWithAuthors] = {
+  def createUser(user: auth.UserData): User = {
+    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.dal.insertUser(
+        User(user.username, user.email, user.password, Option(user.firstName), Option(user.lastName), Option(user.homepage))
+      )
+    }
+  }
+
+  def mapProjectWithAuthors(projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])]): Seq[ProjectWithAuthors] = {
     projectsAndAuthors.map((pa: (dao.SimpleProject, Seq[dao.User])) =>
-      ProjectWithAuthors(pa._1.name, pa._1.slug, pa._1.url, pa._1.tags, pa._1.defaultBranch, pa._1.defaultVersion, pa._1.created, pa._1.updated, pa._1.id, pa._2)
+      mapProjectWithAuthors(Some(pa)).get
     )
+  }
+
+  def mapProjectWithAuthors(projectWithAuthors: Option[(dao.SimpleProject, Seq[dao.User])]): Option[ProjectWithAuthors] = {
+    projectWithAuthors.map { pa =>
+      ProjectWithAuthors(pa._1.name, pa._1.slug, pa._1.url, pa._1.tags, pa._1.defaultBranch, pa._1.defaultVersion, pa._1.created, pa._1.updated, pa._1.id, pa._2)
+    }
   }
 }

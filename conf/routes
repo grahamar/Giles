@@ -9,16 +9,20 @@ GET     /                                                   controllers.Applicat
 # Authentication
 POST    /login                                              auth.Authenticator.authenticate
 GET     /logout                                             auth.Authenticator.logout
+GET     /signUp                                             auth.Authenticator.signUp
+POST    /create/user                                        auth.Authenticator.createUser
 
 GET     /search                                             controllers.Application.search(f ?= "")
 
 GET     /projects                                           controllers.Application.projects
 
-GET     /project/:projectSlug/:projectVersion/*file         controllers.ProjectController.project(projectSlug, projectVersion, file)
+GET     /project/:projectSlug                               controllers.ProjectController.project(projectSlug)
+GET     /project/:projectSlug/:projectVersion/*file         controllers.ProjectController.projectDocs(projectSlug, projectVersion, file)
 
 GET     /dashboard                                          controllers.Application.dashboard
 GET     /dashboard/import                                   controllers.Application.importProject
-POST    /dashboard/create                                   controllers.Application.createProject
+POST    /dashboard/import                                   controllers.Application.createProject
+GET     /dashboard/:projectSlug                             controllers.ProjectController.editProject(projectSlug)
 
 GET     /profile/*username                                  controllers.Application.profile(username)
 

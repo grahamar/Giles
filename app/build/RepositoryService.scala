@@ -31,7 +31,8 @@ trait GitRepositoryService extends RepositoryService {
   }
 
   def cleanVersion(project: Project, version: ProjectVersion): Unit = {
-    Logger.info("Clean Version")
+    Logger.info("Cleaning Version ["+version.versionName+"]")
+    repositoryForProjectVersion(project, version).delete()
   }
 
   private def updateRepo(repoDir: File): Git = {

@@ -1,21 +1,25 @@
-@(results: Seq[build.ProjectSearchResult], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(results: Seq[build.ProjectSearchResult], currentFilter: String, loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
 
-@main("", loginForm) {
+@main(currentFilter, loginForm) {
 <div class="container" style="margin-top: 50px;">
     <div class="row">
         <div class="well">
             <table class="projects table table-bordered">
                 <tbody>
-                @results.map { result =>
-                <tr class="project">
-                    <td>
-                        <a href='@routes.ProjectController.project(result.projectSlug, result.projectVersion, result.path)'><strong>@result.path</strong></a>
-                        <div class="pull-right">
-                            @result.score
-                        </div>
-                    </td>
-                </tr>
-                }
+                    @results.map { result =>
+                    <tr class="project">
+                        <td>
+                            <div>
+                                <a href='@routes.ProjectController.projectDocs(result.projectSlug, result.projectVersion, result.path)'><strong>@result.filename</strong></a>
+                            </div>
+                            <div>
+                                @result.hits.take(5).map { hit =>
+                                    <span>@Html({hit})</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
                 </tbody>
             </table>
         </div>

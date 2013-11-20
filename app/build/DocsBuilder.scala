@@ -15,18 +15,18 @@ import com.typesafe.config.{Config, ConfigFactory}
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def clean(project: Project): Unit
+  def clean(project: Project, version: ProjectVersion): Unit
   def build(project: Project): Unit
   def build(project: Project, version: ProjectVersion): Unit
-  def force(project: Project): Unit
   def initAndBuildProject(project: Project): Unit
 }
 
 trait PamfletDocsBuilder extends DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def clean(project: Project): Unit = {
-    Logger.info("Clean")
+  def clean(project: Project, version: ProjectVersion): Unit = {
+    Logger.info("Cleaning version ["+version.versionName+"]")
+    buildDirForProjectVersion(project, version).delete()
   }
 
   def build(project: Project): Unit = {
@@ -35,10 +35,6 @@ trait PamfletDocsBuilder extends DocsBuilder {
 
   def build(project: Project, version: ProjectVersion): Unit = {
     build(project, version, repositoryForProjectVersion(project, version))
-  }
-
-  def force(project: Project): Unit = {
-    Logger.info("Force Build")
   }
 
   def initAndBuildProject(project: Project): Unit = {
