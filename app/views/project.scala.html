@@ -38,9 +38,6 @@
                         <tr class="project">
                             <td>
                                 <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, "index.html")'><strong>@build.version.versionName</strong></a>
-                                <div class="pull-right">
-                                    <a href='@routes.ProjectController.deleteIndex(projectAndBuilds.project.slug, build.version.versionName)' class="btn btn-info">Re-Index</a>
-                                </div>
                                 @{build.status match {
                                   case dao.BuildFailure =>
                                     <span class="text-danger" style="padding-left: 2px;">(Build Failed)</span>

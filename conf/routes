@@ -18,7 +18,6 @@ GET     /projects                                           controllers.Applicat
 
 GET     /project/:projectSlug                               controllers.ProjectController.project(projectSlug)
 GET     /project/:projectSlug/:projectVersion/*file         controllers.ProjectController.projectDocs(projectSlug, projectVersion, file)
-GET     /index/:projectSlug/:projectVersion/                controllers.ProjectController.deleteIndex(projectSlug, projectVersion)
 
 GET     /dashboard                                          controllers.Application.dashboard
 GET     /dashboard/import                                   controllers.Application.importProject

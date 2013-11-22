@@ -50,16 +50,18 @@ trait LuceneDocsIndexer extends DocsIndexer {
   }
 
   def index(project: Project, version: ProjectVersion, projectVersionedBuildDir: File): Try[Unit] = Try {
-    val index: IndexWriter = {
-      val dir = FSDirectory.open(indexDir)
-      val iwc = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43))
-      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
-      new IndexWriter(dir, iwc)
-    }
-    doWith(index) { indx =>
-      indexDirectory(project, version, projectVersionedBuildDir, indx)
-      indx.commit()
-      Logger.info("Total indexes: "+indx.numDocs())
+    removeExistingProjectAndVersionIndex(project, version).map { _ =>
+      val index: IndexWriter = {
+        val dir = FSDirectory.open(indexDir)
+        val iwc = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43))
+        iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
+        new IndexWriter(dir, iwc)
+      }
+      doWith(index) { indx =>
+        indexDirectory(project, version, projectVersionedBuildDir, indx)
+        indx.commit()
+        Logger.info("Total indexes: "+indx.numDocs())
+      }
     }
   }
 
