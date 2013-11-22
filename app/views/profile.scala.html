@@ -1,4 +1,4 @@
-@(user: dao.User, userProjects: Seq[dao.ProjectWithAuthors], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(user: dao.User, userProjects: Seq[dao.ProjectAndVersions], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
 
 @import tags._
 
@@ -24,17 +24,17 @@
     <div class="col-md-9 well">
         <table class="projects table table-bordered">
             <tbody>
-            @userProjects.map { project =>
+            @userProjects.map { projectAndVersions =>
             <tr class="project">
                 <td>
-                    <a href='@routes.ProjectController.project(project.slug)'><strong>@project.name</strong></a>
-                    @if(!project.authors.isEmpty){
-                    (@{Html(project.authors.map { author =>
+                    <a href='@routes.ProjectController.project(projectAndVersions.project.slug)'><strong>@projectAndVersions.project.name</strong></a>
+                    @if(!projectAndVersions.project.authors.isEmpty){
+                    (@{Html(projectAndVersions.project.authors.map { author =>
                     <a class="text-muted" href="#">{author.username}</a>
                     }.mkString(", "))})
                     }
                     <div class="pull-right">
-                        @viewDocs(project)
+                        @viewDocs(projectAndVersions)
                     </div>
                 </td>
             </tr>

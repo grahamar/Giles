@@ -8,7 +8,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 
 import views._
-import dao.UserDAO
+import dao.{ProjectDAO, UserDAO}
 
 import controllers.Application
 
@@ -49,7 +49,7 @@ object Authenticator extends Controller with LoginLogout with OptionalAuthUser w
 
   def authenticate = AsyncStack { implicit request =>
     loginForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.index(UserDAO.recentlyUpdatedProjectsWithAuthors(10), formWithErrors))),
+      formWithErrors => Future.successful(BadRequest(html.index(ProjectDAO.recentlyUpdatedProjectsWithAuthors(10), formWithErrors))),
       user => user.get.id.map(gotoLoginSucceeded).getOrElse(Future.failed(new UserIdNotSetException))
     )
   }

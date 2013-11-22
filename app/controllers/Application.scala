@@ -10,7 +10,8 @@ import play.api.data.Forms._
 import views._
 import dao._
 import auth.{OptionalAuthUser, Authenticator, AuthConfigImpl}
-import build.{ProjectSearchResult, DocsBuilderFactory}
+import build.{BuildFailedException, ProjectSearchResult, DocsBuilderFactory}
+import play.api.Logger
 
 /**
  * Manage a database of computers
@@ -29,18 +30,18 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
    * Handle default path requests, redirect to computers list
    */
   def index = StackAction { implicit request =>
-    val recentlyUpgradedProjects = UserDAO.recentlyUpdatedProjectsWithAuthors(10)
+    val recentlyUpgradedProjects = ProjectDAO.recentlyUpdatedProjectsWithAuthors(10)
     Ok(html.index(recentlyUpgradedProjects, Authenticator.loginForm))
   }
 
   def projects = StackAction { implicit request =>
-    Ok(html.projects(UserDAO.projectsWithAuthors, Authenticator.loginForm))
+    Ok(html.projects(ProjectDAO.projectsWithAuthors, Authenticator.loginForm))
   }
 
   def profile(username: String) = StackAction { implicit request =>
     val user = UserDAO.userForUsername(username)
     user.map{usr =>
-      val projects = UserDAO.projectsForUser(usr)
+      val projects = ProjectDAO.projectsForUser(usr)
       Ok(html.profile(usr, projects, Authenticator.loginForm))
     }.getOrElse(NotFound)
   }
@@ -53,7 +54,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   def dashboard = StackAction { implicit request =>
     val maybeUser = loggedIn
     maybeUser.map{ usr =>
-      val projects = UserDAO.projectsForUser(usr)
+      val projects = ProjectDAO.projectsForUser(usr)
       Ok(html.dashboard(projects, Authenticator.loginForm))
     }.getOrElse(Home)
   }
@@ -68,30 +69,44 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   def createProject = AsyncStack { implicit request =>
     importProjectForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(html.importProject(Authenticator.loginForm, formWithErrors))),
-      project => projectCreated(project.toSimpleProject)
+      project => {
+        projectCreated(project.toSimpleProject)
+      }
     )
   }
 
   def projectCreated(project: SimpleProject)(implicit request: RequestHeader, currentUser: Option[User]): Future[SimpleResult] = {
-    Future {
-      val persistedProject = ProjectDAO.insertProject(project)
-      currentUser.map { usr =>
-        persistedProject.id.foreach( projId =>
-          usr.id.map(userId => ProjectDAO.insertUserProject(userId -> projId))
-        )
+    val checkForExisting = ProjectDAO.findBySlug(project.slug)
+    if(checkForExisting.isEmpty) {
+      Future {
+        val insertedProject = ProjectDAO.insertProject(project)
+        currentUser.map { usr =>
+          insertedProject.id.foreach( projId =>
+            usr.id.map(userId => ProjectDAO.insertUserProject(userId -> projId))
+          )
+        }
+        ProjectDAO.findBySlug(project.slug).map { persistedProject =>
+          val docsBuilder = DocsBuilderFactory.forProject(persistedProject)
+          docsBuilder.getVersions(project).map { versions =>
+            val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
+            docsBuilder.initAndBuildProject(projectWithVersions)
+          }.recover {
+            case e: Exception => Logger.error("Exception building project", e); throw new BuildFailedException(e.getMessage)
+          }
+        }
       }
-      val docsBuilder = DocsBuilderFactory.forProject(persistedProject)
-      docsBuilder.initAndBuildProject(persistedProject)
+      Future.successful(Redirect(routes.Application.importProject).
+        flashing("success" -> ("Successfully created project \""+project.name+"\"")))
+    } else {
+      Future.successful(Redirect(routes.Application.importProject).
+        flashing("failure" -> ("Project \""+project.name+"\" already exists.")))
     }
-    Future.successful(Redirect(routes.Application.importProject).
-      flashing("success" -> ("Successfully created project \""+project.name+"\"")))
   }
 
   val importProjectForm = Form {
     mapping(
       "name" -> nonEmptyText,
       "repo" -> nonEmptyText,
-      "tags" -> text,
       "default_branch" -> nonEmptyText,
       "default_version" -> nonEmptyText
     )(ProjectImportData.apply)(ProjectImportData.unapply)
@@ -99,10 +114,10 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
 
 }
 
-case class ProjectImportData(name: String, repoUrl: String, commaDelimitedTags: String, defaultBranch: String, defaultVersion: String) {
+case class ProjectImportData(name: String, repoUrl: String, defaultBranch: String, defaultVersion: String) {
   def toSimpleProject: SimpleProject = {
-    SimpleProject(name, ProjectHelper.urlForName(name), repoUrl, commaDelimitedTags, ProjectBranch(defaultBranch), ProjectVersion(defaultVersion))
+    SimpleProject(name, ProjectHelper.urlForName(name), repoUrl, ProjectBranch(defaultBranch), ProjectVersion(defaultVersion))
   }
 }
 
-object DefaultProjectImportData extends ProjectImportData("", "", "", "master", "latest")
+object DefaultProjectImportData extends ProjectImportData("", "", "master", "latest")

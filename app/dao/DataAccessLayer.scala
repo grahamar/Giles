@@ -6,16 +6,16 @@ import play.api.Logger
 /**
  * The Data Access Layer contains all components and a profile
  */
-class DAL(var database: dao.profile.backend.Database) extends UserComponent with ProjectComponent with UserProjectsComponent {
+class DAL(var database: dao.profile.backend.Database) extends UserComponent with ProjectComponent with UserProjectsComponent with ProjectVersionsComponent with BuildComponent {
 
   Logger.info("Init Data Access Layer")
 
   def create(implicit session: Session): Unit = {
-    (users.ddl ++ projects.ddl ++ userProjects.ddl).create
+    (users.ddl ++ projects.ddl ++ userProjects.ddl ++ projectVersions.ddl ++ builds.ddl).create
   }
 
   def drop(implicit session: Session): Unit = {
-    (users.ddl ++ projects.ddl ++ userProjects.ddl).drop
+    (users.ddl ++ projects.ddl ++ userProjects.ddl ++ projectVersions.ddl ++ builds.ddl).drop
   }
 }
 

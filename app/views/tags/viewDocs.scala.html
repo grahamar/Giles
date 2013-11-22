@@ -1,7 +1,7 @@
-@(project: dao.Project)
+@(projectAndVersions: dao.ProjectAndVersions)
 
 <div class="btn-group">
-    <a href='@routes.ProjectController.projectDocs(project.slug, "latest", "index.html")' class="btn btn-info">View Docs</a>
+    <a href='@routes.ProjectController.projectDocs(projectAndVersions.project.slug, "latest", "index.html")' class="btn btn-info">View Docs</a>
     <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
         <span class="sr-only">Show Document Versions</span>
@@ -12,6 +12,8 @@
             <input type="search" id="searchbox" class="search-query form-control" name="f" placeholder="Search...">
             }
         </li>
-        <li><a href='@routes.ProjectController.projectDocs(project.slug, "latest", "index.html")'>latest</a></li>
+        @projectAndVersions.versions.map { version =>
+        <li><a href='@routes.ProjectController.projectDocs(projectAndVersions.project.slug, version.versionName, "index.html")'>@version.versionName</a></li>
+        }
     </ul>
 </div>

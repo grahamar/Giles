@@ -50,34 +50,6 @@ trait UserComponent { this: UserProjectsComponent =>
 
 object UserDAO {
 
-  def projectsWithAuthors: Seq[ProjectWithAuthors] = {
-    val query = (for {
-      u <- Global.dal.users
-      p <- Global.dal.projects
-      up <- Global.dal.userProjects if u.id === up.userId && p.id === up.projectId
-    } yield (u, p)).sortBy(_._2.updated.desc)
-
-    val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
-        query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
-      }
-    mapProjectWithAuthors(projectsAndAuthors)
-  }
-
-  def recentlyUpdatedProjectsWithAuthors(limit: Int): Seq[ProjectWithAuthors] = {
-    val query = (for {
-      u <- Global.dal.users
-      p <- Global.dal.projects
-      up <- Global.dal.userProjects if u.id === up.userId && p.id === up.projectId
-    } yield (u, p)).sortBy(_._2.updated.desc)
-
-    val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
-        query.take(limit).list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
-      }
-    mapProjectWithAuthors(projectsAndAuthors).sorted
-  }
-
   def findById(id: Long): Option[User] = {
     val query = for { u <- Global.dal.users if u.id === id } yield u
     Global.db.withSession{ implicit session: dao.profile.backend.Session =>
@@ -97,23 +69,6 @@ object UserDAO {
     Global.db.withSession{ implicit session: dao.profile.backend.Session =>
       query.firstOption
     }
-  }
-
-  def projectsForUser(user: User): Seq[ProjectWithAuthors] = {
-    user.id.map{ userId =>
-      val query = (for {
-        u <- Global.dal.users
-        p <- Global.dal.projects
-        up <- Global.dal.userProjects if u.id === up.userId && p.id === up.projectId && u.id === userId
-      } yield (u, p)).sortBy(_._2.name.asc)
-
-      val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-        Global.db.withSession{ implicit session: dao.profile.backend.Session =>
-          query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
-        }
-      // Remove the current user from authors
-      mapProjectWithAuthors(projectsAndAuthors).map(p => p.copy(authors = p.authors.diff(Seq(user))))
-    }.getOrElse(Seq.empty)
   }
 
   def authenticate(email: String, password: String): Option[User] = {
@@ -136,7 +91,7 @@ object UserDAO {
 
   def mapProjectWithAuthors(projectWithAuthors: Option[(dao.SimpleProject, Seq[dao.User])]): Option[ProjectWithAuthors] = {
     projectWithAuthors.map { pa =>
-      ProjectWithAuthors(pa._1.name, pa._1.slug, pa._1.url, pa._1.tags, pa._1.defaultBranch, pa._1.defaultVersion, pa._1.created, pa._1.updated, pa._1.id, pa._2)
+      ProjectWithAuthors(pa._1.name, pa._1.slug, pa._1.url, pa._1.defaultBranch, pa._1.defaultVersion, pa._1.created, pa._1.updated, pa._1.id, pa._2)
     }
   }
 }

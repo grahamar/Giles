@@ -1,54 +1,79 @@
 package build
 
-import java.io.{FileNotFoundException, File}
+import java.io.File
 
-import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
+import collection.JavaConverters._
 import play.api.Logger
 
-import dao.{ProjectHelper, ProjectBranch, ProjectVersion, Project}
-import settings.Global
+import dao.{ProjectHelper, ProjectVersion, Project}
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
+import scala.util.Try
 
 trait RepositoryService {
-  def checkoutOrUpdate(project: Project, branch: ProjectBranch, version: ProjectVersion): Future[File]
-  def cleanVersion(project: Project, version: ProjectVersion): Unit
+  def clone(project: Project): Try[File]
+  def checkout(project: Project, version: ProjectVersion): Try[File]
+  def clean(project: Project): Try[Unit]
+  def getVersions(project: Project): Try[Seq[ProjectVersion]]
 }
 
 trait GitRepositoryService extends RepositoryService {
   self: DirectoryHandler =>
 
-  def checkoutOrUpdate(project: Project, branch: ProjectBranch, version: ProjectVersion): Future[File] = Future {
-    val checkoutDir = repositoryForProjectVersion(project, version)
+  def clone(project: Project): Try[File] = Try {
+    val checkoutDir = repositoryForProject(project)
     if(checkoutDir.exists()) {
-      updateRepo(checkoutDir)
-    } else {
-      cloneProjectTo(project, branch, version, checkoutDir)
+      clean(project)
     }
+    cloneProjectTo(project, checkoutDir)
     checkoutDir
   }
 
-  def cleanVersion(project: Project, version: ProjectVersion): Unit = {
-    Logger.info("Cleaning Version ["+version.versionName+"]")
-    repositoryForProjectVersion(project, version).delete()
+  def checkout(project: Project, version: ProjectVersion): Try[File] = Try {
+    val repoDir = new File(repositoryForProject(project), ".git")
+    Logger.info("Checking out repository for version="+version.versionName+" ["+repoDir.getAbsolutePath+"]")
+    if(repoDir.exists()) {
+      checkoutRepo(project, version, repoDir)
+    }
+    repoDir
   }
 
-  private def updateRepo(repoDir: File): Git = {
-    Logger.info("Git repository found at ["+repoDir.getAbsoluteFile+"]. Updating to latest.")
+  def clean(project: Project): Try[Unit] = Try {
+    val repoDir = repositoryForProject(project)
+    Logger.info("Cleaning repository ["+repoDir.getAbsolutePath+"]")
+    if(!repoDir.delete()) {
+      throw new BuildFailedException("Cannot clean directory ["+repoDir.getAbsolutePath+"]")
+    }
+  }
+
+  def getVersions(project: Project): Try[Seq[ProjectVersion]] = Try {
+    val refsIndex = "refs/tags/".length
+    val versions = Seq(ProjectHelper.defaultProjectVersion) ++
+      Git.lsRemoteRepository().setRemote(project.url).setTags(true).call().asScala.map { ref =>
+        ProjectVersion(ref.getName.substring(refsIndex))
+      }.toSeq
+    Logger.info("Found ["+versions.size+"] versions")
+    versions
+  }
+
+  private def checkoutRepo(project: Project, version: ProjectVersion, repoDir: File): Git = {
     val repo = new Git(new FileRepository(repoDir))
-    repo.pull().call()
-    repo
-  }
-
-  private def cloneProjectTo(project: Project, branch: ProjectBranch, version: ProjectVersion, repoDir: File): Git = {
-    Logger.info("Cloning git repository ["+project.url+"] branch=["+branch.branchName+"] version=["+version.versionName+"]. To ["+repoDir.getAbsoluteFile+"].")
-    val repo = Git.cloneRepository().setBranch(branch.branchName).setURI(project.url).setDirectory(repoDir).call()
-    if(!ProjectHelper.defaultProjectVersion.equals(version)) {
-      repo.checkout().setName(version.versionName).call()
+    try {
+      if(ProjectHelper.defaultProjectVersion.equals(version)) {
+        repo.checkout().setName(project.defaultBranch.branchName).call()
+      } else {
+        repo.checkout().setName(version.versionName).call()
+      }
+    } catch {
+      case ex: Exception => Logger.error("Exception checking out.", ex)
     }
     repo
+  }
+
+  private def cloneProjectTo(project: Project, repoDir: File): Git = {
+    Logger.info("Cloning git repository ["+project.url+"]. To ["+repoDir.getAbsoluteFile+"].")
+    Git.cloneRepository().setURI(project.url).setDirectory(repoDir).call()
   }
 
 }

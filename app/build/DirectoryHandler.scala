@@ -6,7 +6,7 @@ import dao.{ProjectVersion, Project}
 import settings.Global
 
 sealed trait DirectoryHandler {
-  def repositoryForProjectVersion(project: Project, version: ProjectVersion): File
+  def repositoryForProject(project: Project): File
   def buildDirForProjectVersion(project: Project, version: ProjectVersion): File
   def buildDirForProjectVersion(projectSlug: String, projectVersion: String): File
   def indexDir: File
@@ -41,8 +41,8 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
     }
   }
 
-  def repositoryForProjectVersion(project: Project, version: ProjectVersion): File = {
-    new File(gitCheckoutsDir, project.slug+File.separator+version.versionName)
+  def repositoryForProject(project: Project): File = {
+    new File(gitCheckoutsDir, project.slug)
   }
 
   def buildDirForProjectVersion(project: Project, version: ProjectVersion): File = {

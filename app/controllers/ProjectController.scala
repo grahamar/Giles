@@ -18,7 +18,7 @@ import util.ResourceUtil
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import org.joda.time.DateTimeZone
 import build.DocsBuilderFactory
-import dao.ProjectDAO
+import dao.{ProjectVersion, BuildHelper, ProjectDAO}
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -73,20 +73,28 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
 
   def project(projectSlug: String) = StackAction { implicit request =>
     val maybeUser = loggedIn
-    ProjectDAO.findBySlug(projectSlug).map { project =>
+    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
       maybeUser.foreach { currentUser =>
-        if(project.authors.contains(currentUser)) {
+        if(project.project.authors.contains(currentUser)) {
           Redirect(routes.ProjectController.editProject(projectSlug))
         }
       }
-      Ok(html.project(project, Authenticator.loginForm))
+      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
     }.getOrElse(NotFound)
   }
 
   def editProject(projectSlug: String) = StackAction { implicit request =>
-    ProjectDAO.findBySlug(projectSlug).map { project =>
-      Ok(html.project(project, Authenticator.loginForm))
+    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
+      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
     }.getOrElse(NotFound)
+  }
+
+  def deleteIndex(projectSlug: String, projectVersion: String) = StackAction { implicit request =>
+    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
+      DocsBuilderFactory.docsBuilder.removeExistingProjectAndVersionIndex(project.project, ProjectVersion(projectVersion)).map { _ =>
+        Gone(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
+      }.getOrElse(BadRequest)
+    }.getOrElse(BadRequest)
   }
 
   def projectDocs(projectSlug: String, projectVersion: String, restOfPath: String) = StackAction { implicit request =>
@@ -111,6 +119,10 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
 
       resource.map {
         case (fileResource, _) if fileResource.isDirectory => {
+          NotFound
+        }
+
+        case (fileResource, _) if !fileResource.exists() => {
           NotFound
         }
 

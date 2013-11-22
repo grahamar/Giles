@@ -14,6 +14,9 @@
         @flash.get("success").map { message =>
         <p class="form-group text-success">@message</p>
         }
+        @flash.get("failure").map { message =>
+        <p class="form-group text-danger">@message</p>
+        }
         <button class="btn btn-primary" style="margin: 20px 0px;" type="submit">Create</button>
         <div class="form-group">
             @helper.input(createProjectForm("name"), '_label -> "Project Name") { (id, name, value, args) =>
@@ -24,12 +27,6 @@
             @helper.input(createProjectForm("repo"), '_label -> "Repository Url") { (id, name, value, args) =>
             <input type="text" name="@name" id="@id" class="form-control" placeholder="Repository Url" @toHtmlArgs(args)>
             <small class="text-info">URL for your code (git). Ex. https://github.com/grahamar/read-the-markdown</small>
-            }
-        </div>
-        <div class="form-group">
-            @helper.input(createProjectForm("tags"), '_label -> "Tags") { (id, name, value, args) =>
-            <input type="text" name="@name" id="@id" class="form-control" placeholder="Comma Delimited Tags" @toHtmlArgs(args)>
-            <small class="text-info">A comma-separated list of tags.</small>
             }
         </div>
         <div class="form-group">
