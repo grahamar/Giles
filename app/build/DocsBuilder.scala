@@ -2,6 +2,7 @@ package build
 
 import java.io.File
 
+import scala.util.Try
 import play.api.Logger
 
 import dao._
@@ -9,38 +10,18 @@ import settings.Global
 
 import pamflet.{FileStorage, Produce}
 import com.typesafe.config.ConfigFactory
-import scala.util.Try
-import dao.ProjectVersion
-import pamflet.FileStorage
-import scala.Some
-import dao.ProjectAndVersions
 import org.apache.commons.io.FileUtils
+import util.ResourceUtil
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def clean(project: Project, version: ProjectVersion): Try[Unit]
-  def build(project: Project): Try[Option[File]]
-  def build(project: Project, version: ProjectVersion): Try[Option[File]]
   def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit]
   def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit]
 }
 
 trait PamfletDocsBuilder extends DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
-
-  def clean(project: Project, version: ProjectVersion): Try[Unit] = Try {
-    Logger.info("Cleaning version ["+version.versionName+"]")
-    buildDirForProjectVersion(project, version).delete()
-  }
-
-  def build(project: Project): Try[Option[File]] = {
-    build(project, project.defaultVersion)
-  }
-
-  def build(project: Project, version: ProjectVersion): Try[Option[File]] = {
-    build(project, version, repositoryForProject(project))
-  }
 
   def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit] = {
     clean(project).map { _ =>
@@ -49,12 +30,13 @@ trait PamfletDocsBuilder extends DocsBuilder {
           val newVersions = Seq(ProjectHelper.defaultProjectVersion) ++ versions.diff(existingVersions)
           for {
             version         <- newVersions
-            buildDirOption  <- build(project, version)
-            buildDir        <- buildDirOption
-          } index(project, version, buildDir).map { _ =>
-            BuildDAO.insertBuildSuccess(project, version)
+            indexHtmlOption <- build(project, version)
+            indexHtml       <- indexHtmlOption
+          } index(project, version).map { _ =>
+            BuildDAO.insertBuildSuccess(project, version, indexHtml)
           }.recover {
             case e: Exception =>
+              val buildDir: File = buildDirForProjectVersion(project, version)
               handleBuildFailed(project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
           }
         }
@@ -68,19 +50,24 @@ trait PamfletDocsBuilder extends DocsBuilder {
         handleBuildFailed(projectWithVersions.project, projectWithVersions.versions, "Clone of ["+projectWithVersions.project.url+"] failed.", e)
     }.map { _ =>
       for {
-        version         <- projectWithVersions.versions
-        buildDirOption  <- build(projectWithVersions.project, version)
-        buildDir        <- buildDirOption
-      } index(projectWithVersions.project, version, buildDir).map { _ =>
-        BuildDAO.insertBuildSuccess(projectWithVersions.project, version)
+        version          <- projectWithVersions.versions
+        indexHtmlOption  <- build(projectWithVersions.project, version)
+        indexHtml        <- indexHtmlOption
+      } index(projectWithVersions.project, version).map { _ =>
+        BuildDAO.insertBuildSuccess(projectWithVersions.project, version, indexHtml)
       }.recover {
         case e: Exception =>
+          val buildDir: File = buildDirForProjectVersion(projectWithVersions.project, version)
           handleBuildFailed(projectWithVersions.project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
       }
     }
   }
 
-  private def build(project: Project, version: ProjectVersion, checkoutDir: File): Try[Option[File]] = {
+  private def build(project: Project, version: ProjectVersion): Try[Option[String]] = {
+    build(project, version, repositoryForProject(project))
+  }
+
+  private def build(project: Project, version: ProjectVersion, checkoutDir: File): Try[Option[String]] = {
     val buildDir: File = buildDirForProjectVersion(project, version)
     checkout(project, version).recover {
       case e: Exception => handleBuildFailed(project, version, "Checkout failed.", e)
@@ -91,9 +78,13 @@ trait PamfletDocsBuilder extends DocsBuilder {
       } else {
         Try{FileUtils.cleanDirectory(buildDir)} // Quietly empty the directory
         Logger.info("Building... project=["+project.slug+"] version=["+version.versionName+"] input=["+inputDir.getAbsolutePath+"] output=["+buildDir.getAbsoluteFile+"]")
-        Produce(FileStorage(inputDir).globalized, buildDir)
+        val pamfletStorage = FileStorage(inputDir).globalized
+        val indexHtml = pamfletStorage.defaultContents.rootSection.template.get("out").getOrElse {
+          ResourceUtil.encodeFileName(pamfletStorage.defaultContents.title)+".html"
+        }
+        Produce(pamfletStorage, buildDir)
+        Some(indexHtml)
       }
-      Some(buildDir)
     }.recover {
       case e: Exception =>
         handleBuildFailed(project, version, "Building of documents to ["+buildDir.getAbsoluteFile+"] failed.", e)

@@ -15,10 +15,10 @@ import play.api.libs.{MimeTypes, Codecs}
 import views._
 import auth.{Authenticator, OptionalAuthUser, AuthConfigImpl}
 import util.ResourceUtil
+import build.DocsBuilderFactory
+import dao.{BuildHelper, ProjectDAO}
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import org.joda.time.DateTimeZone
-import build.DocsBuilderFactory
-import dao.{ProjectVersion, BuildHelper, ProjectDAO}
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -79,25 +79,25 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
           Redirect(routes.ProjectController.editProject(projectSlug))
         }
       }
-      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
+      Ok(html.project(project, Authenticator.loginForm))
     }.getOrElse(NotFound)
   }
 
   def editProject(projectSlug: String) = StackAction { implicit request =>
     ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
+      Ok(html.project(project, Authenticator.loginForm))
     }.getOrElse(NotFound)
   }
 
   def pullNewVersions(projectSlug: String) = StackAction { implicit request =>
     ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      DocsBuilderFactory.docsBuilder.update(project.project, project.versions)
-      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
+      DocsBuilderFactory.documentsBuilder.update(project.project, project.versions)
+      Ok(html.project(project, Authenticator.loginForm))
     }.getOrElse(BadRequest)
   }
 
   def projectDocs(projectSlug: String, projectVersion: String, restOfPath: String) = StackAction { implicit request =>
-    val path = DocsBuilderFactory.docsBuilder.buildDirForProjectVersion(projectSlug, projectVersion)
+    val path = DocsBuilderFactory.directoryService.buildDirForProjectVersion(projectSlug, projectVersion)
     val file = restOfPath
     val resourceName = path + "/" + file
 

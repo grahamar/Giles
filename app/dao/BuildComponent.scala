@@ -26,17 +26,18 @@ object BuildStatus extends Enum[BuildStatus]
 case object BuildSuccess extends BuildStatus
 case object BuildFailure extends BuildStatus
 
-case class Build(projectId: Long, version: ProjectVersion, message: String, created: Timestamp, status: BuildStatus = BuildSuccess, id: Option[Long] = None)
+case class Build(projectId: Long, version: ProjectVersion, message: String, created: Timestamp,
+                 status: BuildStatus = BuildSuccess, startPage: Option[String] = None, id: Option[Long] = None)
 
-case class ProjectAndBuilds(project: ProjectWithAuthors, builds: Seq[Build])
+case class ProjectAndBuilds(project: ProjectWithAuthors, builds: Seq[Build]) {
+  def versions: Seq[ProjectVersion] = builds.map(_.version)
+  def latestBuild: Option[Build] = builds.find(_.version == ProjectHelper.defaultProjectVersion)
+}
 
 object BuildHelper {
-  def apply(result: ((Long, ProjectVersion, String, BuildStatus, Long), Option[Timestamp])): Build = {
-    val ((projectId, version, msg, status, id), created) = result
-    Build(projectId, version, msg, created.get, status, Some(id))
-  }
-  def toProjectAndBuilds(project: ProjectAndVersions): ProjectAndBuilds = {
-    ProjectAndBuilds(project.project, BuildDAO.latestBuildsForProject(project.project))
+  def apply(result: ((Long, ProjectVersion, String, BuildStatus, Option[String], Long), Option[Timestamp])): Build = {
+    val ((projectId, version, msg, status, startPage, id), created) = result
+    Build(projectId, version, msg, created.get, status, startPage, Some(id))
   }
 }
 
@@ -48,14 +49,15 @@ trait BuildComponent { this: ProjectComponent with ProjectVersionsComponent =>
     def message = column[String]("BLD_MSG", O.NotNull)
     def created = column[Timestamp]("BLD_CREATED", O.NotNull)
     def status = column[BuildStatus]("BLD_STATUS", O.NotNull)
+    def startPage = column[Option[String]]("BLD_PAGE", O.Nullable)
 
-    def * = (projectId, version, message, created, status, id.?) <> (Build.tupled, Build.unapply _)
+    def * = (projectId, version, message, created, status, startPage, id.?) <> (Build.tupled, Build.unapply _)
   }
   val builds = TableQuery[Builds]
 
-  private def buildsForInsert = builds.map(b => (b.projectId, b.version, b.message, b.created, b.status).shaped <>
-    ({ t => Build(t._1, t._2, t._3, t._4, t._5, None)}, { (b: Build) =>
-      Some((b.projectId, b.version, b.message, b.created, b.status))}))
+  private def buildsForInsert = builds.map(b => (b.projectId, b.version, b.message, b.created, b.status, b.startPage).shaped <>
+    ({ t => Build(t._1, t._2, t._3, t._4, t._5, t._6, None)}, { (b: Build) =>
+      Some((b.projectId, b.version, b.message, b.created, b.status, b.startPage))}))
 
   def insertBuild(build: Build)(implicit session: Session) =
     build.copy(id = Some((buildsForInsert returning builds.map(_.id)) += build))
@@ -65,13 +67,15 @@ trait BuildComponent { this: ProjectComponent with ProjectVersionsComponent =>
 object BuildDAO {
 
   implicit val TimestampOrdering = Ordering.fromLessThan( (ths: Timestamp, that: Timestamp) => that.before(ths))
-  implicit val getBuildResult = GetResult(b => Build(b.nextLong(), ProjectVersion(b.nextString()), b.nextString(), b.nextTimestamp(), BuildStatus(b.nextString()).get, b.nextLongOption()))
+  implicit val getBuildResult = GetResult(b => Build(b.nextLong(), ProjectVersion(b.nextString()), b.nextString(),
+    b.nextTimestamp(), BuildStatus(b.nextString()).get, b.nextStringOption(), b.nextLongOption()))
 
-  def insertBuildSuccess(project: Project, version: ProjectVersion): Unit = {
+  def insertBuildSuccess(project: Project, version: ProjectVersion, startPage: String): Unit = {
     project.id.map { projectId =>
       Global.db.withSession{ implicit session: Session =>
         Logger.info("Build successful for project ["+project.name+"] and version ["+version.versionName+"]")
-        Global.dal.insertBuild(Build(projectId, version, "", new Timestamp(System.currentTimeMillis()), status = BuildSuccess))
+        Global.dal.insertBuild(Build(projectId, version, "",
+          new Timestamp(System.currentTimeMillis()), status = BuildSuccess, startPage = Some(startPage)))
       }
     }
   }
@@ -111,7 +115,7 @@ object BuildDAO {
       val query = (for {
         b <- Global.dal.builds if b.projectId === projectId && b.version === version
       } yield b).
-        groupBy( b => (b.projectId, b.version, b.message, b.status, b.id)).
+        groupBy( b => (b.projectId, b.version, b.message, b.status, b.startPage, b.id)).
         map{ case (cols, b) => cols -> b.map(_.created).max }
 
       Global.db.withSession{ implicit session: Session =>

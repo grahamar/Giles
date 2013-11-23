@@ -1,7 +1,6 @@
 package build
 
 import java.io._
-import java.net.URLEncoder
 
 import scala.math._
 import scala.util.Try
@@ -13,6 +12,17 @@ import org.apache.lucene.search.{BooleanClause, BooleanQuery, TermQuery, TopScor
 import org.apache.lucene.index.FieldInfo.IndexOptions
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
 import org.apache.lucene.index.Term
+import org.apache.lucene.document._
+import org.apache.lucene.index.{IndexWriter, IndexWriterConfig, DirectoryReader}
+import org.apache.lucene.search.IndexSearcher
+import org.apache.lucene.document.Field.Store
+import org.apache.lucene.util.Version
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.index.IndexWriterConfig.OpenMode
+import org.apache.lucene.store.FSDirectory
+import org.apache.lucene.queryparser.classic.QueryParser
+import org.w3c.tidy.Tidy
+import org.w3c.dom.{NodeList, Node, Text, Element}
 
 case class ProjectSearchResult(projectSlug: String, projectVersion: String, path: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
@@ -20,25 +30,12 @@ case class ProjectSearchResult(projectSlug: String, projectVersion: String, path
 
 trait DocsIndexer {
   def index(project: Project, version: ProjectVersion): Try[Unit]
-  def index(project: Project, version: ProjectVersion, projectVersionedBuildDir: File): Try[Unit]
   def search(filter: String): Seq[ProjectSearchResult]
   def removeExistingProjectAndVersionIndex(project: Project, version: ProjectVersion): Try[Unit]
 }
 
 trait LuceneDocsIndexer extends DocsIndexer {
   self: DirectoryHandler =>
-
-  import org.apache.lucene.document._
-  import org.apache.lucene.index.{IndexWriter, IndexWriterConfig, DirectoryReader}
-  import org.apache.lucene.search.IndexSearcher
-  import org.w3c.tidy.Tidy
-  import org.w3c.dom.{NodeList, Node, Text, Element}
-  import org.apache.lucene.document.Field.Store
-  import org.apache.lucene.util.Version
-  import org.apache.lucene.analysis.standard.StandardAnalyzer
-  import org.apache.lucene.index.IndexWriterConfig.OpenMode
-  import org.apache.lucene.store.FSDirectory
-  import org.apache.lucene.queryparser.classic.QueryParser
 
   import ResourceUtil._
 
@@ -69,9 +66,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
   }
 
   private def search(filter: String, field: String): Seq[ProjectSearchResult] = {
-    val analyzer = new StandardAnalyzer(Version.LUCENE_43)
-    val highlighter = new FastVectorHighlighter()
-    val parser = new QueryParser(Version.LUCENE_43, field, analyzer)
+    val parser = new QueryParser(Version.LUCENE_43, field, new StandardAnalyzer(Version.LUCENE_43))
     parser.setAllowLeadingWildcard(true)
     val query = parser.parse(filter)
     doWith(DirectoryReader.open(FSDirectory.open(indexDir))) { indexReader =>
@@ -79,6 +74,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
       val collector = TopScoreDocCollector.create(1000, true)
       indexSearcher.search(query, collector)
       val results = collector.topDocs().scoreDocs
+      val highlighter = new FastVectorHighlighter()
       val fieldQuery = highlighter.getFieldQuery(query)
       results.map { result =>
         val doc = indexSearcher.doc(result.doc)
@@ -86,7 +82,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
         ProjectSearchResult(doc.get("project"), doc.get("version"),
-          URLEncoder.encode(doc.get("path"), "UTF-8"), doc.get("path"), hits, result.score)
+          encodeFileName(doc.get("path")), doc.get("path"), hits, result.score)
       }.sorted
     }
   }

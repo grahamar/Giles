@@ -5,7 +5,6 @@ import scala.concurrent.{Future, ExecutionContext}
 
 import play.api.mvc._
 import play.api.mvc.Results._
-import play.api.Logger
 
 import dao.UserDAO
 import controllers.Application
@@ -63,11 +62,6 @@ trait AuthConfigImpl extends AuthConfig {
    */
   def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
     true
-    //(user.permission, authority) match {
-    //  case (Administrator, _)       => true
-    //  case (NormalUser, NormalUser) => true
-    //  case _                        => false
-    //}
   }
 
   override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)

@@ -4,7 +4,6 @@ import scala.slick.lifted.Tag
 import profile.simple._
 import java.sql.Timestamp
 import settings.Global
-import play.api.Logger
 
 case class ProjectBranch(branchName: String) extends AnyVal
 case class ProjectVersion(versionName: String) extends AnyVal
@@ -91,7 +90,7 @@ trait ProjectVersionsComponent { this: ProjectComponent =>
 
 object ProjectDAO {
 
-  def recentlyUpdatedProjectsWithAuthors(limit: Int): Seq[ProjectAndVersions] = {
+  def recentlyUpdatedProjectsWithAuthors(limit: Int): Seq[ProjectAndBuilds] = {
     val query = (for {
       u <- Global.dal.users
       p <- Global.dal.projects
@@ -103,11 +102,11 @@ object ProjectDAO {
         query.take(limit).list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
     UserDAO.mapProjectWithAuthors(projectsAndAuthors).sorted.map { projectWithAuthors =>
-      getProjectVersions(projectWithAuthors)
+      ProjectAndBuilds(projectWithAuthors, BuildDAO.latestBuildsForProject(projectWithAuthors))
     }
   }
 
-  def projectsWithAuthors: Seq[ProjectAndVersions] = {
+  def projectsWithAuthors: Seq[ProjectAndBuilds] = {
     val query = (for {
       u <- Global.dal.users
       p <- Global.dal.projects
@@ -119,11 +118,11 @@ object ProjectDAO {
         query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
     UserDAO.mapProjectWithAuthors(projectsAndAuthors).sorted.map { projectWithAuthors =>
-      getProjectVersions(projectWithAuthors)
+      ProjectAndBuilds(projectWithAuthors, BuildDAO.latestBuildsForProject(projectWithAuthors))
     }
   }
 
-  def projectsForUser(user: User): Seq[ProjectAndVersions] = {
+  def projectsForUser(user: User): Seq[ProjectAndBuilds] = {
     user.id.map{ userId =>
       val query = (for {
         u <- Global.dal.users
@@ -137,7 +136,8 @@ object ProjectDAO {
         }
       // Remove the current user from authors
       UserDAO.mapProjectWithAuthors(projectsAndAuthors).sorted.map { projectWithAuthors =>
-        getProjectVersions(projectWithAuthors.copy(authors = projectWithAuthors.authors.diff(Seq(user))))
+        ProjectAndBuilds(projectWithAuthors.copy(authors = projectWithAuthors.authors.diff(Seq(user))),
+          BuildDAO.latestBuildsForProject(projectWithAuthors))
       }
     }.getOrElse(Seq.empty)
   }
@@ -168,7 +168,7 @@ object ProjectDAO {
     UserDAO.mapProjectWithAuthors(projectAndAuthors)
   }
 
-  def findBySlugWithVersions(projectSlug: String): Option[ProjectAndVersions] = {
+  def findBySlugWithVersions(projectSlug: String): Option[ProjectAndBuilds] = {
     val query = (for {
       u <- Global.dal.users
       p <- Global.dal.projects if p.slug === projectSlug
@@ -180,17 +180,7 @@ object ProjectDAO {
         query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq.headOption
       }
     UserDAO.mapProjectWithAuthors(projectAndAuthors).map { projectAndAuthors =>
-      getProjectVersions(projectAndAuthors)
-    }
-  }
-
-  def getProjectVersions(project: ProjectWithAuthors): ProjectAndVersions = {
-    val query = for {
-      v <- Global.dal.projectVersions if v.projectId === project.id
-    } yield v
-
-    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
-      ProjectAndVersions(project, query.list.map{ v: VersionWithProject => ProjectVersion(v.version)}.toSeq)
+      ProjectAndBuilds(projectAndAuthors, BuildDAO.latestBuildsForProject(projectAndAuthors))
     }
   }
 

@@ -2,7 +2,7 @@ package util
 
 import java.io.File
 import scala.util.Try
-import java.net.URLDecoder
+import java.net.{URLEncoder, URLDecoder}
 import play.api.Logger
 
 object ResourceUtil {
@@ -15,8 +15,14 @@ object ResourceUtil {
     }
   }
 
+  def decodeFileName(filename: String): String =
+    URLDecoder.decode(filename, "UTF-8").replace(" ", "+")
+
+  def encodeFileName(filename: String): String =
+    URLEncoder.encode(filename, "UTF-8")
+
   def resource(name: String): Option[File] = {
-    val file = new File(Option(URLDecoder.decode(name, "UTF-8").replace(" ", "+")).map {
+    val file = new File(Option(decodeFileName(name)).map {
       case s if s.startsWith("/") => s.drop(1)
       case s => s
     }.get)

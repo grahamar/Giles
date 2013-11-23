@@ -36,7 +36,13 @@
                         @projectAndBuilds.builds.map { build =>
                         <tr class="project">
                             <td>
-                                <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, "index.html")'><strong>@build.version.versionName</strong></a>
+                                @build.startPage.map { startPage =>
+                                <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>
+                                    <strong>@build.version.versionName</strong>
+                                </a>
+                                }.getOrElse {
+                                <strong>@build.version.versionName</strong>
+                                }
                                 @{build.status match {
                                   case dao.BuildFailure =>
                                     <span class="text-danger" style="padding-left: 2px;">(Build Failed)</span>

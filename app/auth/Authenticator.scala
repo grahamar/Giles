@@ -12,13 +12,8 @@ import dao.{ProjectDAO, UserDAO}
 
 import controllers.Application
 
-case class UserData(username: String,
-                    email: String,
-                    password: String,
-                    rePassword: String,
-                    firstName: String,
-                    lastName: String,
-                    homepage: String)
+case class UserData(username: String, email: String, password: String, rePassword: String,
+                    firstName: String, lastName: String, homepage: String)
 
 object Authenticator extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
 

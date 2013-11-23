@@ -47,7 +47,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   }
 
   def search(filter: String) = StackAction { implicit request =>
-    val results: Seq[ProjectSearchResult] = DocsBuilderFactory.forSearching.search(filter)
+    val results: Seq[ProjectSearchResult] = DocsBuilderFactory.searchService.search(filter)
     Ok(html.search(results, filter, Authenticator.loginForm))
   }
 
@@ -81,15 +81,17 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
       Future {
         val insertedProject = ProjectDAO.insertProject(project)
         currentUser.map { usr =>
-          insertedProject.id.foreach( projId =>
-            usr.id.map(userId => ProjectDAO.insertUserProject(userId -> projId))
-          )
+          insertedProject.id.foreach { projId =>
+            usr.id.map { userId =>
+              Logger.info("Inserted project ["+projId+"] for user ["+userId+"]")
+              ProjectDAO.insertUserProject(userId -> projId)}
+          }
         }
         ProjectDAO.findBySlug(project.slug).map { persistedProject =>
-          val docsBuilder = DocsBuilderFactory.forProject(persistedProject)
-          docsBuilder.getVersions(project).map { versions =>
+          Logger.info("Found project to build: "+persistedProject.name)
+          DocsBuilderFactory.documentsBuilder.getVersions(project).map { versions =>
             val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
-            docsBuilder.initAndBuildProject(projectWithVersions)
+            DocsBuilderFactory.documentsBuilder.initAndBuildProject(projectWithVersions)
           }.recover {
             case e: Exception => Logger.error("Exception building project", e); throw new BuildFailedException(e.getMessage)
           }
