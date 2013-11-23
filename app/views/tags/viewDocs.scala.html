@@ -2,8 +2,8 @@
 
 <div class="btn-group">
     @projectAndBuilds.latestBuild.map { latest =>
-    <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, latest.version.versionName, latest.startPage.get)' class="btn btn-info">View Docs</a>
-    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+    <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, latest.version.versionName, latest.startPage.get)' class="btn btn-primary">View Docs</a>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
         <span class="sr-only">Show Document Versions</span>
     </button>
@@ -14,7 +14,9 @@
             }
         </li>
         @projectAndBuilds.builds.map { build =>
-        <li><a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, "index.html")'>@build.version.versionName</a></li>
+        @build.startPage.map { startPage =>
+        <li><a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>@build.version.versionName</a></li>
+        }
         }
     </ul>
     }.getOrElse {
