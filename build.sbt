@@ -17,7 +17,8 @@ libraryDependencies ++= Seq( jdbc,
     "com.gilt"           %% "lib-lucene-sugar"    % "0.2.0",
     "org.apache.lucene"  %  "lucene-highlighter"  % "4.3.0",
     "net.sf.jtidy"       %  "jtidy"               % "r938",
-    "com.ocpsoft"        %  "ocpsoft-pretty-time" % "1.0.7"
+    "com.ocpsoft"        %  "ocpsoft-pretty-time" % "1.0.7",
+    "commons-io"         %  "commons-io"          % "2.4"
 )
 
 playScalaSettings

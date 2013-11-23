@@ -22,14 +22,13 @@
                 <div class="form-group">
                     <label class="sr-only" for="version">Build a version</label>
                     <select id="version" class="form-control">
-                        <option>latest</option>
                         @projectAndBuilds.builds.map { build =>
                         <option>@build.version.versionName</option>
                         }
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Build</button>
-                <a href='' class="btn btn-info">Check For New Versions</a>
+                <button type="submit" class="btn btn-primary">Re-Build</button>
+                <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.slug)' class="btn btn-info">Pull New Versions</a>
             </form>
             <div class="well">
                 <table class="table table-bordered">

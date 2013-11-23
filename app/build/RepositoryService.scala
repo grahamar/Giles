@@ -10,6 +10,7 @@ import dao.{ProjectHelper, ProjectVersion, Project}
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import scala.util.Try
+import org.apache.commons.io.FileUtils
 
 trait RepositoryService {
   def clone(project: Project): Try[File]
@@ -42,7 +43,8 @@ trait GitRepositoryService extends RepositoryService {
   def clean(project: Project): Try[Unit] = Try {
     val repoDir = repositoryForProject(project)
     Logger.info("Cleaning repository ["+repoDir.getAbsolutePath+"]")
-    if(!repoDir.delete()) {
+    FileUtils.deleteDirectory(repoDir)
+    if(repoDir.exists()) {
       throw new BuildFailedException("Cannot clean directory ["+repoDir.getAbsolutePath+"]")
     }
   }
@@ -53,20 +55,15 @@ trait GitRepositoryService extends RepositoryService {
       Git.lsRemoteRepository().setRemote(project.url).setTags(true).call().asScala.map { ref =>
         ProjectVersion(ref.getName.substring(refsIndex))
       }.toSeq
-    Logger.info("Found ["+versions.size+"] versions")
     versions
   }
 
   private def checkoutRepo(project: Project, version: ProjectVersion, repoDir: File): Git = {
     val repo = new Git(new FileRepository(repoDir))
-    try {
-      if(ProjectHelper.defaultProjectVersion.equals(version)) {
-        repo.checkout().setName(project.defaultBranch.branchName).call()
-      } else {
-        repo.checkout().setName(version.versionName).call()
-      }
-    } catch {
-      case ex: Exception => Logger.error("Exception checking out.", ex)
+    if(ProjectHelper.defaultProjectVersion.equals(version)) {
+      repo.checkout().setName(project.defaultBranch.branchName).call()
+    } else {
+      repo.checkout().setName("refs/tags/"+version.versionName).call()
     }
     repo
   }

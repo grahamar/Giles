@@ -89,11 +89,10 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
     }.getOrElse(NotFound)
   }
 
-  def deleteIndex(projectSlug: String, projectVersion: String) = StackAction { implicit request =>
+  def pullNewVersions(projectSlug: String) = StackAction { implicit request =>
     ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      DocsBuilderFactory.docsBuilder.removeExistingProjectAndVersionIndex(project.project, ProjectVersion(projectVersion)).map { _ =>
-        Gone(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
-      }.getOrElse(BadRequest)
+      DocsBuilderFactory.docsBuilder.update(project.project, project.versions)
+      Ok(html.project(BuildHelper.toProjectAndBuilds(project), Authenticator.loginForm))
     }.getOrElse(BadRequest)
   }
 

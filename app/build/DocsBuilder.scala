@@ -4,12 +4,17 @@ import java.io.File
 
 import play.api.Logger
 
-import dao.{BuildDAO, ProjectAndVersions, ProjectVersion, Project}
+import dao._
 import settings.Global
 
 import pamflet.{FileStorage, Produce}
 import com.typesafe.config.ConfigFactory
 import scala.util.Try
+import dao.ProjectVersion
+import pamflet.FileStorage
+import scala.Some
+import dao.ProjectAndVersions
+import org.apache.commons.io.FileUtils
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
@@ -18,6 +23,7 @@ sealed trait DocsBuilder {
   def build(project: Project): Try[Option[File]]
   def build(project: Project, version: ProjectVersion): Try[Option[File]]
   def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit]
+  def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit]
 }
 
 trait PamfletDocsBuilder extends DocsBuilder {
@@ -34,6 +40,26 @@ trait PamfletDocsBuilder extends DocsBuilder {
 
   def build(project: Project, version: ProjectVersion): Try[Option[File]] = {
     build(project, version, repositoryForProject(project))
+  }
+
+  def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit] = {
+    clean(project).map { _ =>
+      clone(project).map { _ =>
+        getVersions(project).map { versions =>
+          val newVersions = Seq(ProjectHelper.defaultProjectVersion) ++ versions.diff(existingVersions)
+          for {
+            version         <- newVersions
+            buildDirOption  <- build(project, version)
+            buildDir        <- buildDirOption
+          } index(project, version, buildDir).map { _ =>
+            BuildDAO.insertBuildSuccess(project, version)
+          }.recover {
+            case e: Exception =>
+              handleBuildFailed(project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
+          }
+        }
+      }
+    }
   }
 
   def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit] = {
@@ -63,6 +89,7 @@ trait PamfletDocsBuilder extends DocsBuilder {
       if(!inputDir.exists()) {
         throw new BuildFailedException("No document directory exists at ["+inputDir.getAbsolutePath+"].")
       } else {
+        Try{FileUtils.cleanDirectory(buildDir)} // Quietly empty the directory
         Logger.info("Building... project=["+project.slug+"] version=["+version.versionName+"] input=["+inputDir.getAbsolutePath+"] output=["+buildDir.getAbsoluteFile+"]")
         Produce(FileStorage(inputDir).globalized, buildDir)
       }
@@ -86,12 +113,14 @@ trait PamfletDocsBuilder extends DocsBuilder {
 
   private def handleBuildFailed(project: Project, version: ProjectVersion, msg: String, e: Exception): Unit = {
     BuildDAO.insertBuildFailure(project, version, msg + " - " + e.getMessage)
+    throw e
   }
 
   private def handleBuildFailed(project: Project, versions: Seq[ProjectVersion], msg: String, e: Exception): Unit = {
     versions.foreach { version =>
-      handleBuildFailed(project, version, msg, e)
+      try {handleBuildFailed(project, version, msg, e)}catch{case e:Exception => }
     }
+    throw e
   }
 
 }

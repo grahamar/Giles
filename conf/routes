@@ -18,6 +18,7 @@ GET     /projects                                           controllers.Applicat
 
 GET     /project/:projectSlug                               controllers.ProjectController.project(projectSlug)
 GET     /project/:projectSlug/:projectVersion/*file         controllers.ProjectController.projectDocs(projectSlug, projectVersion, file)
+GET     /project/update/:projectSlug                        controllers.ProjectController.pullNewVersions(projectSlug)
 
 GET     /dashboard                                          controllers.Application.dashboard
 GET     /dashboard/import                                   controllers.Application.importProject

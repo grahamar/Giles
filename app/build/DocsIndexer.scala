@@ -60,7 +60,6 @@ trait LuceneDocsIndexer extends DocsIndexer {
       doWith(index) { indx =>
         indexDirectory(project, version, projectVersionedBuildDir, indx)
         indx.commit()
-        Logger.info("Total indexes: "+indx.numDocs())
       }
     }
   }
@@ -76,7 +75,6 @@ trait LuceneDocsIndexer extends DocsIndexer {
     parser.setAllowLeadingWildcard(true)
     val query = parser.parse(filter)
     doWith(DirectoryReader.open(FSDirectory.open(indexDir))) { indexReader =>
-      Logger.info("Total indexes: "+indexReader.numDocs())
       val indexSearcher = new IndexSearcher(indexReader)
       val collector = TopScoreDocCollector.create(1000, true)
       indexSearcher.search(query, collector)
@@ -97,7 +95,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
     val indexWriter: IndexWriter = {
       val dir = FSDirectory.open(indexDir)
       val iwc = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43))
-      iwc.setOpenMode(OpenMode.APPEND)
+      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
       new IndexWriter(dir, iwc)
     }
 
