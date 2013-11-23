@@ -10,8 +10,7 @@ import play.api.data.Forms._
 import views._
 import dao._
 import auth.{OptionalAuthUser, Authenticator, AuthConfigImpl}
-import build.{BuildFailedException, ProjectSearchResult, DocsBuilderFactory}
-import play.api.Logger
+import build.{ProjectSearchResult, DocsBuilderFactory}
 
 /**
  * Manage a database of computers
@@ -83,25 +82,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
   def projectCreated(project: SimpleProject)(implicit request: RequestHeader, currentUser: Option[User]): Future[SimpleResult] = {
     val checkForExisting = ProjectDAO.findBySlug(project.slug)
     if(checkForExisting.isEmpty) {
-      Future {
-        val insertedProject = ProjectDAO.insertProject(project)
-        currentUser.map { usr =>
-          insertedProject.id.foreach { projId =>
-            usr.id.map { userId =>
-              Logger.info("Inserted project ["+projId+"] for user ["+userId+"]")
-              ProjectDAO.insertUserProject(userId -> projId)}
-          }
-        }
-        ProjectDAO.findBySlug(project.slug).map { persistedProject =>
-          Logger.info("Found project to build: "+persistedProject.name)
-          DocsBuilderFactory.documentsBuilder.getVersions(project).map { versions =>
-            val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
-            DocsBuilderFactory.documentsBuilder.initAndBuildProject(projectWithVersions)
-          }.recover {
-            case e: Exception => Logger.error("Exception building project", e); throw new BuildFailedException(e.getMessage)
-          }
-        }
-      }
+      DocsBuilderFactory.buildInitialProject(project, currentUser)
       Future.successful(Redirect(routes.Application.importProject).
         flashing("success" -> ("Successfully created project \""+project.name+"\"")))
     } else {

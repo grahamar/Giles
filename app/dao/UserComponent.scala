@@ -9,16 +9,6 @@ import settings.Global
 import org.mindrot.jbcrypt.BCrypt
 import play.api.Logger
 
-case class User(username: String,
-                email: String,
-                password: String,
-                firstName: Option[String] = None,
-                lastName: Option[String] = None,
-                homepage: Option[String] = None,
-                joined: Timestamp = new Timestamp(new java.util.Date().getTime),
-                salt: Option[String] = None,
-                id: Option[Long] = None)
-
 trait UserComponent { this: UserProjectsComponent =>
 
   class Users(tag: Tag) extends Table[User](tag, "USERS") with IdAutoIncrement[User] {

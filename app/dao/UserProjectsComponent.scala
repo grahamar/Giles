@@ -17,9 +17,3 @@ trait UserProjectsComponent { this: UserComponent with ProjectComponent =>
   }
   val userProjects = TableQuery[UserProjects]
 }
-
-case class ProjectWithAuthors(name: String, slug: String, url: String, defaultBranch: ProjectBranch,
-                              defaultVersion: ProjectVersion, created: Timestamp, updated: Timestamp, id: Option[Long],
-                              authors: Seq[User]) extends Project with Ordered[ProjectWithAuthors] {
-  def compare(that: ProjectWithAuthors): Int = that.updated.compareTo(this.updated)
-}

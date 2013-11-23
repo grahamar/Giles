@@ -63,7 +63,7 @@ trait GitRepositoryService extends RepositoryService {
     if(ProjectHelper.defaultProjectVersion.equals(version)) {
       repo.checkout().setName(project.defaultBranch.branchName).call()
     } else {
-      repo.checkout().setName("refs/tags/"+version.versionName).call()
+      repo.checkout().setName(version.versionName).call()
     }
     repo
   }

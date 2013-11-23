@@ -16,7 +16,7 @@
     <div>
         @helper.form(action=routes.Application.searchProject(projectAndBuilds.project.slug), 'class -> "rtm-search form-search", 'role -> "form") {
         <div class="input-group">
-            <input type="search" id="searchbox" class="search-query input-lg form-control" name="f" placeholder="Search @projectAndBuilds.project.name">
+            <input type="search" id="searchbox" class="search-query input-lg form-control" name="projectFilter" placeholder="Search @projectAndBuilds.project.name">
             <span class="input-group-btn">
                 <button id="searchsubmit" class="btn btn-lg btn-primary" type="submit">
                     <span class="glyphicon glyphicon-search"></span>

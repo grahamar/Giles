@@ -5,46 +5,6 @@ import profile.simple._
 import java.sql.Timestamp
 import settings.Global
 
-case class ProjectBranch(branchName: String) extends AnyVal
-case class ProjectVersion(versionName: String) extends AnyVal
-
-trait Project {
-  val name: String
-  val slug: String
-  val url: String
-  val defaultBranch: ProjectBranch
-  val defaultVersion: ProjectVersion
-  val created: Timestamp
-  val updated: Timestamp
-  val id: Option[Long]
-}
-
-case class SimpleProject(name: String,
-                         slug: String,
-                         url: String = "",
-                         defaultBranch: ProjectBranch = ProjectHelper.defaultProjectBranch,
-                         defaultVersion: ProjectVersion = ProjectHelper.defaultProjectVersion,
-                         created: Timestamp = new Timestamp(System.currentTimeMillis),
-                         updated: Timestamp = new Timestamp(System.currentTimeMillis),
-                         id: Option[Long] = None) extends Project
-
-case class VersionWithProject(projectId: Long, version: String)
-
-case class ProjectAndVersions(project: ProjectWithAuthors, versions: Seq[ProjectVersion])
-
-object ProjectHelper {
-  def apply(name: String): SimpleProject = {
-    new SimpleProject(name, urlForName(name))
-  }
-  def urlForName(name: String): String = {
-    //TODO this is Rudimental at best...
-    name.toLowerCase.replaceAll(" ", "-").replaceAll("\\.", "").replaceAll("'", "").replaceAll("\"", "")
-  }
-
-  lazy val defaultProjectBranch = ProjectBranch("master")
-  lazy val defaultProjectVersion = ProjectVersion("latest")
-}
-
 trait ProjectComponent { this: UserProjectsComponent with ProjectVersionsComponent =>
 
   class Projects(tag: Tag) extends Table[SimpleProject](tag, "PROJECTS") with IdAutoIncrement[SimpleProject] {

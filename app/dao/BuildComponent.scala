@@ -1,45 +1,12 @@
 package dao
 
-import scala.slick.lifted.Tag
-import profile.simple._
 import java.sql.Timestamp
-import settings.Global
 import play.api.Logger
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
+import scala.slick.lifted.Tag
+import profile.simple._
 
-trait Enum[A] {
-  trait Value { self: A =>
-    _values :+= this
-  }
-  private var _values = Seq.empty[A]
-  def values = _values
-  def apply(name: String): Option[A] = {
-    values.find(_.toString.equals(name))
-  }
-  def unapply(value: A): String = {
-    value.toString
-  }
-}
-
-sealed trait BuildStatus extends BuildStatus.Value
-object BuildStatus extends Enum[BuildStatus]
-case object BuildSuccess extends BuildStatus
-case object BuildFailure extends BuildStatus
-
-case class Build(projectId: Long, version: ProjectVersion, message: String, created: Timestamp,
-                 status: BuildStatus = BuildSuccess, startPage: Option[String] = None, id: Option[Long] = None)
-
-case class ProjectAndBuilds(project: ProjectWithAuthors, builds: Seq[Build]) {
-  def versions: Seq[ProjectVersion] = builds.map(_.version)
-  def latestBuild: Option[Build] = builds.find(_.version == ProjectHelper.defaultProjectVersion)
-}
-
-object BuildHelper {
-  def apply(result: ((Long, ProjectVersion, String, BuildStatus, Option[String], Long), Option[Timestamp])): Build = {
-    val ((projectId, version, msg, status, startPage, id), created) = result
-    Build(projectId, version, msg, created.get, status, startPage, Some(id))
-  }
-}
+import settings.Global
 
 trait BuildComponent { this: ProjectComponent with ProjectVersionsComponent =>
 

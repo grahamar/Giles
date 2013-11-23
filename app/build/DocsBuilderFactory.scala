@@ -1,11 +1,37 @@
 package build
 
+import scala.util.Try
+import scala.concurrent.{ExecutionContext, Future}
+
+import dao.{BuildDAO, SimpleProject, User, ProjectDAO}
+
 object DocsBuilderFactory {
 
   private lazy val docsBuilder =
-    new DirectoryHandlerImpl with PamfletDocsBuilder with GitRepositoryService with LuceneDocsIndexer
+    new DirectoryHandlerImpl with PamfletDocsBuilder with GitRepositoryService with LuceneDocsIndexer with LuceneDocsSearcher
 
-  def documentsBuilder: DocsBuilder with RepositoryService with DocsIndexer = {
+  def buildInitialProject(project: SimpleProject, currentUser: Option[User])
+                        (implicit ex: ExecutionContext): Future[Unit] = Future {
+    Try {
+      val insertedProject = ProjectDAO.insertProject(project)
+      currentUser.map { usr =>
+        insertedProject.id.foreach { projId =>
+          usr.id.map(userId => ProjectDAO.insertUserProject(userId -> projId))
+        }
+      }
+      ProjectDAO.findBySlug(project.slug).map { persistedProject =>
+        repositoryService.getVersions(project).map { versions =>
+          val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
+          documentsBuilder.initAndBuildProject(projectWithVersions)
+        }
+      }
+    }.recover {
+      case e: Exception =>
+        BuildDAO.insertBuildFailure(project, project.defaultVersion, e.getMessage)
+    }
+  }
+
+  def documentsBuilder: DocsBuilder = {
     docsBuilder
   }
 
@@ -13,7 +39,7 @@ object DocsBuilderFactory {
     docsBuilder
   }
 
-  def searchService: DocsIndexer = {
+  def searchService: DocsSearcher = {
     docsBuilder
   }
 
