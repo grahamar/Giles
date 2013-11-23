@@ -3,14 +3,15 @@ package dao
 import java.sql.Timestamp
 import play.api.Logger
 import scala.slick.jdbc.{GetResult, StaticQuery => Q}
-import scala.slick.lifted.Tag
-import profile.simple._
+import scala.slick.lifted.{TableQuery, Tag}
+import driver.profile.simple._
 
 import settings.Global
 
 trait BuildComponent { this: ProjectComponent with ProjectVersionsComponent =>
 
-  class Builds(tag: Tag) extends Table[Build](tag, "BUILDS") with IdAutoIncrement[Build] {
+  class Builds(tag: Tag) extends AbstTable[Build](tag, "BUILDS") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def projectId = column[Long]("BLD_PROJID", O.NotNull)
     def version = column[ProjectVersion]("BLD_VERSION", O.NotNull)
     def message = column[String]("BLD_MSG", O.NotNull)
@@ -26,7 +27,7 @@ trait BuildComponent { this: ProjectComponent with ProjectVersionsComponent =>
     ({ t => Build(t._1, t._2, t._3, t._4, t._5, t._6, None)}, { (b: Build) =>
       Some((b.projectId, b.version, b.message, b.created, b.status, b.startPage))}))
 
-  def insertBuild(build: Build)(implicit session: Session) =
+  def insertBuild(build: Build)(implicit session: driver.backend.Session) =
     build.copy(id = Some((buildsForInsert returning builds.map(_.id)) += build))
 
 }
@@ -39,7 +40,7 @@ object BuildDAO {
 
   def insertBuildSuccess(project: Project, version: ProjectVersion, startPage: String): Unit = {
     project.id.map { projectId =>
-      Global.db.withSession{ implicit session: Session =>
+      Global.db.withSession{ implicit session: driver.backend.Session =>
         Logger.info("Build successful for project ["+project.name+"] and version ["+version.versionName+"]")
         Global.dal.insertBuild(Build(projectId, version, "",
           new Timestamp(System.currentTimeMillis()), status = BuildSuccess, startPage = Some(startPage)))
@@ -49,7 +50,7 @@ object BuildDAO {
 
   def insertBuildFailure(project: Project, version: ProjectVersion, message: String): Unit = {
     project.id.map { projectId =>
-      Global.db.withSession{ implicit session: Session =>
+      Global.db.withSession{ implicit session: driver.backend.Session =>
         Logger.warn("Build failed for project ["+project.name+"] and version ["+version.versionName+"] - "+message)
         Global.dal.insertBuild(Build(projectId, version, message, new Timestamp(System.currentTimeMillis()), status = BuildFailure))
       }
@@ -85,7 +86,7 @@ object BuildDAO {
         groupBy( b => (b.projectId, b.version, b.message, b.status, b.startPage, b.id)).
         map{ case (cols, b) => cols -> b.map(_.created).max }
 
-      Global.db.withSession{ implicit session: Session =>
+      Global.db.withSession{ implicit session: driver.backend.Session =>
         query.list.toSeq.map {
           case tuples => BuildHelper(tuples)
         }.headOption

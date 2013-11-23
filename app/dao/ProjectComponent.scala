@@ -1,13 +1,14 @@
 package dao
 
-import scala.slick.lifted.Tag
-import profile.simple._
+import scala.slick.lifted.{TableQuery, Tag}
+import driver.profile.simple._
 import java.sql.Timestamp
 import settings.Global
 
 trait ProjectComponent { this: UserProjectsComponent with ProjectVersionsComponent =>
 
-  class Projects(tag: Tag) extends Table[SimpleProject](tag, "PROJECTS") with IdAutoIncrement[SimpleProject] {
+  class Projects(tag: Tag) extends AbstTable[SimpleProject](tag, "PROJECTS") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("PROJ_NAME", O.NotNull)
     def slug = column[String]("PROJ_SLUG", O.NotNull)
     def url = column[String]("PROJ_URL", O.NotNull)
@@ -17,7 +18,7 @@ trait ProjectComponent { this: UserProjectsComponent with ProjectVersionsCompone
     def updated = column[Timestamp]("PROJ_UPDATED", O.NotNull)
     def authors = userProjects.filter(_.projectId === id).flatMap(_.userFK)
 
-    def * = (name, slug, url, defaultBranch, defaultVersion, created, updated, id.?) <> (SimpleProject.tupled, SimpleProject.unapply _)
+    def * = (name, slug, url, defaultBranch, defaultVersion, created, updated, id.?) <> (SimpleProject.tupled, SimpleProject.unapply)
 
     def idx_name = index("idx_proj", name, unique = true)
     def idx_slug = index("idx_slug", slug, unique = true)
@@ -28,17 +29,17 @@ trait ProjectComponent { this: UserProjectsComponent with ProjectVersionsCompone
     ({ t => SimpleProject(t._1, t._2, t._3, t._4, t._5, t._6, t._7, None)}, { (p: SimpleProject) =>
       Some((p.name, p.slug, p.url, p.defaultBranch, p.defaultVersion, p.created, p.updated))}))
 
-  def insertProject(project: SimpleProject)(implicit session: Session) =
+  def insertProject(project: SimpleProject)(implicit session: dao.driver.backend.Session) =
     project.copy(id = Some((projectsForInsert returning projects.map(_.id)) += project))
 }
 
 trait ProjectVersionsComponent { this: ProjectComponent =>
 
-  class ProjectVersions(tag: Tag) extends Table[VersionWithProject](tag, "PROJECT_VERSIONS") {
+  class ProjectVersions(tag: Tag) extends AbstTable[VersionWithProject](tag, "PROJECT_VERSIONS") {
     def projectId = column[Long]("PROJ_ID", O.NotNull)
     def version = column[String]("VERSION", O.NotNull)
 
-    def * = (projectId, version) <> (VersionWithProject.tupled, VersionWithProject.unapply _)
+    def * = (projectId, version) <> (VersionWithProject.tupled, VersionWithProject.unapply)
 
     def pk = primaryKey("pk_proj_version", (projectId, version))
 
@@ -58,7 +59,7 @@ object ProjectDAO {
     } yield (u, p)).sortBy(_._2.updated.desc)
 
     val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.db.withSession{ implicit session: dao.driver.backend.Session =>
         query.take(limit).list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
     UserDAO.mapProjectWithAuthors(projectsAndAuthors).sorted.map { projectWithAuthors =>
@@ -74,7 +75,7 @@ object ProjectDAO {
     } yield (u, p)).sortBy(_._2.updated.desc)
 
     val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.db.withSession{ implicit session: dao.driver.backend.Session =>
         query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
       }
     UserDAO.mapProjectWithAuthors(projectsAndAuthors).sorted.map { projectWithAuthors =>
@@ -91,7 +92,7 @@ object ProjectDAO {
       } yield (u, p)).sortBy(_._2.name.asc)
 
       val projectsAndAuthors: Seq[(dao.SimpleProject, Seq[dao.User])] =
-        Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+        Global.db.withSession{ implicit session: dao.driver.backend.Session =>
           query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq
         }
       // Remove the current user from authors
@@ -103,13 +104,13 @@ object ProjectDAO {
   }
 
   def insertProject(project: SimpleProject): Project = {
-    Global.db.withSession{ implicit session: Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       Global.dal.insertProject(project)
     }
   }
 
   def insertUserProject(userIdProjId: (Long, Long)) = {
-    Global.db.withSession{ implicit session: Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       Global.dal.userProjects.insert(userIdProjId)
     }
   }
@@ -122,7 +123,7 @@ object ProjectDAO {
     } yield (u, p)).sortBy(_._2.updated.desc)
 
     val projectAndAuthors: Option[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.db.withSession{ implicit session: dao.driver.backend.Session =>
         query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq.headOption
       }
     UserDAO.mapProjectWithAuthors(projectAndAuthors)
@@ -136,7 +137,7 @@ object ProjectDAO {
     } yield (u, p)).sortBy(_._2.updated.desc)
 
     val projectAndAuthors: Option[(dao.SimpleProject, Seq[dao.User])] =
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.db.withSession{ implicit session: dao.driver.backend.Session =>
         query.list.groupBy( _._2 ).mapValues( _.map( _._1 ).toSeq ).toSeq.headOption
       }
     UserDAO.mapProjectWithAuthors(projectAndAuthors).map { projectAndAuthors =>
@@ -146,7 +147,7 @@ object ProjectDAO {
 
   def insertProjectVersions(project: ProjectWithAuthors, versions: Seq[ProjectVersion]): ProjectAndVersions = {
     project.id.map { projectId =>
-      Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+      Global.db.withSession{ implicit session: dao.driver.backend.Session =>
         versions.foreach { version =>
           Global.dal.projectVersions.insert(VersionWithProject(projectId, version.versionName))
         }

@@ -2,16 +2,16 @@ package dao
 
 import java.sql.Timestamp
 
-import scala.slick.lifted.Tag
-import profile.simple._
+import scala.slick.lifted.{TableQuery, Tag}
+import driver.profile.simple._
 import settings.Global
 
 import org.mindrot.jbcrypt.BCrypt
-import play.api.Logger
 
 trait UserComponent { this: UserProjectsComponent =>
 
-  class Users(tag: Tag) extends Table[User](tag, "USERS") with IdAutoIncrement[User] {
+  class Users(tag: Tag) extends AbstTable[User](tag, "USERS") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def username = column[String]("USR_USERNAME", O.NotNull)
     def email = column[String]("USR_EMAIL", O.NotNull)
     def password = column[String]("USR_PWD", O.NotNull)
@@ -22,7 +22,7 @@ trait UserComponent { this: UserProjectsComponent =>
     def salt = column[Option[String]]("USR_SALT", O.NotNull)
     def project = userProjects.filter(_.userId === id).flatMap(_.projectFK)
 
-    def * = (username, email, password, firstName, lastName, homepage, joined, salt, id.?) <> (User.tupled, User.unapply _)
+    def * = (username, email, password, firstName, lastName, homepage, joined, salt, id.?) <> (User.tupled, User.unapply)
   }
   val users = TableQuery[Users]
 
@@ -30,7 +30,7 @@ trait UserComponent { this: UserProjectsComponent =>
     ({ t => User(t._1, t._2, t._3, t._4, t._5, t._6, t._7, t._8, None)}, { (u: User) =>
       Some((u.username, u.email, u.password, u.firstName, u.lastName, u.homepage, u.joined, u.salt))}))
 
-  def insertUser(user: User)(implicit session: Session) = {
+  def insertUser(user: User)(implicit session: dao.driver.backend.Session) = {
     val salt: String = BCrypt.gensalt()
     val hashedPwd: String = BCrypt.hashpw(user.password, salt)
     val saltedUser = user.copy(salt = Some(salt), password = hashedPwd)
@@ -42,21 +42,21 @@ object UserDAO {
 
   def findById(id: Long): Option[User] = {
     val query = for { u <- Global.dal.users if u.id === id } yield u
-    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       query.firstOption
     }
   }
 
   def findByEmail(email: String): Option[User] = {
     val query = for { u <- Global.dal.users if u.email === email } yield u
-    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       query.firstOption
     }
   }
 
   def userForUsername(username: String): Option[User] = {
     val query = for { u <- Global.dal.users if u.username === username } yield u
-    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       query.firstOption
     }
   }
@@ -66,7 +66,7 @@ object UserDAO {
   }
 
   def createUser(user: auth.UserData): User = {
-    Global.db.withSession{ implicit session: dao.profile.backend.Session =>
+    Global.db.withSession{ implicit session: dao.driver.backend.Session =>
       Global.dal.insertUser(
         User(user.username, user.email, user.password, Option(user.firstName), Option(user.lastName), Option(user.homepage))
       )
