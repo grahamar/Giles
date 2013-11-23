@@ -8,14 +8,13 @@
         <span class="sr-only">Show Document Versions</span>
     </button>
     <ul class="dropdown-menu view-docs-dropdown" role="menu">
-        <li>
-            @helper.form(action=routes.Application.search(), 'role -> "form") {
-            <input type="search" id="searchbox" class="search-query form-control" name="f" placeholder="Search...">
-            }
-        </li>
         @projectAndBuilds.builds.map { build =>
         @build.startPage.map { startPage =>
-        <li><a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>@build.version.versionName</a></li>
+        <li>
+            <a href='@routes.ProjectController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>
+                @build.version.versionName
+            </a>
+        </li>
         }
         }
     </ul>

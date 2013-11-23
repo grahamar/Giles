@@ -13,6 +13,7 @@ GET     /signUp                                             auth.Authenticator.s
 POST    /create/user                                        auth.Authenticator.createUser
 
 GET     /search                                             controllers.Application.search(f ?= "")
+POST    /search/:projectSlug                                controllers.Application.searchProject(projectSlug, f ?= "")
 
 GET     /projects                                           controllers.Application.projects
 

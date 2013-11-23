@@ -51,6 +51,11 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
     Ok(html.search(results, filter, Authenticator.loginForm))
   }
 
+  def searchProject(projectSlug: String, filter: String) = StackAction { implicit request =>
+    val results: Seq[ProjectSearchResult] = DocsBuilderFactory.searchService.searchProject(projectSlug, filter)
+    Ok(html.search(results, filter, Authenticator.loginForm))
+  }
+
   def dashboard = StackAction { implicit request =>
     val maybeUser = loggedIn
     maybeUser.map{ usr =>
