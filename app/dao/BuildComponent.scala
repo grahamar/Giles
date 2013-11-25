@@ -42,6 +42,7 @@ object BuildDAO {
     project.id.map { projectId =>
       Global.db.withSession{ implicit session: driver.backend.Session =>
         Logger.info("Build successful for project ["+project.name+"] and version ["+version.versionName+"]")
+        (for { p <- Global.dal.projects if p.id === projectId } yield p.updated).update(new Timestamp(System.currentTimeMillis()))
         Global.dal.insertBuild(Build(projectId, version, "",
           new Timestamp(System.currentTimeMillis()), status = BuildSuccess, startPage = Some(startPage)))
       }
@@ -52,6 +53,7 @@ object BuildDAO {
     project.id.map { projectId =>
       Global.db.withSession{ implicit session: driver.backend.Session =>
         Logger.warn("Build failed for project ["+project.name+"] and version ["+version.versionName+"] - "+message)
+        (for { p <- Global.dal.projects if p.id === projectId } yield p.updated).update(new Timestamp(System.currentTimeMillis()))
         Global.dal.insertBuild(Build(projectId, version, message, new Timestamp(System.currentTimeMillis()), status = BuildFailure))
       }
     }
