@@ -4,6 +4,7 @@ import scala.util.Try
 import scala.concurrent.{ExecutionContext, Future}
 
 import dao.{BuildDAO, SimpleProject, User, ProjectDAO}
+import play.api.Logger
 
 object DocsBuilderFactory {
 
@@ -20,9 +21,11 @@ object DocsBuilderFactory {
         }
       }
       ProjectDAO.findBySlug(project.slug).map { persistedProject =>
-        repositoryService.getVersions(project).map { versions =>
-          val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
-          documentsBuilder.initAndBuildProject(projectWithVersions)
+        repositoryService.clone(project).map { _ =>
+          repositoryService.getVersions(project).map { versions =>
+            val projectWithVersions = ProjectDAO.insertProjectVersions(persistedProject, versions)
+            documentsBuilder.initAndBuildProject(projectWithVersions)
+          }
         }
       }
     }.recover {

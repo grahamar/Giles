@@ -58,7 +58,7 @@ case object BuildSuccess extends BuildStatus
 case object BuildFailure extends BuildStatus
 
 case class Build(projectId: Long, version: ProjectVersion, message: String, created: Timestamp,
-                 status: BuildStatus = BuildSuccess, startPage: Option[String] = None, id: Option[Long] = None)
+                 status: BuildStatus = BuildFailure, startPage: Option[String] = None, id: Option[Long] = None)
 
 case class ProjectAndBuilds(project: ProjectWithAuthors, builds: Seq[Build]) {
   def versions: Seq[ProjectVersion] = builds.map(_.version)

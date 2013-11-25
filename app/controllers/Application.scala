@@ -84,7 +84,7 @@ object Application extends Controller with OptionalAuthUser with AuthConfigImpl 
     if(checkForExisting.isEmpty) {
       DocsBuilderFactory.buildInitialProject(project, currentUser)
       Future.successful(Redirect(routes.Application.importProject).
-        flashing("success" -> ("Successfully created project \""+project.name+"\"")))
+        flashing("success" -> ("Creating project \""+project.name+"\"...")))
     } else {
       Future.successful(Redirect(routes.Application.importProject).
         flashing("failure" -> ("Project \""+project.name+"\" already exists.")))

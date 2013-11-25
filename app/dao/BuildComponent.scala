@@ -36,7 +36,7 @@ object BuildDAO {
 
   implicit val TimestampOrdering = Ordering.fromLessThan( (ths: Timestamp, that: Timestamp) => that.before(ths))
   implicit val getBuildResult = GetResult(b => Build(b.nextLong(), ProjectVersion(b.nextString()), b.nextString(),
-    b.nextTimestamp(), BuildStatus(b.nextString()).get, b.nextStringOption(), b.nextLongOption()))
+    b.nextTimestamp(), BuildStatus(b.nextString()).getOrElse(BuildFailure), b.nextStringOption(), b.nextLongOption()))
 
   def insertBuildSuccess(project: Project, version: ProjectVersion, startPage: String): Unit = {
     project.id.map { projectId =>

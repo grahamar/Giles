@@ -17,16 +17,17 @@ sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
   def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit]
-  def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit]
+  def update(project: ProjectWithAuthors, existingVersions: Seq[ProjectVersion]): Try[Unit]
 }
 
 trait PamfletDocsBuilder extends DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def update(project: Project, existingVersions: Seq[ProjectVersion]): Try[Unit] = {
+  def update(project: ProjectWithAuthors, existingVersions: Seq[ProjectVersion]): Try[Unit] = {
     clean(project).map { _ =>
       clone(project).map { _ =>
         getVersions(project).map { versions =>
+          ProjectDAO.insertProjectVersions(project, versions.diff(existingVersions))
           val newVersions = Seq(ProjectHelper.defaultProjectVersion) ++ versions.diff(existingVersions)
           for {
             version         <- newVersions
@@ -44,22 +45,17 @@ trait PamfletDocsBuilder extends DocsBuilder {
     }
   }
 
-  def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit] = {
-    clone(projectWithVersions.project).recover {
+  def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit] = Try {
+    for {
+      version          <- projectWithVersions.versions
+      indexHtmlOption  <- build(projectWithVersions.project, version)
+      indexHtml        <- indexHtmlOption
+    } index(projectWithVersions.project, version).map { _ =>
+      BuildDAO.insertBuildSuccess(projectWithVersions.project, version, indexHtml)
+    }.recover {
       case e: Exception =>
-        handleBuildFailed(projectWithVersions.project, projectWithVersions.versions, "Clone of ["+projectWithVersions.project.url+"] failed.", e)
-    }.map { _ =>
-      for {
-        version          <- projectWithVersions.versions
-        indexHtmlOption  <- build(projectWithVersions.project, version)
-        indexHtml        <- indexHtmlOption
-      } index(projectWithVersions.project, version).map { _ =>
-        BuildDAO.insertBuildSuccess(projectWithVersions.project, version, indexHtml)
-      }.recover {
-        case e: Exception =>
-          val buildDir: File = buildDirForProjectVersion(projectWithVersions.project, version)
-          handleBuildFailed(projectWithVersions.project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
-      }
+        val buildDir: File = buildDirForProjectVersion(projectWithVersions.project, version)
+        handleBuildFailed(projectWithVersions.project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
     }
   }
 
@@ -104,13 +100,6 @@ trait PamfletDocsBuilder extends DocsBuilder {
 
   private def handleBuildFailed(project: Project, version: ProjectVersion, msg: String, e: Exception): Unit = {
     BuildDAO.insertBuildFailure(project, version, msg + " - " + e.getMessage)
-    throw e
-  }
-
-  private def handleBuildFailed(project: Project, versions: Seq[ProjectVersion], msg: String, e: Exception): Unit = {
-    versions.foreach { version =>
-      try {handleBuildFailed(project, version, msg, e)}catch{case e:Exception => }
-    }
     throw e
   }
 
