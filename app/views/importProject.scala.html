@@ -7,7 +7,7 @@
     <div class="row">
     @currentUser.map { user =>
         <h3>Import a project</h3>
-        @helper.form(action=routes.Application.createProject) {
+        @helper.form(action=routes.ProjectController.createProject) {
         @createProjectForm.globalError.map { error =>
         <p class="form-group text-danger">@error.message</p>
         }

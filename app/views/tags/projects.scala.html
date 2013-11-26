@@ -9,7 +9,7 @@
                 <a href='@routes.ProjectController.project(projectAndVersions.project.slug)'><strong>@projectAndVersions.project.name</strong></a>
                 @if(!projectAndVersions.project.authors.isEmpty){
                 (@{Html(projectAndVersions.project.authors.map { author =>
-                val authorProfileLink = routes.Application.profile(author.username).toString
+                val authorProfileLink = auth.routes.Authenticator.profile(author.username).toString
                 <a class="text-muted" href={authorProfileLink}>{author.username}</a>
                 }.mkString(", "))})
                 }

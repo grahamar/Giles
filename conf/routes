@@ -4,30 +4,29 @@
 
 # Default path will just redirect to the computer list
 
-GET     /                                             controllers.Application.index
+GET     /                                                   controllers.Application.index
 
 # Authentication
-POST    /login                                        auth.Authenticator.authenticate
-GET     /logout                                       auth.Authenticator.logout
-GET     /signUp                                       auth.Authenticator.signUp
-POST    /create/user                                  auth.Authenticator.createUser
+POST    /login                                              auth.Authenticator.authenticate
+GET     /logout                                             auth.Authenticator.logout
+GET     /signUpForm                                         auth.Authenticator.signUp
+POST    /users/create                                       auth.Authenticator.createUser
+GET     /users/*username                                    auth.Authenticator.profile(username)
 
-GET     /search                                       controllers.Application.search(f ?= "")
-GET     /search/:projectSlug                          controllers.Application.searchProject(projectSlug, projectFilter ?= "")
+GET     /search                                             controllers.Application.search(f ?= "")
+GET     /search/:projectSlug                                controllers.Application.searchProject(projectSlug, projectFilter ?= "")
 
-GET     /projects                                     controllers.Application.projects
+GET     /projects                                           controllers.ProjectController.projects
+GET     /projects/create                                    controllers.ProjectController.importProject
+PUT     /projects/create                                    controllers.ProjectController.createProject
+GET     /projects/:projectSlug                              controllers.ProjectController.project(projectSlug)
+GET     /projects/:projectSlug/edit                         controllers.ProjectController.editProject(projectSlug)
+GET     /projects/:projectSlug/pull                         controllers.ProjectController.pullNewVersions(projectSlug)
+GET     /projects/:projectSlug/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectSlug, projectVersion, file)
+PUT     /projects/:projectSlug/docs/:projectVersion/*file   controllers.StaticDocsController.publish(projectSlug, projectVersion, file)
 
-GET     /project/:projectSlug                         controllers.ProjectController.project(projectSlug)
-GET     /project/:projectSlug/:projectVersion/*file   controllers.ProjectController.projectDocs(projectSlug, projectVersion, file)
-GET     /project/update/:projectSlug                  controllers.ProjectController.pullNewVersions(projectSlug)
-
-GET     /dashboard                                    controllers.Application.dashboard
-GET     /dashboard/import                             controllers.Application.importProject
-POST    /dashboard/import                             controllers.Application.createProject
-GET     /dashboard/:projectSlug                       controllers.ProjectController.editProject(projectSlug)
-
-GET     /profile/*username                            controllers.Application.profile(username)
+GET     /dashboard                                          controllers.Application.dashboard
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /favicon.ico                                  controllers.Assets.at(path="/public", file="favicon.ico")
-GET     /assets/*file                                 controllers.Assets.at(path="/public", file)
+GET     /favicon.ico                                        controllers.Assets.at(path="/public", file="favicon.ico")
+GET     /assets/*file                                       controllers.Assets.at(path="/public", file)

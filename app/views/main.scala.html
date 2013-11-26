@@ -72,8 +72,8 @@
                         <div class="collapse navbar-collapse">
                             <ul class="nav navbar-nav">
                                 <li><a href="@routes.Application.dashboard">Projects</a></li>
-                                <li><a href="@routes.Application.importProject">Import project</a></li>
-                                <li><a href="@routes.Application.profile(loggedInUser.username)">Profile</a></li>
+                                <li><a href="@routes.ProjectController.importProject">Import project</a></li>
+                                <li><a href="@auth.routes.Authenticator.profile(loggedInUser.username)">Profile</a></li>
                             </ul>
                         </div>
                     </div>

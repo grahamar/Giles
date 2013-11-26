@@ -61,6 +61,14 @@ object Authenticator extends Controller with LoginLogout with OptionalAuthUser w
     Application.Home
   }
 
+  def profile(username: String) = StackAction { implicit request =>
+    val user = UserDAO.userForUsername(username)
+    user.map{usr =>
+      val projects = ProjectDAO.projectsForUser(usr)
+      Ok(html.profile(usr, projects, Authenticator.loginForm))
+    }.getOrElse(NotFound)
+  }
+
   private class UserIdNotSetException extends RuntimeException
 
 }
