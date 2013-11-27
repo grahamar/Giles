@@ -9,14 +9,14 @@ POST    /login                                                controllers.Authen
 GET     /logout                                               controllers.AuthenticationController.logout
 GET     /signUpForm                                           controllers.AuthenticationController.signUp
 POST    /users/create                                         controllers.AuthenticationController.createUser
-GET     /users/*username                                      controllers.AuthenticationController.profile(username)
+GET     /users/profile/*username                              controllers.AuthenticationController.profile(username)
 
 GET     /search                                               controllers.ApplicationController.search(f ?= "")
 GET     /search/:projectSlug                                  controllers.ApplicationController.searchProject(projectSlug, projectFilter ?= "")
 
 GET     /projects                                             controllers.ProjectController.projects
-GET     /projects/create                                      controllers.ProjectController.importProject
-PUT     /projects/create                                      controllers.ProjectController.createProject
+GET     /projects/import                                      controllers.ProjectController.importProject
+POST    /projects/create                                      controllers.ProjectController.createProject
 GET     /projects/:projectUrlKey                              controllers.ProjectController.project(projectUrlKey)
 GET     /projects/:projectUrlKey/edit                         controllers.ProjectController.editProject(projectUrlKey)
 GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)

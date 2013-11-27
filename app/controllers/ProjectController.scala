@@ -15,6 +15,7 @@ import build.DocumentationFactory
 import settings.Global
 import dao.util.ProjectHelper
 import java.util.UUID
+import play.api.Logger
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -60,7 +61,9 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
 
   def createProject = AsyncStack { implicit request =>
     importProjectForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.importProject(AuthenticationController.loginForm, formWithErrors))),
+      formWithErrors => {
+        Future.successful(BadRequest(html.importProject(AuthenticationController.loginForm, formWithErrors)))
+      },
       project => projectCreated(project)
     )
   }

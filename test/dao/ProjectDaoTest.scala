@@ -37,6 +37,7 @@ class ProjectDaoTest extends PlaySpecification with Mockito with BeforeAfter {
       val maybeProject = projects.findByGuid(guid)
 
       maybeProject must not be None
+      maybeProject.get mustEqual project
     }
 
   }

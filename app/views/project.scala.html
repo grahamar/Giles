@@ -52,7 +52,7 @@
                                     <strong>@build.version</strong>
                                 </a>
                                 @{build.status match {
-                                  case models.BuildFailure =>
+                                  case "failure" =>
                                     <span class="text-danger" style="padding-left: 2px;">(Build Failed)</span>
                                     <p class="text-danger">{build.message}</p>
                                   case _ =>

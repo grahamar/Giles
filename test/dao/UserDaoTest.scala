@@ -16,9 +16,7 @@ class UserDaoTest extends PlaySpecification with Mockito with BeforeAfter {
   lazy val usersCollection = TestMongoInit.mongoDb("users")
   lazy val users = new dao.UserDao(usersCollection)
 
-  def before = {
-    usersCollection.drop()
-  }
+  def before = usersCollection.drop()
 
   def after = {}
 
@@ -38,6 +36,7 @@ class UserDaoTest extends PlaySpecification with Mockito with BeforeAfter {
       val maybeUser = users.findByGuid(guid)
 
       maybeUser must not be None
+      maybeUser.get mustEqual user
     }
 
   }

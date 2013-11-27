@@ -9,7 +9,7 @@ import java.util.UUID
 
 class BuildDao(builds: MongoCollection) {
 
-  def create(guid: UUID, projectGuid: UUID, version: String, message: String, status: BuildStatus): Build = {
+  def create(guid: UUID, projectGuid: UUID, version: String, message: String, status: String): Build = {
     val build = Build(guid = guid,
       project_guid = projectGuid,
       version = version,
@@ -21,11 +21,11 @@ class BuildDao(builds: MongoCollection) {
   }
 
   def createSuccess(projectGuid: UUID, version: String): Build = {
-    create(UUID.randomUUID(), projectGuid, version, "", BuildSuccess)
+    create(UUID.randomUUID(), projectGuid, version, "", "success")
   }
 
   def createFailure(projectGuid: UUID, version: String, message: String): Build = {
-    create(UUID.randomUUID(), projectGuid, version, message, BuildFailure)
+    create(UUID.randomUUID(), projectGuid, version, message, "failure")
   }
 
   def findByGuid(guid: UUID): Option[Build] = {

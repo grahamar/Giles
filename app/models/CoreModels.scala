@@ -43,17 +43,12 @@ class ProjectAuthorsAndBuilds(val project: Project, val authors: Seq[User], val 
   def latestBuild: Option[Build] = builds.find(_.version == project.head_version)
 }
 
-sealed trait BuildStatus extends BuildStatus.Value
-object BuildStatus extends Enum[BuildStatus]
-case object BuildSuccess extends BuildStatus
-case object BuildFailure extends BuildStatus
-
 case class Build(guid: UUID,
                  project_guid: UUID,
                  version: String,
                  message: String,
                  created_at: DateTime,
-                 status: BuildStatus = BuildFailure)
+                 status: String = "failure")
 
 /**
  * An actual file (in HTML) containing some documentation for

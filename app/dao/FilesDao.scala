@@ -49,7 +49,7 @@ class FilesDao(files: MongoCollection) {
   def search(query: FileQuery): Iterable[File] = {
     val builder = MongoDBObject.newBuilder
     query.guid.foreach { v => builder += "guid" -> v }
-    query.project_guid.foreach { v => builder += "application_guid" -> v }
+    query.project_guid.foreach { v => builder += "project_guid" -> v }
     query.version.foreach { v => builder += "version" -> v }
     query.title.foreach { v => builder += "title" -> v }
     query.url_key.foreach { v => builder += "url_key" -> v }
