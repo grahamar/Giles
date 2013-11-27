@@ -4,7 +4,6 @@ import models._
 import util.{Index, MongoUtil}
 
 import com.novus.salat._
-import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import java.util.UUID
 

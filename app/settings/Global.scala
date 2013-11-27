@@ -1,7 +1,7 @@
 package settings
 
-import dao.util.{RegisterAnyValConversionHelpers, Index, MongoUtil}
 import play.api.Application
+import dao.util.{Index, MongoUtil}
 
 object Global extends play.api.GlobalSettings {
 
