@@ -6,17 +6,18 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
+import java.util.UUID
 
 class FilesDao(files: MongoCollection) {
 
-  def create(guid: Guid, project: Project, version: Version, title: String, html: String): File = {
+  def create(guid: UUID, project: Project, version: String, title: String, html: String): File = {
     val urlKey = UrlKey.generate(title)
     val file = File(guid = guid,
       project_guid = project.guid,
       version = version,
       title = title,
       url_key = urlKey,
-      keywords = Keywords.generate(Seq(guid.value, title, html, urlKey.value)),
+      keywords = Keywords.generate(Seq(guid.toString, title, html, urlKey)),
       html = html,
       created_at = new DateTime())
 
@@ -33,24 +34,24 @@ class FilesDao(files: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: Guid): Option[File] = {
+  def findByGuid(guid: UUID): Option[File] = {
     search(FileQuery(guid = Some(guid))).headOption
   }
 
-  def findAllByProjectGuidAndVersion(projectGuid: Guid, version: Version): Iterable[File] = {
+  def findAllByProjectGuidAndVersion(projectGuid: UUID, version: String): Iterable[File] = {
     search(FileQuery(project_guid = Some(projectGuid), version = Some(version)))
   }
 
-  def delete(guid: Guid) = {
+  def delete(guid: UUID) = {
     // TODO: Soft delete?
-    files.remove(MongoDBObject("guid" -> guid.value))
+    files.remove(MongoDBObject("guid" -> guid))
   }
 
   def search(query: FileQuery): Iterable[File] = {
     val builder = MongoDBObject.newBuilder
     query.guid.foreach { v => builder += "guid" -> v }
-    query.project_guid.foreach { v => builder += "application_guid" -> v.value }
-    query.version.foreach { v => builder += "version" -> v.name }
+    query.project_guid.foreach { v => builder += "application_guid" -> v }
+    query.version.foreach { v => builder += "version" -> v }
     query.title.foreach { v => builder += "title" -> v }
     query.url_key.foreach { v => builder += "url_key" -> v }
     query.query.foreach { v => builder += "keywords" -> v.toLowerCase.r }

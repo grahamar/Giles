@@ -1,25 +1,23 @@
 package models
 
 import org.joda.time.DateTime
+import java.util.UUID
 
-case class Guid(value: String) extends AnyVal
-
-case class User(guid: Guid,
+case class User(guid: UUID,
                 username: String,
                 email: String,
                 password: String,
-                project_guids: Seq[Guid],
+                project_guids: Seq[UUID],
                 first_name: Option[String] = None,
                 last_name: Option[String] = None,
                 homepage: Option[String] = None,
                 created_at: DateTime = new DateTime,
                 salt: Option[String] = None)
 
-case class UrlKey(value: String) extends AnyVal
 object UrlKey {
-  def generate(name: String): UrlKey = {
-    new UrlKey(name.toLowerCase.replaceAll(" ", "-").
-      replaceAll("\\.", "").replaceAll("'", "").replaceAll("\"", ""))
+  def generate(name: String): String = {
+    name.toLowerCase.replaceAll(" ", "-").
+      replaceAll("\\.", "").replaceAll("'", "").replaceAll("\"", "")
   }
 }
 object Keywords {
@@ -28,15 +26,15 @@ object Keywords {
   }
 }
 
-case class Project(guid: Guid,
+case class Project(guid: UUID,
                    name: String,
                    description: String,
-                   url_key: UrlKey,
+                   url_key: String,
                    repo_url: String,
                    keywords: Seq[String],
-                   head_version: Version,
-                   versions: Seq[Version],
-                   author_guids: Seq[Guid],
+                   head_version: String,
+                   versions: Seq[String],
+                   author_guids: Seq[UUID],
                    created_at: DateTime,
                    updated_at: DateTime)
 
@@ -45,16 +43,14 @@ class ProjectAuthorsAndBuilds(val project: Project, val authors: Seq[User], val 
   def latestBuild: Option[Build] = builds.find(_.version == project.head_version)
 }
 
-case class Version(name: String) extends AnyVal
-
 sealed trait BuildStatus extends BuildStatus.Value
 object BuildStatus extends Enum[BuildStatus]
 case object BuildSuccess extends BuildStatus
 case object BuildFailure extends BuildStatus
 
-case class Build(guid: Guid,
-                 project_guid: Guid,
-                 version: Version,
+case class Build(guid: UUID,
+                 project_guid: UUID,
+                 version: String,
                  message: String,
                  created_at: DateTime,
                  status: BuildStatus = BuildFailure)
@@ -64,11 +60,11 @@ case class Build(guid: Guid,
  * this project. API is to provide a title and the actual contents
  * for this file.
  */
-case class File(guid: Guid,
-                project_guid: Guid,
-                version: Version,
+case class File(guid: UUID,
+                project_guid: UUID,
+                version: String,
                 title: String,
-                url_key: UrlKey,
+                url_key: String,
                 keywords: Seq[String],
                 html: String,
                 created_at: DateTime) extends Ordered[File] {
@@ -77,19 +73,19 @@ case class File(guid: Guid,
   override def compare(other: File): Int = {
     if (url_key == other.url_key) {
       0
-    } else if ("readme".equals(url_key.value)  || "index".equals(url_key.value)) {
+    } else if ("readme".equals(url_key)  || "index".equals(url_key)) {
       -1
-    } else if ("readme".equals(other.url_key.value) || "index".equals(other.url_key.value)) {
+    } else if ("readme".equals(other.url_key) || "index".equals(other.url_key)) {
       1
     } else {
-      url_key.value.compare(other.url_key.value)
+      url_key.compare(other.url_key)
     }
   }
 
 }
 
-case class View(guid: Guid, file_guid: Guid, user_guid: Option[Guid], created_at: DateTime)
+case class View(guid: UUID, file_guid: UUID, user_guid: Option[UUID], created_at: DateTime)
 
-case class FileRollup(file_guid: Guid, count: Long)
+case class FileRollup(file_guid: UUID, count: Long)
 
-case class UserFileRollup(user_guid: Guid, file_guid: Guid, count: Long)
+case class UserFileRollup(user_guid: UUID, file_guid: UUID, count: Long)

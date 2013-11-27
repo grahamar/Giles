@@ -6,6 +6,7 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
+import java.util.UUID
 
 /**
  * A view is essentially a page view. We de-normalise views by
@@ -19,11 +20,11 @@ import org.joda.time.DateTime
  */
 class ViewsDao(views: MongoCollection, fileRollup: FileViewRollupDao, userFileRollup: UserFileViewRollupDao) {
 
-  def findByGuid(guid: Guid): Option[View] = {
+  def findByGuid(guid: UUID): Option[View] = {
     search(ViewQuery(guid = Some(guid))).headOption
   }
 
-  def create(guid: Guid, fileGuid: Guid, userGuid: Option[Guid]): View = {
+  def create(guid: UUID, fileGuid: UUID, userGuid: Option[UUID]): View = {
     val view = View(guid = guid,
       file_guid = fileGuid,
       user_guid = userGuid,
@@ -35,18 +36,18 @@ class ViewsDao(views: MongoCollection, fileRollup: FileViewRollupDao, userFileRo
     view
   }
 
-  def deleteFile(fileGuid: Guid) = {
+  def deleteFile(fileGuid: UUID) = {
     // TODO: Soft delete?
     fileRollup.delete(fileGuid)
     userFileRollup.deleteFile(fileGuid)
     views.remove(MongoDBObject("file_guid" -> fileGuid))
   }
 
-  def numberViewsForFile(fileGuid: Guid): Long = {
+  def numberViewsForFile(fileGuid: UUID): Long = {
     fileRollup.numberViews(fileGuid)
   }
 
-  def numberViewsForUserAndFile(userGuid: Guid, fileGuid: Guid): Long = {
+  def numberViewsForUserAndFile(userGuid: UUID, fileGuid: UUID): Long = {
     userFileRollup.numberViews(userGuid, fileGuid)
   }
 

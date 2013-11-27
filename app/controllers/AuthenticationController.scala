@@ -11,7 +11,7 @@ import views._
 import models._
 import controllers.auth._
 import settings.Global
-import dao.util.UserProjectDAOHelper
+import dao.util.ProjectHelper
 
 object AuthenticationController extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
 
@@ -63,7 +63,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
     val user = Global.users.findByUsername(username)
     user.map{usr =>
       val projects = Global.projects.findByAuthorGuid(usr.guid)
-      Ok(html.profile(usr, UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+      Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
     }.getOrElse(NotFound)
   }
 

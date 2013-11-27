@@ -7,11 +7,12 @@ import play.api.data.Forms._
 
 import models._
 import settings.Global
+import java.util.UUID
 
 object VersionsApiController extends Controller {
 
   def getVersions(projectGuid: String, version: Option[String]) = Action {
-    Global.projects.findByGuid(projectGuid.toGuid) match {
+    Global.projects.findByGuid(UUID.fromString(projectGuid)) match {
       case None => {
         NotFound("Project for guid [%s] not found".format(projectGuid))
       }
@@ -19,9 +20,9 @@ object VersionsApiController extends Controller {
         version match {
           case None =>
             Ok(Json.toJson(project.versions.map(Json.toJson(_))))
-          case Some(ver) if !project.versions.contains(ver.toVersion) =>
+          case Some(ver) if !project.versions.contains(ver) =>
             NotFound("Project version [%s] not found".format(version))
-          case Some(ver) if project.versions.contains(ver.toVersion) =>
+          case Some(ver) if project.versions.contains(ver) =>
             // TODO what do we return here? files? project?
             Ok(Json.toJson(project.versions.map(Json.toJson(_))))
         }
@@ -38,7 +39,7 @@ object VersionsApiController extends Controller {
   }
 
   def createVersion(data: PutVersionFormData)(implicit request: Request[Any]) = {
-    Global.projects.findByGuid(data.project_guid.toGuid) match {
+    Global.projects.findByGuid(UUID.fromString(data.project_guid)) match {
       case None => {
         NotFound("Project for guid [%s] not found".format(data.project_guid))
       }
@@ -46,8 +47,8 @@ object VersionsApiController extends Controller {
         Ok(Json.toJson(project))
       }
       case Some(project: Project) if !project.versions.contains(data.version) => {
-        Global.projects.update(project.copy(versions = project.versions.+:(data.version.toVersion)))
-        Ok(Json.toJson(Global.projects.findByGuid(data.project_guid.toGuid)))
+        Global.projects.update(project.copy(versions = project.versions.+:(data.version)))
+        Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(data.project_guid))))
       }
       case _ => InternalServerError
     }

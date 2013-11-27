@@ -7,7 +7,7 @@ import views._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.{ProjectSearchResult, DocumentationFactory}
 import settings.Global
-import dao.util.UserProjectDAOHelper
+import dao.util.ProjectHelper
 
 /**
  * Manage a database of computers
@@ -27,12 +27,12 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
    */
   def index = StackAction { implicit request =>
     val projects = Global.projects.findRecentlyUpdated(10)
-    Ok(html.index(UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+    Ok(html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
   }
 
   def index(loginForm: Form[Option[User]])(implicit flash: Flash, currentUser: Option[models.User]) = {
     val projects = Global.projects.findRecentlyUpdated(10)
-    html.index(UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, loginForm)
+    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, loginForm)
   }
 
   def search(filter: String) = StackAction { implicit request =>
@@ -49,7 +49,7 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
     val maybeUser = loggedIn
     maybeUser.map{ usr =>
       val projects = Global.projects.findByAuthorGuid(usr.guid)
-      Ok(html.dashboard(UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+      Ok(html.dashboard(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
     }.getOrElse(Home)
   }
 

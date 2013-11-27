@@ -16,9 +16,9 @@ import settings.Global
 
 trait RepositoryService {
   def clone(project: Project): Try[JFile]
-  def checkout(project: Project, version: Version): Try[JFile]
+  def checkout(project: Project, version: String): Try[JFile]
   def clean(project: Project): Try[Unit]
-  def getVersions(project: Project): Try[Seq[Version]]
+  def getVersions(project: Project): Try[Seq[String]]
 }
 
 trait GitRepositoryService extends RepositoryService {
@@ -39,9 +39,9 @@ trait GitRepositoryService extends RepositoryService {
       throw e
   }
 
-  def checkout(project: Project, version: Version): Try[JFile] = Try {
+  def checkout(project: Project, version: String): Try[JFile] = Try {
     val repoDir = new JFile(repositoryForProject(project), ".git")
-    Logger.info("Checking out repository for version="+version.name+" ["+repoDir.getAbsolutePath+"]")
+    Logger.info("Checking out repository for version="+version+" ["+repoDir.getAbsolutePath+"]")
     if(repoDir.exists()) {
       checkoutRepo(project, version, repoDir)
     }
@@ -67,7 +67,7 @@ trait GitRepositoryService extends RepositoryService {
       throw e
   }
 
-  def getVersions(project: Project): Try[Seq[Version]] = Try {
+  def getVersions(project: Project): Try[Seq[String]] = Try {
     val repoDir = repositoryForProject(project)
     getVersionsForRepo(project, repoDir)
   }.recover {
@@ -81,13 +81,13 @@ trait GitRepositoryService extends RepositoryService {
     val refsIndex = "refs/tags/".length
     val repo = new Git(new FileRepository(repoDir))
     Seq(project.head_version) ++ repo.tagList().call().asScala.map { ref =>
-      new Version(ref.getName.substring(refsIndex))
+      ref.getName.substring(refsIndex)
     }.toSeq
   }
 
-  private def checkoutRepo(project: Project, version: Version, repoDir: JFile): Git = {
+  private def checkoutRepo(project: Project, version: String, repoDir: JFile): Git = {
     val repo = new Git(new FileRepository(repoDir))
-    repo.checkout().setName(version.name).call()
+    repo.checkout().setName(version).call()
     repo
   }
 

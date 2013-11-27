@@ -17,7 +17,7 @@ trait DocsSearcher {
   def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult]
 }
 
-case class ProjectSearchResult(projectUrlKey: UrlKey, projectVersion: Version, fileUrlKey: UrlKey, fileTitle: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
+case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: String, fileTitle: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
 }
 
@@ -55,7 +55,7 @@ trait LuceneDocsSearcher extends DocsSearcher {
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
         if(hits.length > 0) {
-          Some(ProjectSearchResult(UrlKey.generate(doc.get("project")), new Version(doc.get("version")),
+          Some(ProjectSearchResult(UrlKey.generate(doc.get("project")), doc.get("version"),
             UrlKey.generate(doc.get("path")), doc.get("title"), hits, result.score))
         } else { None }
       }.flatten.sorted
@@ -78,7 +78,7 @@ trait LuceneDocsSearcher extends DocsSearcher {
         val hits = highlighter.getBestFragments(fieldQuery, indexReader, result.doc, field, 200, 5).map { hit =>
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
-        ProjectSearchResult(UrlKey.generate(doc.get("project")), new Version(doc.get("version")),
+        ProjectSearchResult(UrlKey.generate(doc.get("project")), doc.get("version"),
           UrlKey.generate(doc.get("path")), doc.get("title"), hits, result.score)
       }.sorted
     }

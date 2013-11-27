@@ -1,6 +1,7 @@
 package dao.util
 
 import scala.collection.JavaConverters._
+import play.api.Play.{current, resource}
 
 import com.mongodb.{Mongo, DBObject, ServerAddress}
 import com.mongodb.casbah.{MongoCollection, MongoOptions, MongoConnection, MongoDB}
@@ -19,7 +20,7 @@ object MongoUtil {
     c
   }
 
-  def collectionWithGuid(name: String, indexes: Seq[Index]=Seq.empty) = {
+  def collectionWithIndexes(name: String, indexes: Seq[Index]=Seq.empty) = {
     val c = collection(name, indexes)
     MongoInit.safeEnsureIndexes(c, Seq(("guid", true)))
     c
@@ -28,7 +29,11 @@ object MongoUtil {
 }
 
 object MongoInit extends MongoInit {
-  override val mongoConfig = ConfigFactory.load("mongodb")
+  override val mongoConfig = ConfigFactory.parseURL(resource("mongodb.yml").get)
+}
+
+object TestMongoInit extends MongoInit {
+  override val mongoConfig = ConfigFactory.parseResources("test_mongodb.yml")
 }
 
 private[util] trait MongoInit {

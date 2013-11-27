@@ -7,12 +7,13 @@ import play.api.data.Forms._
 
 import models._
 import settings.Global
+import java.util.UUID
 
 object FilesApiController extends Controller {
 
   def getFiles(guid: Option[String], name: Option[String], project_guid: Option[String], query: Option[String], title: Option[String],
                urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
-    val fileQuery = FileQuery(guid = guid.map(_.toGuid), query = query, url_key = urlKey.map(_.toUrlKey), project_guid = project_guid.map(_.toGuid),
+    val fileQuery = FileQuery(guid = guid.map(UUID.fromString), query = query, url_key = urlKey, project_guid = project_guid.map(UUID.fromString),
       title = title, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
     Ok(Json.toJson(Global.files.search(fileQuery).toList.map(Json.toJson(_))))
   }
@@ -25,22 +26,22 @@ object FilesApiController extends Controller {
   }
 
   def createFile(data: PutFileFormData)(implicit request: Request[Any]) = {
-    Global.projects.findByGuid(data.project_guid.toGuid) match {
+    Global.projects.findByGuid(UUID.fromString(data.project_guid)) match {
       case None => {
         NotFound("Project for guid [%s] not found".format(data.project_guid))
       }
-      case Some(project: Project) if !project.versions.contains(data.version.toVersion) => {
+      case Some(project: Project) if !project.versions.contains(data.version) => {
         NotFound("Project version [%s] not found".format(data.version))
       }
-      case Some(project: Project) if project.versions.contains(data.version.toVersion) => {
-        Global.files.findByGuid(data.guid.toGuid) match {
+      case Some(project: Project) if project.versions.contains(data.version) => {
+        Global.files.findByGuid(UUID.fromString(data.guid)) match {
           case None => {
-            Global.files.create(data.guid.toGuid, project, data.version.toVersion, data.title, data.html)
-            Ok(Json.toJson(Global.files.findByGuid(data.guid.toGuid)))
+            Global.files.create(UUID.fromString(data.guid), project, data.version, data.title, data.html)
+            Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }
           case Some(existing: File) => {
             Global.files.update(existing.copy(html = data.html))
-            Ok(Json.toJson(Global.files.findByGuid(data.guid.toGuid)))
+            Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }
           case _ => InternalServerError
         }

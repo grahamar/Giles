@@ -22,7 +22,7 @@
             @userProjects.map { projectAndBuilds =>
             <tr class="project">
                 <td>
-                    <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key.value)'><strong>@projectAndBuilds.project.name</strong></a>
+                    <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key)'><strong>@projectAndBuilds.project.name</strong></a>
                     @if(!projectAndBuilds.authors.isEmpty){
                     (@{Html(projectAndBuilds.authors.map { author =>
                     <a class="text-muted" href="#">{author.username}</a>

@@ -6,17 +6,18 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
+import java.util.UUID
 
 class ProjectDao(projects: MongoCollection) {
 
-  def create(createdByGuid: Guid, guid: Guid, name: String, description: String = "", repoUrl: String, headVersion: Version = new Version("HEAD")): Project = {
+  def create(createdByGuid: UUID, guid: UUID, name: String, description: String = "", repoUrl: String, headVersion: String = "HEAD"): Project = {
     val urlKey = UrlKey.generate(name)
     val project = Project(guid = guid,
       name = name,
       description = description,
       url_key = urlKey,
       repo_url = repoUrl,
-      keywords = Keywords.generate(Seq(guid.value, name, urlKey.value)),
+      keywords = Keywords.generate(Seq(guid.toString, name, urlKey)),
       head_version = headVersion,
       versions = Seq(headVersion),
       author_guids = Seq(createdByGuid),
@@ -38,7 +39,7 @@ class ProjectDao(projects: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: Guid): Option[Project] = {
+  def findByGuid(guid: UUID): Option[Project] = {
     search(ProjectQuery(guid = Some(guid))).headOption
   }
 
@@ -46,11 +47,11 @@ class ProjectDao(projects: MongoCollection) {
     search(ProjectQuery(name = Some(name))).headOption
   }
 
-  def findByUrlKey(urlKey: UrlKey): Option[Project] = {
+  def findByUrlKey(urlKey: String): Option[Project] = {
     search(ProjectQuery(url_key = Some(urlKey))).headOption
   }
 
-  def findByAuthorGuid(authorGuid: Guid): Option[Project] = {
+  def findByAuthorGuid(authorGuid: UUID): Option[Project] = {
     search(ProjectQuery(author_guids = Some(Seq(authorGuid)))).headOption
   }
 
@@ -58,9 +59,9 @@ class ProjectDao(projects: MongoCollection) {
     search(ProjectQuery(limit = Some(limit), order_by = Some("updated_at"), order_direction = -1))
   }
 
-  def delete(guid: Guid) = {
+  def delete(guid: UUID) = {
     // TODO: Soft delete?
-    projects.remove(MongoDBObject("guid" -> guid.value))
+    projects.remove(MongoDBObject("guid" -> guid))
   }
 
   def search(query: ProjectQuery): Iterable[Project] = {

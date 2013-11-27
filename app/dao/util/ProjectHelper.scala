@@ -3,7 +3,7 @@ package dao.util
 import models._
 import settings.Global
 
-object UserProjectDAOHelper {
+object ProjectHelper {
 
   def getAuthorsForProjects(projects: Iterable[Project]): Iterable[ProjectAndAuthors] =
     projects.map(getAuthorsForProject)

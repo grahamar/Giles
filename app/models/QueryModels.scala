@@ -1,6 +1,8 @@
 package models
 
-case class UserQuery(guid: Option[Guid] = None,
+import java.util.UUID
+
+case class UserQuery(guid: Option[UUID] = None,
                      username: Option[String] = None,
                      email: Option[String] = None,
                      limit: Option[Int] = None,
@@ -20,9 +22,9 @@ case class UserQuery(guid: Option[Guid] = None,
 
 }
 
-case class BuildQuery(guid: Option[Guid] = None,
-                      project_guid: Option[Guid] = None,
-                      version: Option[Version] = None,
+case class BuildQuery(guid: Option[UUID] = None,
+                      project_guid: Option[UUID] = None,
+                      version: Option[String] = None,
                       limit: Option[Int] = None,
                       offset: Option[Int] = None,
                       order_by: Option[String] = None,
@@ -48,11 +50,11 @@ case class BuildQuery(guid: Option[Guid] = None,
 
 }
 
-case class ProjectQuery(guid: Option[Guid] = None,
+case class ProjectQuery(guid: Option[UUID] = None,
                         name: Option[String] = None,
-                        author_guids: Option[Seq[Guid]] = None,
+                        author_guids: Option[Seq[UUID]] = None,
                         query: Option[String] = None,
-                        url_key: Option[UrlKey] = None,
+                        url_key: Option[String] = None,
                         limit: Option[Int] = None,
                         offset: Option[Int] = None,
                         order_by: Option[String] = None,
@@ -79,12 +81,12 @@ case class ProjectQuery(guid: Option[Guid] = None,
 
 }
 
-case class FileQuery(guid: Option[Guid] = None,
-                     project_guid: Option[Guid] = None,
-                     version: Option[Version] = None,
+case class FileQuery(guid: Option[UUID] = None,
+                     project_guid: Option[UUID] = None,
+                     version: Option[String] = None,
                      query: Option[String] = None,
                      title: Option[String] = None,
-                     url_key: Option[UrlKey] = None,
+                     url_key: Option[String] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
@@ -105,9 +107,9 @@ case class FileQuery(guid: Option[Guid] = None,
 
 }
 
-case class ViewQuery(guid: Option[Guid] = None,
-                     file_guid: Option[Guid] = None,
-                     user_guid: Option[Guid] = None,
+case class ViewQuery(guid: Option[UUID] = None,
+                     file_guid: Option[UUID] = None,
+                     user_guid: Option[UUID] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
@@ -125,7 +127,7 @@ case class ViewQuery(guid: Option[Guid] = None,
 
 }
 
-case class FileRollupQuery(file_guid: Option[Guid] = None,
+case class FileRollupQuery(file_guid: Option[UUID] = None,
                            limit: Option[Int] = None,
                            offset: Option[Int] = None,
                            order_by: Option[String] = None,
@@ -149,8 +151,8 @@ case class FileRollupQuery(file_guid: Option[Guid] = None,
 
 }
 
-case class UserFileRollupQuery(user_guid: Option[Guid] = None,
-                               file_guid: Option[Guid] = None,
+case class UserFileRollupQuery(user_guid: Option[UUID] = None,
+                               file_guid: Option[UUID] = None,
                                limit: Option[Int] = None,
                                offset: Option[Int] = None,
                                order_by: Option[String] = None,

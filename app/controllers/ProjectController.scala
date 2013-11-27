@@ -13,7 +13,7 @@ import models._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.DocumentationFactory
 import settings.Global
-import dao.util.UserProjectDAOHelper
+import dao.util.ProjectHelper
 import java.util.UUID
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
@@ -25,30 +25,30 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
         if(project.author_guids.contains(currentUser.guid)) {
           Redirect(routes.ProjectController.editProject(urlKey))
         } else {
-          Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
+          Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
         }
       }.getOrElse {
-        Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
+        Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
       }
     }.getOrElse(NotFound)
   }
 
   def editProject(urlKey: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
-      Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
+      Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
     }.getOrElse(NotFound)
   }
 
   def pullNewVersions(urlKey: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
       DocumentationFactory.documentsBuilder.build(project)
-      Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
+      Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
     }.getOrElse(BadRequest)
   }
 
   def projects = StackAction { implicit request =>
     val projects = Global.projects.search(ProjectQuery())
-    Ok(html.projects(UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+    Ok(html.projects(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
   }
 
   def importProject = StackAction { implicit request =>
@@ -72,11 +72,11 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       currentUser.map { usr =>
         val newProject = Global.projects.create(
           createdByGuid = usr.guid,
-          guid = new Guid(UUID.randomUUID().toString),
+          guid = UUID.randomUUID(),
           name = project.name,
           description = project.description,
           repoUrl = project.repoUrl,
-          headVersion = new Version(project.headVersion))
+          headVersion = project.headVersion)
         DocumentationFactory.documentsBuilder.build(newProject)
         Global.users.update(usr.copy(project_guids = usr.project_guids ++ Seq(newProject.guid)))
 

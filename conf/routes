@@ -2,8 +2,6 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Default path will just redirect to the computer list
-
 GET     /                                                     controllers.ApplicationController.index
 
 # Authentication
@@ -24,7 +22,6 @@ GET     /projects/:projectUrlKey/edit                         controllers.Projec
 GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)
 GET     /projects/:projectUrlKey/docs/:projectVersion         controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
-PUT     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.publish(projectUrlKey, projectVersion, file)
 
 GET     /dashboard                                            controllers.ApplicationController.dashboard
 

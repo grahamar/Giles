@@ -1,14 +1,14 @@
 package build
 
-import java.io.{File => JFile}
-
+import scala.collection.JavaConverters._
 import scala.util.Try
 import play.api.Logger
 
 import models._
 import settings.Global
 
-import com.typesafe.config.ConfigFactory
+import org.apache.commons.io.{FilenameUtils, FileUtils}
+import java.util.UUID
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
@@ -18,6 +18,8 @@ sealed trait DocsBuilder {
 
 trait MarkdownDocsBuilder extends DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
+
+  private val SupportedFileExtensions = Array(".md", ".markdown")
 
   def build(project: Project): Try[Unit] = {
     for {
@@ -31,7 +33,7 @@ trait MarkdownDocsBuilder extends DocsBuilder {
     }
   }
 
-  private def buildProjectAndVersions(project: Project, versions: Seq[Version]): Seq[Try[Build]] = {
+  private def buildProjectAndVersions(project: Project, versions: Seq[String]): Seq[Try[Build]] = {
     versions.map { version =>
       checkout(project, version).flatMap { _ =>
         build(project, version).flatMap { _ =>
@@ -43,24 +45,24 @@ trait MarkdownDocsBuilder extends DocsBuilder {
     }
   }
 
-  private def build(project: Project, version: Version): Try[Unit] = Try {
-    val inputDir: JFile = parseYamlConfig(repositoryForProject(project))
+  private def build(project: Project, version: String): Try[Unit] = Try {
+    val inputDir = repositoryForProject(project)
     if(!inputDir.exists()) {
-      throw new BuildFailedException("No document directory exists at ["+inputDir.getAbsolutePath+"].")
+      throw new BuildFailedException("No directory exists at ["+inputDir.getAbsolutePath+"].")
     }
-    Logger.info("Building... project=["+project.name+"] version=["+version.name+"] input=["+inputDir.getAbsolutePath+"]")
-    // TODO crawl through repo extracting markdown files and inserting them into mongo
-  }.recover {
-    case e: Exception => Global.builds.createFailure(project.guid, version, "Build failed - "+ e.getMessage)
-  }
+    Logger.info("Building... project=["+project.name+"] version=["+version+"] input=["+inputDir.getAbsolutePath+"]")
+    FileUtils.iterateFiles(inputDir, SupportedFileExtensions, true).asScala.foreach { document =>
+      val extension = FilenameUtils.getExtension(document.getName)
+      val filename = FilenameUtils.getName(document.getName)
+      val relativePath = FilenameUtils.getFullPath(document.getAbsolutePath).substring(inputDir.getAbsolutePath.length)
+      Logger.info(s"Adding File. path=...$relativePath filename=$filename extension=$extension")
 
-  private def parseYamlConfig(checkoutDir: JFile): JFile = {
-    val rtmYaml = new JFile(checkoutDir, "rtm.yaml")
-    if(rtmYaml.exists()) {
-      new JFile(checkoutDir, ConfigFactory.parseFile(rtmYaml).getString("docs.directory"))
-    } else {
-      Logger.warn("Config rtm.yaml not found in project root ["+checkoutDir.getAbsoluteFile+"]")
-      new JFile(checkoutDir, Global.configuration.getString("default.docs.dir").getOrElse("docs"))
+      Global.files.create(UUID.randomUUID(), project, version, filename, FileUtils.readFileToString(document, "UTF-8"))
+    }
+  }.recover {
+    case e: Exception => {
+      Global.builds.createFailure(project.guid, version, "Build failed - "+ e.getMessage)
+      throw e
     }
   }
 

@@ -7,6 +7,7 @@ import play.api.data.Forms._
 
 import models._
 import settings.Global
+import java.util.UUID
 
 object ViewsApiController extends Controller {
 
@@ -18,16 +19,16 @@ object ViewsApiController extends Controller {
   }
 
   def createView(data: PutViewFormData)(implicit request: Request[Any]) = {
-    Global.views.findByGuid(data.guid.toGuid) match {
+    Global.views.findByGuid(UUID.fromString(data.guid)) match {
       case None => {
-        Global.views.create(data.guid.toGuid, data.file_guid.toGuid, data.user_guid.map(_.toGuid))
-        Ok(Json.toJson(Global.views.findByGuid(data.file_guid.toGuid).get))
+        Global.views.create(UUID.fromString(data.guid), UUID.fromString(data.file_guid), data.user_guid.map(UUID.fromString))
+        Ok(Json.toJson(Global.views.findByGuid(UUID.fromString(data.file_guid)).get))
       }
-      case Some(existing: View) if existing.file_guid == data.file_guid.toGuid => {
-        BadRequest("Cannot change file guid from %s to %s".format(existing.file_guid, data.file_guid.toGuid))
+      case Some(existing: View) if existing.file_guid == UUID.fromString(data.file_guid) => {
+        BadRequest("Cannot change file guid from %s to %s".format(existing.file_guid, data.file_guid))
       }
-      case Some(existing: View) if existing.user_guid == data.user_guid.map(_.toGuid) => {
-        BadRequest("Cannot change user guid from %s to %s".format(existing.user_guid, data.user_guid.map(_.toGuid)))
+      case Some(existing: View) if existing.user_guid == data.user_guid => {
+        BadRequest("Cannot change user guid from %s to %s".format(existing.user_guid, data.user_guid))
       }
       case _ => InternalServerError
     }

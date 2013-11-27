@@ -1,28 +1,20 @@
 package controllers
 
-import java.io.{FileInputStream, File}
+import play.api.mvc._
+import play.api.templates.Html
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.JavaConverters._
-import play.api.mvc.{ResponseHeader, SimpleResult, Controller}
-import play.api.cache.Cache
-import play.api.libs.{MimeTypes, Codecs}
-import play.api.{Logger, Play}
-import play.api.Play.current
-import play.api.libs.iteratee.Enumerator
-
+import views._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
-import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
-import org.joda.time.DateTimeZone
-import build.DocumentationFactory
-import util.ResourceUtil
+import settings.Global
 
 object StaticDocsController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
-  def publish(projectSlug: String, projectVersion: String, restOfPath: String) = TODO
+  def projectIndex(projectUrlKey: String, projectVersion: String) = Action {
+    Global.projects.findByUrlKey(projectUrlKey).map { project =>
+      val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
+      Ok(html.docsMain(files.head.title, Html(files.head.html), files))
+    }.getOrElse(NotFound)
+  }
 
-  def projectIndex(projectSlug: String, projectVersion: String) = TODO
-
-  def projectDocs(projectSlug: String, projectVersion: String, restOfPath: String) = TODO
-
+  def projectDocs(projectSlug: String, projectVersion: String, fileTitle: String) = TODO
 }

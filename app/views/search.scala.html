@@ -10,9 +10,9 @@
                     <tr class="project">
                         <td>
                             <div>
-                                <a href='@routes.StaticDocsController.projectDocs(result.projectUrlKey.value, result.projectVersion.name, result.fileUrlKey.value)'><strong>@result.fileTitle</strong></a>
+                                <a href='@routes.StaticDocsController.projectDocs(result.projectUrlKey, result.projectVersion, result.fileUrlKey)'><strong>@result.fileTitle</strong></a>
                                 <span class="pull-right" style="color: #0066FF">
-                                    <strong>@result.projectVersion.name</strong>
+                                    <strong>@result.projectVersion</strong>
                                 </span>
                             </div>
                             <div>

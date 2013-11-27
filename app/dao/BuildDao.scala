@@ -10,7 +10,7 @@ import java.util.UUID
 
 class BuildDao(builds: MongoCollection) {
 
-  def create(guid: Guid, projectGuid: Guid, version: Version, message: String, status: BuildStatus): Build = {
+  def create(guid: UUID, projectGuid: UUID, version: String, message: String, status: BuildStatus): Build = {
     val build = Build(guid = guid,
       project_guid = projectGuid,
       version = version,
@@ -21,15 +21,15 @@ class BuildDao(builds: MongoCollection) {
     build
   }
 
-  def createSuccess(projectGuid: Guid, version: Version): Build = {
-    create(new Guid(UUID.randomUUID().toString), projectGuid, version, "", BuildSuccess)
+  def createSuccess(projectGuid: UUID, version: String): Build = {
+    create(UUID.randomUUID(), projectGuid, version, "", BuildSuccess)
   }
 
-  def createFailure(projectGuid: Guid, version: Version, message: String): Build = {
-    create(new Guid(UUID.randomUUID().toString), projectGuid, version, message, BuildFailure)
+  def createFailure(projectGuid: UUID, version: String, message: String): Build = {
+    create(UUID.randomUUID(), projectGuid, version, message, BuildFailure)
   }
 
-  def findByGuid(guid: Guid): Option[Build] = {
+  def findByGuid(guid: UUID): Option[Build] = {
     search(BuildQuery(guid = Some(guid))).headOption
   }
 
@@ -37,18 +37,18 @@ class BuildDao(builds: MongoCollection) {
     search(BuildQuery(project_guid = Some(project.guid))).take(project.versions.size)
   }
 
-  def findByProjectGuidAndVersion(projectGuid: Guid, version: Version): Option[Build] = {
+  def findByProjectGuidAndVersion(projectGuid: UUID, version: String): Option[Build] = {
     search(BuildQuery(project_guid = Some(projectGuid), version = Some(version))).headOption
   }
 
-  def delete(guid: Guid) = {
+  def delete(guid: UUID) = {
     // TODO: Soft delete?
-    builds.remove(MongoDBObject("guid" -> guid.value))
+    builds.remove(MongoDBObject("guid" -> guid))
   }
 
   def search(query: BuildQuery): Iterable[Build] = {
     val builder = MongoDBObject.newBuilder
-    query.guid.foreach { v => builder += "guid" -> v.value }
+    query.guid.foreach { v => builder += "guid" -> v }
     query.project_guid.foreach { v => builder += "project_guid" -> v }
     query.version.foreach { v => builder += "version" -> v }
 

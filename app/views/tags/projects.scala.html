@@ -6,7 +6,7 @@
         @userProjects.map { projectAndAuthors =>
         <tr class="project">
             <td>
-                <a href='@routes.ProjectController.project(projectAndAuthors.project.url_key.value)'><strong>@projectAndAuthors.project.name</strong></a>
+                <a href='@routes.ProjectController.project(projectAndAuthors.project.url_key)'><strong>@projectAndAuthors.project.name</strong></a>
                 @if(!projectAndAuthors.authors.isEmpty){
                 (@{Html(projectAndAuthors.authors.map { author =>
                 val authorProfileLink = routes.AuthenticationController.profile(author.username).toString

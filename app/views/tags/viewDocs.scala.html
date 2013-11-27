@@ -2,7 +2,7 @@
 
 <div class="btn-group">
     @projectAndBuilds.latestBuild.map { latest =>
-    <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key.value, latest.version.name)' class="btn btn-primary">View Docs</a>
+    <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, latest.version)' class="btn btn-primary">View Docs</a>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span>
         <span class="sr-only">Show Document Versions</span>
@@ -10,8 +10,8 @@
     <ul class="dropdown-menu view-docs-dropdown" role="menu">
         @projectAndBuilds.builds.map { build =>
         <li>
-            <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key.value, build.version.name)'>
-                @build.version.name
+            <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, build.version)'>
+                @build.version
             </a>
         </li>
         }

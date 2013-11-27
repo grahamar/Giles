@@ -7,12 +7,13 @@ import play.api.data.Forms._
 
 import settings.Global
 import models._
+import java.util.UUID
 
 object ProjectsApiController extends Controller {
 
   def getProjects(guid: Option[String], name: Option[String], author_guids: Option[String], query:Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
     val projectQuery =
-      ProjectQuery(guid = guid.map(_.toGuid), name = name, query = query, url_key = urlKey.map(_.toUrlKey), limit = limit.map(_.toInt), offset = offset.map(_.toInt))
+      ProjectQuery(guid = guid.map(UUID.fromString), name = name, query = query, url_key = urlKey, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
     Ok(Json.toJson(Global.projects.search(projectQuery).toList.map(Json.toJson(_))))
   }
 
@@ -24,16 +25,16 @@ object ProjectsApiController extends Controller {
   }
 
   def createProject(projectData: PutProjectFormData)(implicit request: Request[Any]) = {
-    Global.projects.findByGuid(projectData.guid.toGuid) match {
+    Global.projects.findByGuid(UUID.fromString(projectData.guid)) match {
       case None => {
-        Global.projects.create(projectData.author_guid.toGuid, projectData.guid.toGuid, projectData.name,
-          projectData.description, projectData.repoUrl, projectData.headVersion.map(_.toVersion).getOrElse(Version("HEAD")))
-        Ok(Json.toJson(Global.projects.findByGuid(projectData.guid.toGuid)))
+        Global.projects.create(UUID.fromString(projectData.author_guid), UUID.fromString(projectData.guid), projectData.name,
+          projectData.description, projectData.repoUrl, projectData.headVersion.getOrElse("HEAD"))
+        Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
       }
       case Some(existing: Project) => {
-        val updated = existing.copy(description = projectData.description, head_version = projectData.headVersion.map(_.toVersion).getOrElse(Version("HEAD")))
+        val updated = existing.copy(description = projectData.description, head_version = projectData.headVersion.getOrElse("HEAD"))
         Global.projects.update(updated)
-        Ok(Json.toJson(Global.projects.findByGuid(projectData.guid.toGuid)))
+        Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
       }
       case _ => InternalServerError
     }

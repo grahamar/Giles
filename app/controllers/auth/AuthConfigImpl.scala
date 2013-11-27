@@ -9,8 +9,8 @@ import play.api.mvc.Results._
 import controllers.ApplicationController
 
 import jp.t2v.lab.play2.auth.AuthConfig
-import models.Guid
 import settings.Global
+import java.util.UUID
 
 sealed trait Permission
 case object Administrator extends Permission
@@ -18,7 +18,7 @@ case object NormalUser extends Permission
 
 trait AuthConfigImpl extends AuthConfig {
 
-  type Id = Guid
+  type Id = UUID
 
   type User = models.User
 

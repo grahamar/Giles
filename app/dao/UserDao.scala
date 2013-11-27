@@ -7,10 +7,11 @@ import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
+import java.util.UUID
 
 class UserDao(users: MongoCollection) {
 
-  def create(guid: Guid, username: String, email: String, password: String, firstName: Option[String] = None, lastName: Option[String] = None): User = {
+  def create(guid: UUID, username: String, email: String, password: String, firstName: Option[String] = None, lastName: Option[String] = None): User = {
     val user = User(guid = guid,
       username = username,
       email = email,
@@ -38,7 +39,7 @@ class UserDao(users: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: Guid): Option[User] = {
+  def findByGuid(guid: UUID): Option[User] = {
     search(UserQuery(guid = Some(guid))).headOption
   }
 
@@ -54,14 +55,14 @@ class UserDao(users: MongoCollection) {
     findByEmail(email).filter{user => user.salt.exists(salt => BCrypt.checkpw(password, user.password))}
   }
 
-  def delete(guid: Guid) = {
+  def delete(guid: UUID) = {
     // TODO: Soft delete?
-    users.remove(MongoDBObject("guid" -> guid.value))
+    users.remove(MongoDBObject("guid" -> guid))
   }
 
   def search(query: UserQuery): Iterable[User] = {
     val builder = MongoDBObject.newBuilder
-    query.guid.foreach { v => builder += "guid" -> v.value }
+    query.guid.foreach { v => builder += "guid" -> v }
     query.username.foreach { v => builder += "username" -> v }
     query.email.foreach { v => builder += "email" -> v }
 

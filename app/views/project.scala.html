@@ -14,7 +14,7 @@
         </div>
     </div>
     <div>
-        @helper.form(action=routes.ApplicationController.searchProject(projectAndBuilds.project.url_key.value), 'class -> "rtm-search form-search", 'role -> "form") {
+        @helper.form(action=routes.ApplicationController.searchProject(projectAndBuilds.project.url_key), 'class -> "rtm-search form-search", 'role -> "form") {
         <div class="input-group">
             <input type="search" id="searchbox" class="search-query input-lg form-control" name="projectFilter" placeholder="Search @projectAndBuilds.project.name">
             <span class="input-group-btn">
@@ -35,12 +35,12 @@
                     <label class="sr-only" for="version">Build a version</label>
                     <select id="version" class="form-control">
                         @projectAndBuilds.builds.map { build =>
-                        <option>@build.version.name</option>
+                        <option>@build.version</option>
                         }
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary">Re-Build</button>
-                <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.url_key.value)' class="btn btn-info">Pull New Versions</a>
+                <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.url_key)' class="btn btn-info">Pull New Versions</a>
             </form>
             <div class="well">
                 <table class="table table-bordered">
@@ -48,8 +48,8 @@
                         @projectAndBuilds.builds.map { build =>
                         <tr class="project">
                             <td>
-                                <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key.value, build.version.name)'>
-                                    <strong>@build.version.name</strong>
+                                <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, build.version)'>
+                                    <strong>@build.version</strong>
                                 </a>
                                 @{build.status match {
                                   case models.BuildFailure =>

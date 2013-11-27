@@ -32,7 +32,7 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
   }
 
   def repositoryForProject(project: Project): JFile =
-    new JFile(gitCheckoutsDir, project.url_key.value)
+    new JFile(gitCheckoutsDir, project.url_key)
 
   def indexDir: File = luceneIndexDir
 }
