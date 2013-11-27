@@ -41,6 +41,14 @@ class FilesDao(files: MongoCollection) {
     search(FileQuery(project_guid = Some(projectGuid), version = Some(version)))
   }
 
+  def findForProjectGuidAndVersion(projectGuid: UUID, version: String, fileTitle: String): Option[File] = {
+    search(FileQuery(
+      project_guid = Some(projectGuid),
+      version = Some(version),
+      title = Some(fileTitle)
+    )).headOption
+  }
+
   def delete(guid: UUID) = {
     // TODO: Soft delete?
     files.remove(MongoDBObject("guid" -> guid))
