@@ -9,85 +9,92 @@ import play.api.data.Forms._
 import play.api.mvc.SimpleResult
 
 import views._
-import dao._
-import auth.{Authenticator, OptionalAuthUser, AuthConfigImpl}
-import build.DocsBuilderFactory
+import models._
+import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
+import build.DocumentationFactory
+import settings.Global
+import dao.util.UserProjectDAOHelper
+import java.util.UUID
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
-  def project(projectSlug: String) = StackAction { implicit request =>
+  def project(urlKey: String) = StackAction { implicit request =>
     val maybeUser = loggedIn
-    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      maybeUser.foreach { currentUser =>
-        if(project.project.authors.contains(currentUser)) {
-          Redirect(routes.ProjectController.editProject(projectSlug))
+    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+      maybeUser.map { currentUser =>
+        if(project.author_guids.contains(currentUser.guid)) {
+          Redirect(routes.ProjectController.editProject(urlKey))
+        } else {
+          Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
         }
+      }.getOrElse {
+        Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
       }
-      Ok(html.project(project, Authenticator.loginForm))
     }.getOrElse(NotFound)
   }
 
-  def editProject(projectSlug: String) = StackAction { implicit request =>
-    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      Ok(html.project(project, Authenticator.loginForm))
+  def editProject(urlKey: String) = StackAction { implicit request =>
+    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+      Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
     }.getOrElse(NotFound)
   }
 
-  def pullNewVersions(projectSlug: String) = StackAction { implicit request =>
-    ProjectDAO.findBySlugWithVersions(projectSlug).map { project =>
-      DocsBuilderFactory.documentsBuilder.update(project.project, project.versions)
-      Ok(html.project(project, Authenticator.loginForm))
+  def pullNewVersions(urlKey: String) = StackAction { implicit request =>
+    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+      DocumentationFactory.documentsBuilder.build(project)
+      Ok(html.project(UserProjectDAOHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
     }.getOrElse(BadRequest)
   }
 
   def projects = StackAction { implicit request =>
-    Ok(html.projects(ProjectDAO.projectsWithAuthors, Authenticator.loginForm))
+    val projects = Global.projects.search(ProjectQuery())
+    Ok(html.projects(UserProjectDAOHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
   }
 
   def importProject = StackAction { implicit request =>
     val maybeUser = loggedIn
     maybeUser.map{ usr =>
-      Ok(html.importProject(Authenticator.loginForm, importProjectForm))
-    }.getOrElse(Application.Home)
+      Ok(html.importProject(AuthenticationController.loginForm, importProjectForm))
+    }.getOrElse(ApplicationController.Home)
   }
 
   def createProject = AsyncStack { implicit request =>
     importProjectForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.importProject(Authenticator.loginForm, formWithErrors))),
-      project => {
-        projectCreated(project.toSimpleProject)
-      }
+      formWithErrors => Future.successful(BadRequest(html.importProject(AuthenticationController.loginForm, formWithErrors))),
+      project => projectCreated(project)
     )
   }
 
-  def projectCreated(project: SimpleProject)(implicit request: RequestHeader, currentUser: Option[User]): Future[SimpleResult] = {
-    val checkForExisting = ProjectDAO.findBySlug(project.slug)
-    if(checkForExisting.isEmpty) {
-      DocsBuilderFactory.buildInitialProject(project, currentUser)
-      Future.successful(Redirect(routes.ProjectController.importProject).
-        flashing("success" -> ("Creating project \""+project.name+"\"...")))
-    } else {
-      Future.successful(Redirect(routes.ProjectController.importProject).
-        flashing("failure" -> ("Project \""+project.name+"\" already exists.")))
+  def projectCreated(project: ProjectImportData)(implicit request: RequestHeader, currentUser: Option[User]): Future[SimpleResult] = {
+    val response = Global.projects.findByName(project.name).map { existing =>
+      Redirect(routes.ProjectController.importProject).flashing("failure" -> ("Project \""+project.name+"\" already exists."))
+    }.getOrElse {
+      currentUser.map { usr =>
+        val newProject = Global.projects.create(
+          createdByGuid = usr.guid,
+          guid = new Guid(UUID.randomUUID().toString),
+          name = project.name,
+          description = project.description,
+          repoUrl = project.repoUrl,
+          headVersion = new Version(project.headVersion))
+        DocumentationFactory.documentsBuilder.build(newProject)
+        Global.users.update(usr.copy(project_guids = usr.project_guids ++ Seq(newProject.guid)))
+
+        Redirect(routes.ProjectController.importProject).flashing("success" -> ("Creating project \""+project.name+"\"..."))
+      }.getOrElse {
+        Redirect(routes.ProjectController.importProject).flashing("failure" -> "Please login.")
+      }
     }
+    Future.successful(response)
   }
 
   val importProjectForm = Form {
     mapping(
       "name" -> nonEmptyText,
+      "description" -> text,
       "repo" -> nonEmptyText,
-      "default_branch" -> nonEmptyText,
-      "default_version" -> nonEmptyText
+      "head_version" -> nonEmptyText
     )(ProjectImportData.apply)(ProjectImportData.unapply)
   }.fill(DefaultProjectImportData)
 
 }
-
-case class ProjectImportData(name: String, repoUrl: String, defaultBranch: String, defaultVersion: String) {
-  def toSimpleProject: SimpleProject = {
-    SimpleProject(name, ProjectHelper.urlForName(name), repoUrl, ProjectBranch(defaultBranch), ProjectVersion(defaultVersion))
-  }
-}
-
-object DefaultProjectImportData extends ProjectImportData("", "", "master", "latest")
-

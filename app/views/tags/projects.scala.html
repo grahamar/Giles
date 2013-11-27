@@ -1,21 +1,21 @@
-@(userProjects: Seq[dao.ProjectAndBuilds])
+@(userProjects: Seq[models.ProjectAuthorsAndBuilds])
 
 <div class="well">
     <table class="projects table table-bordered">
         <tbody>
-        @userProjects.map { projectAndVersions =>
+        @userProjects.map { projectAndAuthors =>
         <tr class="project">
             <td>
-                <a href='@routes.ProjectController.project(projectAndVersions.project.slug)'><strong>@projectAndVersions.project.name</strong></a>
-                @if(!projectAndVersions.project.authors.isEmpty){
-                (@{Html(projectAndVersions.project.authors.map { author =>
-                val authorProfileLink = auth.routes.Authenticator.profile(author.username).toString
+                <a href='@routes.ProjectController.project(projectAndAuthors.project.url_key.value)'><strong>@projectAndAuthors.project.name</strong></a>
+                @if(!projectAndAuthors.authors.isEmpty){
+                (@{Html(projectAndAuthors.authors.map { author =>
+                val authorProfileLink = routes.AuthenticationController.profile(author.username).toString
                 <a class="text-muted" href={authorProfileLink}>{author.username}</a>
                 }.mkString(", "))})
                 }
                 <div class="pull-right">
-                    @util.TemplateUtil.displayTimeSince(projectAndVersions.project.updated)
-                    @viewDocs(projectAndVersions)
+                    @util.TemplateUtil.displayTimeSince(projectAndAuthors.project.updated_at)
+                    @viewDocs(projectAndAuthors)
                 </div>
             </td>
         </tr>

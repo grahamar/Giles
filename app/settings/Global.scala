@@ -1,25 +1,19 @@
 package settings
 
-import play.api.db.DB
-import play.api.Play.current
-import play.api.{Logger, GlobalSettings}
+import dao.util.{Index, MongoUtil}
 
-import dao._
-import driver.simple._
+object Global extends play.api.GlobalSettings {
 
-object Global extends GlobalSettings {
+  private lazy val projectIndexes = Seq(Index(field="url_key", unique=true), Index(field="name", unique=true))
+  private lazy val viewIndexes = Seq(Index(field="file_guid"), Index(field="user_guid"))
+  private lazy val userIndexes = Seq(Index(field="username", unique=true))
 
-  lazy val db = driver.backend.Database.forDataSource(DB.getDataSource())
-  lazy val dal = new DataAccessLayer(db)
-
-  override def onStart(app: play.api.Application) {
-    import dal._
-
-    database withSession { implicit session: driver.backend.Session =>
-      Logger.info("Create DB schema and populate test data.")
-
-      dal.create
-    }
-  }
+  lazy val projects = new dao.ProjectDao(MongoUtil.collectionWithGuid("projects", projectIndexes))
+  lazy val users = new dao.UserDao(MongoUtil.collectionWithGuid("users", userIndexes))
+  lazy val builds = new dao.BuildDao(MongoUtil.collectionWithGuid("builds"))
+  lazy val files = new dao.FilesDao(MongoUtil.collectionWithGuid("files"))
+  lazy val fileRollup = new dao.FileViewRollupDao()
+  lazy val userFileRollup = new dao.UserFileViewRollupDao()
+  lazy val views = new dao.ViewsDao(MongoUtil.collectionWithGuid("views", viewIndexes), fileRollup, userFileRollup)
 
 }

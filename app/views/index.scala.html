@@ -1,4 +1,4 @@
-@(recentlyUpdatedProjects: Seq[dao.ProjectAndBuilds], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(recentlyUpdatedProjects: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
@@ -6,7 +6,7 @@
 <div class="container center" style="margin-top: 50px;">
     <div>
         <h3>Recently Updated Projects
-            <small><a href="@routes.ProjectController.projects()">(All Projects)</a></small>
+            <small><a href="@routes.ProjectController.projects">(All Projects)</a></small>
         </h3>
     </div>
     <div class="row">

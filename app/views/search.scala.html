@@ -1,4 +1,4 @@
-@(results: Seq[build.ProjectSearchResult], currentFilter: String, loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(results: Seq[build.ProjectSearchResult], currentFilter: String, loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @main(currentFilter, loginForm) {
 <div class="container" style="margin-top: 50px;">
@@ -10,9 +10,9 @@
                     <tr class="project">
                         <td>
                             <div>
-                                <a href='@routes.StaticDocsController.projectDocs(result.projectSlug, result.projectVersion, result.path)'><strong>@result.filename</strong></a>
+                                <a href='@routes.StaticDocsController.projectDocs(result.projectUrlKey.value, result.projectVersion.name, result.fileUrlKey.value)'><strong>@result.fileTitle</strong></a>
                                 <span class="pull-right" style="color: #0066FF">
-                                    <strong>@result.projectVersion</strong>
+                                    <strong>@result.projectVersion.name</strong>
                                 </span>
                             </div>
                             <div>

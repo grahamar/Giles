@@ -1,20 +1,20 @@
-@(projectAndBuilds: dao.ProjectAndBuilds, loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(projectAndBuilds: models.ProjectAuthorsAndBuilds, loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @main("", loginForm) {
 <div class="container" style="margin-top: 20px;">
     <div class="jumbotron">
         <div class="container">
             <h1>@projectAndBuilds.project.name</h1>
-            <p>@if(!projectAndBuilds.project.authors.isEmpty){
-            (@{Html(projectAndBuilds.project.authors.map { author =>
-            val authorProfileLink = auth.routes.Authenticator.profile(author.username).toString
+            <p>@if(!projectAndBuilds.authors.isEmpty){
+            (@{Html(projectAndBuilds.authors.map { author =>
+            val authorProfileLink = routes.AuthenticationController.profile(author.username).toString
             <a class="text-primary" href={authorProfileLink}>{author.username}</a>
             }.mkString(", "))})
             }</p>
         </div>
     </div>
     <div>
-        @helper.form(action=routes.Application.searchProject(projectAndBuilds.project.slug), 'class -> "rtm-search form-search", 'role -> "form") {
+        @helper.form(action=routes.ApplicationController.searchProject(projectAndBuilds.project.url_key.value), 'class -> "rtm-search form-search", 'role -> "form") {
         <div class="input-group">
             <input type="search" id="searchbox" class="search-query input-lg form-control" name="projectFilter" placeholder="Search @projectAndBuilds.project.name">
             <span class="input-group-btn">
@@ -35,12 +35,12 @@
                     <label class="sr-only" for="version">Build a version</label>
                     <select id="version" class="form-control">
                         @projectAndBuilds.builds.map { build =>
-                        <option>@build.version.versionName</option>
+                        <option>@build.version.name</option>
                         }
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary">Re-Build</button>
-                <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.slug)' class="btn btn-info">Pull New Versions</a>
+                <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.url_key.value)' class="btn btn-info">Pull New Versions</a>
             </form>
             <div class="well">
                 <table class="table table-bordered">
@@ -48,15 +48,11 @@
                         @projectAndBuilds.builds.map { build =>
                         <tr class="project">
                             <td>
-                                @build.startPage.map { startPage =>
-                                <a href='@routes.StaticDocsController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>
-                                    <strong>@build.version.versionName</strong>
+                                <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key.value, build.version.name)'>
+                                    <strong>@build.version.name</strong>
                                 </a>
-                                }.getOrElse {
-                                <strong>@build.version.versionName</strong>
-                                }
                                 @{build.status match {
-                                  case dao.BuildFailure =>
+                                  case models.BuildFailure =>
                                     <span class="text-danger" style="padding-left: 2px;">(Build Failed)</span>
                                     <p class="text-danger">{build.message}</p>
                                   case _ =>

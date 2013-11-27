@@ -1,24 +1,24 @@
-@(currentFilter: String, loginForm: Form[Option[dao.User]])(content: Html)(implicit flash: Flash, currentUser: Option[dao.User])
+@(currentFilter: String, loginForm: Form[Option[models.User]])(content: Html)(implicit flash: Flash, currentUser: Option[models.User])
 
 @header = {
 @currentUser.map { loggedInUser =>
 <div class="navbar-collapse collapse">
     <div class="navbar-right">
-        <a href="@routes.Application.dashboard" class="btn btn-primary navbar-btn" type="submit">Dashboard</a>
-        <a href="@auth.routes.Authenticator.logout" class="btn btn-primary navbar-btn" type="submit">Logout</a>
+        <a href="@routes.ApplicationController.dashboard" class="btn btn-primary navbar-btn" type="submit">Dashboard</a>
+        <a href="@routes.AuthenticationController.logout" class="btn btn-primary navbar-btn" type="submit">Logout</a>
     </div>
 </div>
 }.getOrElse {
 <div class="navbar-collapse collapse">
     <div class="navbar-right">
-        @helper.form(action=auth.routes.Authenticator.authenticate, 'class -> "navbar-form") {
+        @helper.form(action=routes.AuthenticationController.authenticate, 'class -> "navbar-form") {
         @loginForm.globalError.map { error =>
         <p class="form-group text-danger">@error.message</p>
         }
         @flash.get("success").map { message =>
         <p class="form-group text-success">@message</p>
         }
-        <a href="@auth.routes.Authenticator.signUp" class="btn btn-primary navbar-btn" type="submit">Sign Up!</a>
+        <a href="@routes.AuthenticationController.signUp" class="btn btn-primary navbar-btn" type="submit">Sign Up!</a>
         <div class="form-group">
             <input type="email" class="form-control" placeholder="Email" name="email" value='@loginForm("email").value'>
         </div>
@@ -62,7 +62,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a href="@routes.Application.index()" class="navbar-brand" style="color: #FFF">Read The Markdown</a>
+                        <a href="@routes.ApplicationController.index" class="navbar-brand" style="color: #FFF">Read The Markdown</a>
                     </div>
                     @header
                 </div>
@@ -71,9 +71,9 @@
                     <div class="container">
                         <div class="collapse navbar-collapse">
                             <ul class="nav navbar-nav">
-                                <li><a href="@routes.Application.dashboard">Projects</a></li>
+                                <li><a href="@routes.ApplicationController.dashboard">Projects</a></li>
                                 <li><a href="@routes.ProjectController.importProject">Import project</a></li>
-                                <li><a href="@auth.routes.Authenticator.profile(loggedInUser.username)">Profile</a></li>
+                                <li><a href="@routes.AuthenticationController.profile(loggedInUser.username)">Profile</a></li>
                             </ul>
                         </div>
                     </div>
@@ -81,7 +81,7 @@
                 }
             <div id="main" style="padding: 120px 5px;">
                 <div class="container">
-                    @helper.form(action=routes.Application.search(), 'class -> "rtm-search form-search", 'role -> "form") {
+                    @helper.form(action=routes.ApplicationController.search(), 'class -> "rtm-search form-search", 'role -> "form") {
                     <div class="input-group">
                         <input type="search" id="searchbox" class="search-query input-lg form-control" name="f" value="@currentFilter" placeholder="Search all documents...">
                         <span class="input-group-btn">

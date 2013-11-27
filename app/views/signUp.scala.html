@@ -1,4 +1,4 @@
-@(createUserForm: Form[auth.UserData], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(createUserForm: Form[models.UserData], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import helper.twitterBootstrap._
 
@@ -6,7 +6,7 @@
 <div class="container" style="margin-top: 50px;">
     <div class="row">
         <h3>Sign Up</h3>
-        @helper.form(action=auth.routes.Authenticator.createUser) {
+        @helper.form(action=routes.AuthenticationController.createUser) {
         @createUserForm.globalError.map { error =>
         <p class="form-group text-danger">@error.message</p>
         }

@@ -1,11 +1,12 @@
 package build
 
-import java.io._
+import java.io.{Reader, StringReader, InputStreamReader}
 
 import scala.util.Try
 import play.api.Logger
 
-import dao.{ProjectVersion, Project}
+import models._
+import settings.Global
 import util.ResourceUtil
 import org.apache.lucene.search.{BooleanClause, BooleanQuery, TermQuery}
 import org.apache.lucene.index.FieldInfo.IndexOptions
@@ -13,7 +14,7 @@ import org.apache.lucene.index.Term
 import org.apache.lucene.document._
 import org.apache.lucene.index.{IndexWriter, IndexWriterConfig}
 import org.apache.lucene.document.Field.Store
-import org.apache.lucene.util.Version
+import org.apache.lucene.util.{Version => LucVersion}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.index.IndexWriterConfig.OpenMode
 import org.apache.lucene.store.FSDirectory
@@ -21,8 +22,8 @@ import org.w3c.tidy.Tidy
 import org.w3c.dom.{NodeList, Node, Text, Element}
 
 trait DocsIndexer {
-  def index(project: Project, version: ProjectVersion): Try[Unit]
-  def cleanProjectAndVersionIndex(project: Project, version: ProjectVersion): Try[Unit]
+  def index(project: Project, version: models.Version): Try[Unit]
+  def cleanProjectAndVersionIndex(project: Project, version: Version): Try[Unit]
 }
 
 trait LuceneDocsIndexer extends DocsIndexer {
@@ -30,76 +31,67 @@ trait LuceneDocsIndexer extends DocsIndexer {
 
   import ResourceUtil._
 
-  private val fileSuffix = ".html"
-  private val skipDirectories = Seq("css", "img", "js", "offline")
+  private val LuceneVersion = LucVersion.LUCENE_43
 
-  def index(project: Project, version: ProjectVersion): Try[Unit] = {
-    index(project, version, buildDirForProjectVersion(project, version))
-  }
-
-  def cleanProjectAndVersionIndex(project: Project, version: ProjectVersion): Try[Unit] = Try {
+  def cleanProjectAndVersionIndex(project: Project, version: Version): Try[Unit] = Try {
     val indexWriter: IndexWriter = {
       val dir = FSDirectory.open(indexDir)
-      val iwc = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43))
+      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
       iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
       new IndexWriter(dir, iwc)
     }
 
     val booleanQuery = new BooleanQuery()
-    booleanQuery.add(new TermQuery(new Term("project", project.slug)), BooleanClause.Occur.MUST)
-    booleanQuery.add(new TermQuery(new Term("version", version.versionName)), BooleanClause.Occur.MUST)
+    booleanQuery.add(new TermQuery(new Term("project", project.url_key.value)), BooleanClause.Occur.MUST)
+    booleanQuery.add(new TermQuery(new Term("version", version.name)), BooleanClause.Occur.MUST)
     doWith(indexWriter) { writer =>
       writer.deleteDocuments(booleanQuery)
       writer.commit()
     }
+  }.recover {
+    case e: Exception =>
+      Global.builds.createFailure(project.guid, version, "Cleaning Index failed - "+ e.getMessage)
+      throw e
   }
 
-  private def index(project: Project, version: ProjectVersion, projectVersionedBuildDir: File): Try[Unit] = Try {
+  def index(project: Project, version: Version): Try[Unit] = {
     cleanProjectAndVersionIndex(project, version).map { _ =>
       val index: IndexWriter = {
         val dir = FSDirectory.open(indexDir)
-        val iwc = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43))
+        val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
         iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
         new IndexWriter(dir, iwc)
       }
       doWith(index) { indx =>
-        indexDirectory(project, version, projectVersionedBuildDir, indx)
+        indexProject(project, version, indx)
         indx.commit()
       }
+    }.recover {
+      case e: Exception =>
+        Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
+        throw e
     }
   }
 
-  private def indexDirectory(project: Project, version: ProjectVersion, dataDir: File, index: IndexWriter): Unit = {
-    Logger.debug("Indexing Directory ["+dataDir.getAbsoluteFile+"]")
-    for (f <- dataDir.listFiles()) {
-      if (f.isDirectory && !skipDirectory(f)) {
-        indexDirectory(project, version, f, index)
-      } else {
-        indexFile(project, version, f, index)
-      }
+  private def indexProject(project: Project, version: Version, index: IndexWriter): Unit = {
+    Logger.debug("Indexing Project ["+project.name+"]")
+    Global.files.findAllByProjectGuidAndVersion(project.guid, version).foreach { file =>
+      indexFile(project, version, file, index)
     }
   }
 
-  private def skipDirectory(directory: File): Boolean = {
-    skipDirectories.contains(directory.getName)
-  }
-
-  private def indexFile(project: Project, version: ProjectVersion, f: File, index: IndexWriter): Unit = {
-    if (!f.isHidden && !f.isDirectory && f.canRead && f.exists() && f.getName.endsWith(fileSuffix)) {
-      val filePath = f.getAbsolutePath.
-        substring(indexDir.getAbsolutePath.length+project.slug.length+version.versionName.length+4)
-      ResourceUtil.doWith(new InputStreamReader(new FileInputStream(f), "UTF-8")) { stream =>
-        index.addDocument(getDocument(project, version, filePath, stream))
-      }
+  private def indexFile(project: Project, version: Version, file: File, index: IndexWriter): Unit = {
+    ResourceUtil.doWith(new StringReader(file.html)) { stream =>
+      index.addDocument(getDocument(project, version, file.url_key.value, stream))
     }
   }
 
-  private def getDocument(project: Project, version: ProjectVersion, filename: String, is: InputStreamReader): Document = {
+  private def getDocument(project: Project, version: Version, fileUrlKey: String, html: Reader): Document = {
     val tidy = new Tidy()
     tidy.setQuiet(true)
     tidy.setShowWarnings(false)
 
-    val root = tidy.parseDOM(is, null)
+    val root = tidy.parseDOM(html, null)
     val rawDoc = Option(root.getDocumentElement)
 
     val doc = new org.apache.lucene.document.Document()
@@ -117,9 +109,9 @@ trait LuceneDocsIndexer extends DocsIndexer {
     }
     rawDoc.flatMap(getTitle).foreach { title =>
       doc.add(new StringField("title", title, Store.YES))
-      doc.add(new StringField("path", filename, Store.YES))
-      doc.add(new StringField("project", project.slug, Store.YES))
-      doc.add(new StringField("version", version.versionName, Store.YES))
+      doc.add(new StringField("path", fileUrlKey, Store.YES))
+      doc.add(new StringField("project", project.url_key.value, Store.YES))
+      doc.add(new StringField("version", version.name, Store.YES))
     }
     doc
   }

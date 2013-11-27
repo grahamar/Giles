@@ -1,4 +1,4 @@
-@(user: dao.User, userProjects: Seq[dao.ProjectAndBuilds], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(user: models.User, userProjects: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
@@ -8,33 +8,28 @@
         <div class="col-md-10">
             @gravatar(user.email)
             <span class="divider col-md-1"></span>
-            <h4>@user.firstName @user.lastName</h4>
+            <h4>@user.first_name @user.last_name</h4>
             <h5 class="text-muted">(@user.username)</h5>
             @user.homepage.map{ hp =>
             <span class="divider col-md-1"></span>
             <a href="@hp">@hp</a>
             }
-            <!-- TODO
-            if user.homepage
-            divider
-            show homepage
-            -->
         </div>
     </div>
     <div class="col-md-9 well">
         <table class="projects table table-bordered">
             <tbody>
-            @userProjects.map { projectAndVersions =>
+            @userProjects.map { projectAndBuilds =>
             <tr class="project">
                 <td>
-                    <a href='@routes.ProjectController.project(projectAndVersions.project.slug)'><strong>@projectAndVersions.project.name</strong></a>
-                    @if(!projectAndVersions.project.authors.isEmpty){
-                    (@{Html(projectAndVersions.project.authors.map { author =>
+                    <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key.value)'><strong>@projectAndBuilds.project.name</strong></a>
+                    @if(!projectAndBuilds.authors.isEmpty){
+                    (@{Html(projectAndBuilds.authors.map { author =>
                     <a class="text-muted" href="#">{author.username}</a>
                     }.mkString(", "))})
                     }
                     <div class="pull-right">
-                        @viewDocs(projectAndVersions)
+                        @viewDocs(projectAndBuilds)
                     </div>
                 </td>
             </tr>

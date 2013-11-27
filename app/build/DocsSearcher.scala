@@ -2,8 +2,10 @@ package build
 
 import scala.math.Ordered
 
+import models._
+
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.util.Version
+import org.apache.lucene.util.{Version => LucVersion}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.search._
 import org.apache.lucene.index.{DirectoryReader, Term}
@@ -12,10 +14,10 @@ import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
 
 trait DocsSearcher {
   def search(filter: String): Seq[ProjectSearchResult]
-  def searchProject(projectSlug: String, filter: String): Seq[ProjectSearchResult]
+  def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult]
 }
 
-case class ProjectSearchResult(projectSlug: String, projectVersion: String, path: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
+case class ProjectSearchResult(projectUrlKey: UrlKey, projectVersion: Version, fileUrlKey: UrlKey, fileTitle: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
 }
 
@@ -24,19 +26,21 @@ trait LuceneDocsSearcher extends DocsSearcher {
 
   import util.ResourceUtil._
 
+  private val LuceneVersion = LucVersion.LUCENE_43
+
   def search(filter: String): Seq[ProjectSearchResult] = {
     search(filter, "body") ++ search(filter, "title")
   }
 
-  def searchProject(projectSlug: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body", projectSlug) ++ search(filter, "title", projectSlug)
+  def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult] = {
+    search(filter, "body", projectUrlKey) ++ search(filter, "title", projectUrlKey)
   }
 
-  private def search(filter: String, field: String, projectSlug: String): Seq[ProjectSearchResult] = {
-    val parser = new QueryParser(Version.LUCENE_43, field, new StandardAnalyzer(Version.LUCENE_43))
+  private def search(filter: String, field: String, projectUrlKey: String): Seq[ProjectSearchResult] = {
+    val parser = new QueryParser(LuceneVersion, field, new StandardAnalyzer(LuceneVersion))
     parser.setAllowLeadingWildcard(true)
     val booleanQuery = new BooleanQuery()
-    booleanQuery.add(new TermQuery(new Term("project", projectSlug)), BooleanClause.Occur.MUST)
+    booleanQuery.add(new TermQuery(new Term("project", projectUrlKey)), BooleanClause.Occur.MUST)
     booleanQuery.add(parser.parse(filter), BooleanClause.Occur.SHOULD)
     doWith(DirectoryReader.open(FSDirectory.open(indexDir))) { indexReader =>
       val indexSearcher = new IndexSearcher(indexReader)
@@ -51,15 +55,15 @@ trait LuceneDocsSearcher extends DocsSearcher {
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
         if(hits.length > 0) {
-          Some(ProjectSearchResult(doc.get("project"), doc.get("version"),
-            encodeFileName(doc.get("path")), doc.get("path"), hits, result.score))
+          Some(ProjectSearchResult(UrlKey.generate(doc.get("project")), new Version(doc.get("version")),
+            UrlKey.generate(doc.get("path")), doc.get("title"), hits, result.score))
         } else { None }
       }.flatten.sorted
     }
   }
 
   private def search(filter: String, field: String): Seq[ProjectSearchResult] = {
-    val parser = new QueryParser(Version.LUCENE_43, field, new StandardAnalyzer(Version.LUCENE_43))
+    val parser = new QueryParser(LuceneVersion, field, new StandardAnalyzer(LuceneVersion))
     parser.setAllowLeadingWildcard(true)
     val query = parser.parse(filter)
     doWith(DirectoryReader.open(FSDirectory.open(indexDir))) { indexReader =>
@@ -74,8 +78,8 @@ trait LuceneDocsSearcher extends DocsSearcher {
         val hits = highlighter.getBestFragments(fieldQuery, indexReader, result.doc, field, 200, 5).map { hit =>
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
-        ProjectSearchResult(doc.get("project"), doc.get("version"),
-          encodeFileName(doc.get("path")), doc.get("path"), hits, result.score)
+        ProjectSearchResult(UrlKey.generate(doc.get("project")), new Version(doc.get("version")),
+          UrlKey.generate(doc.get("path")), doc.get("title"), hits, result.score)
       }.sorted
     }
   }

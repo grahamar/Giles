@@ -1,106 +1,67 @@
 package build
 
-import java.io.File
+import java.io.{File => JFile}
 
 import scala.util.Try
 import play.api.Logger
 
-import dao._
+import models._
 import settings.Global
 
-import pamflet.{FileStorage, Produce}
 import com.typesafe.config.ConfigFactory
-import org.apache.commons.io.FileUtils
-import util.ResourceUtil
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit]
-  def update(project: ProjectWithAuthors, existingVersions: Seq[ProjectVersion]): Try[Unit]
+  def build(project: Project): Try[Unit]
 }
 
-trait PamfletDocsBuilder extends DocsBuilder {
+trait MarkdownDocsBuilder extends DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
-  def update(project: ProjectWithAuthors, existingVersions: Seq[ProjectVersion]): Try[Unit] = {
-    clean(project).map { _ =>
-      clone(project).map { _ =>
-        getVersions(project).map { versions =>
-          ProjectDAO.insertProjectVersions(project, versions.diff(existingVersions))
-          val newVersions = Seq(ProjectHelper.defaultProjectVersion) ++ versions.diff(existingVersions)
-          for {
-            version         <- newVersions
-            indexHtmlOption <- build(project, version)
-            indexHtml       <- indexHtmlOption
-          } index(project, version).map { _ =>
-            BuildDAO.insertBuildSuccess(project, version, indexHtml)
-          }.recover {
-            case e: Exception =>
-              val buildDir: File = buildDirForProjectVersion(project, version)
-              handleBuildFailed(project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
+  def build(project: Project): Try[Unit] = {
+    for {
+      _         <- clean(project)
+      _         <- clone(project)
+      versions  <- getVersions(project)
+    } yield {
+      val newVersions = versions.diff(project.versions)
+      Global.projects.update(project.copy(versions = project.versions ++ newVersions))
+      buildProjectAndVersions(project, Seq(project.head_version) ++ newVersions)
+    }
+  }
+
+  private def buildProjectAndVersions(project: Project, versions: Seq[Version]): Seq[Try[Build]] = {
+    versions.map { version =>
+      checkout(project, version).flatMap { _ =>
+        build(project, version).flatMap { _ =>
+          index(project, version).map { _ =>
+            Global.builds.createSuccess(project.guid, version)
           }
         }
       }
     }
   }
 
-  def initAndBuildProject(projectWithVersions: ProjectAndVersions): Try[Unit] = Try {
-    for {
-      version          <- projectWithVersions.versions
-      indexHtmlOption  <- build(projectWithVersions.project, version)
-      indexHtml        <- indexHtmlOption
-    } index(projectWithVersions.project, version).map { _ =>
-      BuildDAO.insertBuildSuccess(projectWithVersions.project, version, indexHtml)
-    }.recover {
-      case e: Exception =>
-        val buildDir: File = buildDirForProjectVersion(projectWithVersions.project, version)
-        handleBuildFailed(projectWithVersions.project, version, "Indexing build directory ["+buildDir.getAbsolutePath+"] failed.", e)
+  private def build(project: Project, version: Version): Try[Unit] = Try {
+    val inputDir: JFile = parseYamlConfig(repositoryForProject(project))
+    if(!inputDir.exists()) {
+      throw new BuildFailedException("No document directory exists at ["+inputDir.getAbsolutePath+"].")
     }
+    Logger.info("Building... project=["+project.name+"] version=["+version.name+"] input=["+inputDir.getAbsolutePath+"]")
+    // TODO crawl through repo extracting markdown files and inserting them into mongo
+  }.recover {
+    case e: Exception => Global.builds.createFailure(project.guid, version, "Build failed - "+ e.getMessage)
   }
 
-  private def build(project: Project, version: ProjectVersion): Try[Option[String]] = {
-    build(project, version, repositoryForProject(project))
-  }
-
-  private def build(project: Project, version: ProjectVersion, checkoutDir: File): Try[Option[String]] = {
-    val buildDir: File = buildDirForProjectVersion(project, version)
-    checkout(project, version).recover {
-      case e: Exception => handleBuildFailed(project, version, "Checkout failed.", e)
-    }.map { _ =>
-      val inputDir: File = parseYamlConfig(checkoutDir)
-      if(!inputDir.exists()) {
-        throw new BuildFailedException("No document directory exists at ["+inputDir.getAbsolutePath+"].")
-      } else {
-        Try{FileUtils.cleanDirectory(buildDir)} // Quietly empty the directory
-        Logger.info("Building... project=["+project.slug+"] version=["+version.versionName+"] input=["+inputDir.getAbsolutePath+"] output=["+buildDir.getAbsoluteFile+"]")
-        val pamfletStorage = FileStorage(inputDir).globalized
-        val indexHtml = pamfletStorage.defaultContents.rootSection.template.get("out").getOrElse {
-          ResourceUtil.encodeFileName(pamfletStorage.defaultContents.title)+".html"
-        }
-        Produce(pamfletStorage, buildDir)
-        Some(indexHtml)
-      }
-    }.recover {
-      case e: Exception =>
-        handleBuildFailed(project, version, "Building of documents to ["+buildDir.getAbsoluteFile+"] failed.", e)
-        None
-    }
-  }
-
-  private def parseYamlConfig(checkoutDir: File): File = {
-    val rtmYaml = new File(checkoutDir, "rtm.yaml")
+  private def parseYamlConfig(checkoutDir: JFile): JFile = {
+    val rtmYaml = new JFile(checkoutDir, "rtm.yaml")
     if(rtmYaml.exists()) {
-      new File(checkoutDir, ConfigFactory.parseFile(rtmYaml).getString("docs.directory"))
+      new JFile(checkoutDir, ConfigFactory.parseFile(rtmYaml).getString("docs.directory"))
     } else {
       Logger.warn("Config rtm.yaml not found in project root ["+checkoutDir.getAbsoluteFile+"]")
-      new File(checkoutDir, Global.configuration.getString("default.docs.dir").getOrElse("docs"))
+      new JFile(checkoutDir, Global.configuration.getString("default.docs.dir").getOrElse("docs"))
     }
-  }
-
-  private def handleBuildFailed(project: Project, version: ProjectVersion, msg: String, e: Exception): Unit = {
-    BuildDAO.insertBuildFailure(project, version, msg + " - " + e.getMessage)
-    throw e
   }
 
 }
