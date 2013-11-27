@@ -1,4 +1,4 @@
-package auth
+package controllers
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -8,17 +8,15 @@ import play.api.data.Form
 import play.api.data.Forms._
 
 import views._
-import dao.{ProjectDAO, UserDAO}
+import models._
+import controllers.auth._
+import settings.Global
+import dao.util.ProjectHelper
 
-import controllers.Application
-
-case class UserData(username: String, email: String, password: String, rePassword: String,
-                    firstName: String, lastName: String, homepage: String)
-
-object Authenticator extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
+object AuthenticationController extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
 
   val loginForm = Form {
-    mapping("email" -> email, "password" -> text)(UserDAO.authenticate)(_.map(u => (u.email, "")))
+    mapping("email" -> email, "password" -> text)(Global.users.authenticate)(_.map(u => (u.email, "")))
       .verifying("Invalid email or password", result => result.isDefined)
   }
 
@@ -35,7 +33,7 @@ object Authenticator extends Controller with LoginLogout with OptionalAuthUser w
   }
 
   def login = StackAction { implicit request =>
-    Application.Home
+    ApplicationController.Home
   }
 
   def logout = AsyncStack { implicit request =>
@@ -44,8 +42,8 @@ object Authenticator extends Controller with LoginLogout with OptionalAuthUser w
 
   def authenticate = AsyncStack { implicit request =>
     loginForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.index(ProjectDAO.recentlyUpdatedProjectsWithAuthors(10), formWithErrors))),
-      user => user.get.id.map(gotoLoginSucceeded).getOrElse(Future.failed(new UserIdNotSetException))
+      formWithErrors => Future.successful(BadRequest(ApplicationController.index(formWithErrors))),
+      user => user.map(usr => gotoLoginSucceeded(usr.guid)).getOrElse(Future.failed(new UserIdNotSetException))
     )
   }
 
@@ -56,16 +54,16 @@ object Authenticator extends Controller with LoginLogout with OptionalAuthUser w
   def createUser = StackAction { implicit request =>
     createUserForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(html.signUp(formWithErrors, loginForm))),
-      user => Future.successful(UserDAO.createUser(user))
+      user => Future.successful(Global.users.create(user.toUser))
     )
-    Application.Home
+    ApplicationController.Home
   }
 
   def profile(username: String) = StackAction { implicit request =>
-    val user = UserDAO.userForUsername(username)
+    val user = Global.users.findByUsername(username)
     user.map{usr =>
-      val projects = ProjectDAO.projectsForUser(usr)
-      Ok(html.profile(usr, projects, Authenticator.loginForm))
+      val projects = Global.projects.findByAuthorGuid(usr.guid)
+      Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
     }.getOrElse(NotFound)
   }
 

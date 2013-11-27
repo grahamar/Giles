@@ -21,7 +21,11 @@ libraryDependencies ++= Seq( jdbc,
     "org.apache.lucene"  %  "lucene-highlighter"            % "4.3.0",
     "net.sf.jtidy"       %  "jtidy"                         % "r938",
     "com.ocpsoft"        %  "ocpsoft-pretty-time"           % "1.0.7",
-    "commons-io"         %  "commons-io"                    % "2.4"
+    "commons-io"         %  "commons-io"                    % "2.4",
+    "com.novus"          %% "salat-core"                    % "1.9.4",
+    "org.mockito"        %  "mockito-core"                  % "1.9.5"                   % "test",
+    "org.scalacheck"     %% "scalacheck"                    % "1.10.1"                  % "test",
+    "org.scalatest"      %% "scalatest"                     % "2.0"                     % "test"
 )
 
 playScalaSettings

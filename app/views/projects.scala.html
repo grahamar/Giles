@@ -1,9 +1,9 @@
-@(projectsAndVersions: Seq[dao.ProjectAndBuilds], loginForm: Form[Option[dao.User]])(implicit flash: Flash, currentUser: Option[dao.User])
+@(projectsAuthorsAndBuilds: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @main("", loginForm) {
 <div class="container" style="margin-top: 50px;">
     <div class="row">
-        @tags.projects(projectsAndVersions)
+        @tags.projects(projectsAuthorsAndBuilds)
     </div>
 </div>
 }

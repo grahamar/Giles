@@ -1,27 +1,21 @@
-@(projectAndBuilds: dao.ProjectAndBuilds)
+@(projectAndBuilds: models.ProjectAuthorsAndBuilds)
 
 <div class="btn-group">
     @projectAndBuilds.latestBuild.map { latest =>
-    @latest.startPage.map{ startPage =>
-        <a href='@routes.StaticDocsController.projectDocs(projectAndBuilds.project.slug, latest.version.versionName, startPage)' class="btn btn-primary">View Docs</a>
-        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-            <span class="caret"></span>
-            <span class="sr-only">Show Document Versions</span>
-        </button>
-        <ul class="dropdown-menu view-docs-dropdown" role="menu">
-            @projectAndBuilds.builds.map { build =>
-            @build.startPage.map { startPage =>
-            <li>
-                <a href='@routes.StaticDocsController.projectDocs(projectAndBuilds.project.slug, build.version.versionName, startPage)'>
-                    @build.version.versionName
-                </a>
-            </li>
-            }
-            }
-        </ul>
-    }.getOrElse {
-    <a href='' class="btn btn-info">No Docs</a>
-    }
+    <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, latest.version)' class="btn btn-primary">View Docs</a>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+        <span class="caret"></span>
+        <span class="sr-only">Show Document Versions</span>
+    </button>
+    <ul class="dropdown-menu view-docs-dropdown" role="menu">
+        @projectAndBuilds.builds.map { build =>
+        <li>
+            <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, build.version)'>
+                @build.version
+            </a>
+        </li>
+        }
+    </ul>
     }.getOrElse {
     <a href='' class="btn btn-info">No Docs</a>
     }

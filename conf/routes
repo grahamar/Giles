@@ -2,31 +2,39 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Default path will just redirect to the computer list
-
-GET     /                                                   controllers.Application.index
+GET     /                                                     controllers.ApplicationController.index
 
 # Authentication
-POST    /login                                              auth.Authenticator.authenticate
-GET     /logout                                             auth.Authenticator.logout
-GET     /signUpForm                                         auth.Authenticator.signUp
-POST    /users/create                                       auth.Authenticator.createUser
-GET     /users/*username                                    auth.Authenticator.profile(username)
+POST    /login                                                controllers.AuthenticationController.authenticate
+GET     /logout                                               controllers.AuthenticationController.logout
+GET     /signUpForm                                           controllers.AuthenticationController.signUp
+POST    /users/create                                         controllers.AuthenticationController.createUser
+GET     /users/*username                                      controllers.AuthenticationController.profile(username)
 
-GET     /search                                             controllers.Application.search(f ?= "")
-GET     /search/:projectSlug                                controllers.Application.searchProject(projectSlug, projectFilter ?= "")
+GET     /search                                               controllers.ApplicationController.search(f ?= "")
+GET     /search/:projectSlug                                  controllers.ApplicationController.searchProject(projectSlug, projectFilter ?= "")
 
-GET     /projects                                           controllers.ProjectController.projects
-GET     /projects/create                                    controllers.ProjectController.importProject
-PUT     /projects/create                                    controllers.ProjectController.createProject
-GET     /projects/:projectSlug                              controllers.ProjectController.project(projectSlug)
-GET     /projects/:projectSlug/edit                         controllers.ProjectController.editProject(projectSlug)
-GET     /projects/:projectSlug/pull                         controllers.ProjectController.pullNewVersions(projectSlug)
-GET     /projects/:projectSlug/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectSlug, projectVersion, file)
-PUT     /projects/:projectSlug/docs/:projectVersion/*file   controllers.StaticDocsController.publish(projectSlug, projectVersion, file)
+GET     /projects                                             controllers.ProjectController.projects
+GET     /projects/create                                      controllers.ProjectController.importProject
+PUT     /projects/create                                      controllers.ProjectController.createProject
+GET     /projects/:projectUrlKey                              controllers.ProjectController.project(projectUrlKey)
+GET     /projects/:projectUrlKey/edit                         controllers.ProjectController.editProject(projectUrlKey)
+GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)
+GET     /projects/:projectUrlKey/docs/:projectVersion         controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
+GET     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
 
-GET     /dashboard                                          controllers.Application.dashboard
+GET     /dashboard                                            controllers.ApplicationController.dashboard
+
+# Api
+GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid: Option[String], name: Option[String], author_guids: Option[String], query: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects
+GET     /api/versions                                         controllers.api.VersionsApiController.getVersions(projectGuid, version: Option[String])
+PUT     /api/versions                                         controllers.api.VersionsApiController.putVersions
+GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], name: Option[String], project_guid: Option[String], query: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+PUT     /api/files                                            controllers.api.FilesApiController.putFiles
+PUT     /api/views                                            controllers.api.ViewsApiController.putViews
+GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /favicon.ico                                        controllers.Assets.at(path="/public", file="favicon.ico")
-GET     /assets/*file                                       controllers.Assets.at(path="/public", file)
+GET     /favicon.ico                                          controllers.Assets.at(path="/public", file="favicon.ico")
+GET     /assets/*file                                         controllers.Assets.at(path="/public", file)

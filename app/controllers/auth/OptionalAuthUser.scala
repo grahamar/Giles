@@ -1,4 +1,4 @@
-package auth
+package controllers.auth
 
 import scala.util.Success
 import scala.concurrent.{Future, ExecutionContext}

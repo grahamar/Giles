@@ -1,4 +1,4 @@
-package auth
+package controllers.auth
 
 import scala.reflect.{ClassTag, classTag}
 import scala.concurrent.{Future, ExecutionContext}
@@ -6,10 +6,11 @@ import scala.concurrent.{Future, ExecutionContext}
 import play.api.mvc._
 import play.api.mvc.Results._
 
-import dao.UserDAO
-import controllers.Application
+import controllers.ApplicationController
 
 import jp.t2v.lab.play2.auth.AuthConfig
+import settings.Global
+import java.util.UUID
 
 sealed trait Permission
 case object Administrator extends Permission
@@ -17,9 +18,9 @@ case object NormalUser extends Permission
 
 trait AuthConfigImpl extends AuthConfig {
 
-  type Id = Long
+  type Id = UUID
 
-  type User = dao.User
+  type User = models.User
 
   type Authority = Permission
 
@@ -30,25 +31,25 @@ trait AuthConfigImpl extends AuthConfig {
    */
   val sessionTimeoutInSeconds: Int = 3600
 
-  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = Future {UserDAO.findById(id)}
+  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = Future {Global.users.findByGuid(id)}
 
   /**
    * Where to redirect the user after a successful login.
    */
   def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
-    Future.successful(Application.Dashboard)
+    Future.successful(ApplicationController.Dashboard)
 
   /**
    * Where to redirect the user after logging out
    */
   def logoutSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
-    Future.successful(Application.Home)
+    Future.successful(ApplicationController.Home)
 
   /**
    * If the user is not logged in and tries to access a protected resource then redirct them as follows:
    */
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[SimpleResult] =
-    Future.successful(Redirect(routes.Authenticator.authenticate))
+    Future.successful(Redirect(controllers.routes.AuthenticationController.authenticate))
 
   /**
    * If authorization failed (usually incorrect password) redirect the user as follows:
@@ -64,8 +65,8 @@ trait AuthConfigImpl extends AuthConfig {
     true
   }
 
-  override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.secure").getOrElse(true)
+  override lazy val cookieSecureOption: Boolean = play.api.Play.current.configuration.getBoolean("controllers.auth.cookie.secure").getOrElse(true)
 
-  override lazy val cookieHttpOnlyOption: Boolean = play.api.Play.current.configuration.getBoolean("auth.cookie.httpOnly").getOrElse(false)
+  override lazy val cookieHttpOnlyOption: Boolean = play.api.Play.current.configuration.getBoolean("controllers.auth.cookie.httpOnly").getOrElse(false)
 
 }

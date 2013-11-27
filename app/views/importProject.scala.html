@@ -1,4 +1,4 @@
-@(loginForm: Form[Option[dao.User]], createProjectForm: Form[ProjectImportData])(implicit flash: Flash, currentUser: Option[dao.User])
+@(loginForm: Form[Option[models.User]], createProjectForm: Form[ProjectImportData])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import helper.twitterBootstrap._
 
@@ -30,15 +30,14 @@
             }
         </div>
         <div class="form-group">
-            @helper.input(createProjectForm("default_branch"), '_label -> "Default Branch") { (id, name, value, args) =>
-            <input type="text" name="@name" id="@id" class="form-control" placeholder="Default Branch" value="@value" @toHtmlArgs(args)>
-            <small class="text-info">What branch "latest" points to (eg. trunk or master).</small>
-            }
-        </div>
-        <div class="form-group">
             @helper.input(createProjectForm("default_version"), '_label -> "Default Version") { (id, name, value, args) =>
             <input type="text" name="@name" id="@id" class="form-control" placeholder="Default Version (e.g. latest)" value="@value" @toHtmlArgs(args)>
             <small class="text-info">The version of your project that / redirects to</small>
+            }
+        </div>
+        <div class="form-group">
+            @helper.input(createProjectForm("description"), '_label -> "Description") { (id, name, value, args) =>
+            <input type="text" name="@name" id="@id" class="form-control" placeholder="Description" value="@value" @toHtmlArgs(args)>
             }
         </div>
         <button class="btn btn-primary" type="submit">Create</button>

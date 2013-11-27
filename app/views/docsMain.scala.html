@@ -1,0 +1,119 @@
+@(title: String, content: Html, files: Seq[models.File])
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>@title</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("css/bootstrap-theme-3.0.2.min.css")">
+    <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("css/bootstrap-3.0.2.min.css")">
+    <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("css/docs.css")">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="wy-body-for-nav">
+    <div class="wy-grid-for-nav">
+        <nav class="wy-nav-side" data-toggle="wy-nav-shift">
+            <div class="wy-side-nav-search">
+                <a class="icon icon-home" href="#">@title</a>
+                <form method="get" action="search.html" class="wy-form" autocomplete="off" id="rtd-search-form">
+                    <input type="text" placeholder="Search docs" name="q">
+                    <input type="hidden" value="yes" name="check_keywords">
+                    <input type="hidden" value="default" name="area">
+                </form>
+            </div>
+
+            <div data-spy="affix" class="wy-menu wy-menu-vertical">
+                <ul>
+                    @files.map { file =>
+                    <li class="toctree-l1"><a href="@{file.title}.html" class="reference internal">@file.title</a></li>
+                    }
+                </ul>
+            </div>
+            &nbsp;
+        </nav>
+        <section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+            <nav class="wy-nav-top">
+                <i class="icon icon-reorder" data-toggle="wy-nav-top"></i>
+                <a href="#">@title</a>
+            </nav>
+            <div class="wy-nav-content">
+                <div class="rst-content">
+                    <ul class="wy-breadcrumbs">
+                        <li><a href="#">Docs</a> »</li>
+                        <li><a href="">Welcome to Read The Docs</a></li>
+                        <li class="wy-breadcrumbs-aside">
+                            <a class="icon icon-github" href="https://github.com/rtfd/readthedocs.org/blob/master/docs/index.rst"> Edit on GitHub</a>
+                        </li>
+                    </ul>
+                    <hr>
+                    <div id="welcome-to-read-the-docs" class="section">
+                        @content
+                    </div>
+                    <footer>
+                        <div class="rst-footer-buttons">
+                            <a title="Getting Started" class="btn btn-neutral float-right" href="getting_started.html">Next <span class="icon icon-circle-arrow-right"></span></a>
+                        </div>
+                        <hr>
+                        <p>
+                            &copy; Copyright 2013, Graham Rhodes.
+                        </p>
+                        <a href="https://www.github.com/snide/sphinx_rtd_theme">Theme</a> provided by <a href="http://readthedocs.org">Read the Docs</a>
+                    </footer>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div data-toggle="rst-versions" class="rst-versions">
+        <span data-toggle="rst-current-version" class="rst-current-version">
+          <span class="icon icon-book"> Read the Docs</span>
+          v: latest
+          <span class="icon icon-caret-down"></span>
+        </span>
+        <div class="rst-other-versions">
+            <div class="injected">
+                <dl>
+                    <dt>Versions</dt>
+                    <strong>
+                        <dd><a href="/en/latest/">latest</a></dd>
+                    </strong>
+                </dl>
+                <dl>
+                    <dt>Downloads</dt>
+                    <dd><a href="https://media.readthedocs.org/pdf/docs/latest/docs.pdf">PDF</a></dd>
+                    <dd><a href="https://media.readthedocs.org/htmlzip/docs/latest/docs.zip">HTML</a></dd>
+                    <dd><a href="https://media.readthedocs.org/epub/docs/latest/docs.epub">Epub</a></dd>
+                </dl>
+                <dl>
+                    <dt>On Read the Docs</dt>
+                    <dd>
+                        <a href="//readthedocs.org/projects/docs/?fromdocs=docs">Project Home</a>
+                    </dd>
+                    <dd>
+                        <a href="//readthedocs.org/builds/docs/?fromdocs=docs">Builds</a>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt>On GitHub</dt>
+                    <dd>
+                        <a href="https://github.com/rtfd/readthedocs.org/blob/master/docs/index.rst">Edit</a>
+                    </dd>
+                </dl>
+                <hr>
+                Free document hosting provided by <a href="https://readthedocs.org">Read the Docs</a>. Support us on <a href="https://www.gittip.com/readthedocs/">Gittip</a>.
+            </div>
+        </div>
+    </div>
+    <script src="@routes.Assets.at("js/jquery-2.0.3.min.js")"></script>
+    <script src="@routes.Assets.at("js/bootstrap-3.0.2.min.js")"></script>
+</body>
+</html>

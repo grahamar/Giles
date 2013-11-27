@@ -1,0 +1,5 @@
+hosts=["localhost:27017"]
+dbname=read_the_markdown_test
+autoUpdate=true
+writeConcern=Safe
+ensureIndex=true
