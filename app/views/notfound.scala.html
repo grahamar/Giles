@@ -1,0 +1,12 @@
+@(loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+
+@import tags._
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 50px;">
+    <div style="margin-left: 150px;">
+        <h2>Sorry, can't seem to find your documents...</h2>
+        <img src="@routes.Assets.at("img/404.gif")"/>
+    </div>
+</div>
+}

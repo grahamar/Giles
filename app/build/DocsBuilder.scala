@@ -67,15 +67,12 @@ trait MarkdownDocsBuilder extends DocsBuilder {
     import com.tristanhunt.knockoff._
 
     FileUtils.iterateFiles(inputDir, SupportedFileExtensions, true).asScala.foreach { document =>
-      val extension = FilenameUtils.getExtension(document.getName)
       val filename = FilenameUtils.getName(document.getName)
       val relativePath = normaliseRelativePath(document, inputDir)
-
       val blocks = knockoff(FileUtils.readFileToString(document, "UTF-8"))
       val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header))).getOrElse(filename)
       val htmlContent = toXHTML(blocks).toString()
 
-      Logger.info(s"Adding File. path=...$relativePath filename=$filename extension=$extension fileTitle=$fileTitle")
       Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, htmlContent)
     }
   }.recover {

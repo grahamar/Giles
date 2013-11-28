@@ -64,7 +64,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
     user.map{usr =>
       val projects = Global.projects.findByAuthorGuid(usr.guid)
       Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
-    }.getOrElse(NotFound)
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   private class UserIdNotSetException extends RuntimeException

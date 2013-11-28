@@ -1,12 +1,10 @@
 package controllers
 
-import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 import play.api.mvc._
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.mvc.SimpleResult
 
 import views._
 import models._
@@ -15,7 +13,9 @@ import build.DocumentationFactory
 import settings.Global
 import dao.util.ProjectHelper
 import java.util.UUID
-import play.api.Logger
+import play.api.mvc.SimpleResult
+import models.ProjectQuery
+import models.ProjectImportData
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -31,13 +31,13 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       }.getOrElse {
         Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
       }
-    }.getOrElse(NotFound)
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def editProject(urlKey: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
       Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
-    }.getOrElse(NotFound)
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def pullNewVersions(urlKey: String) = StackAction { implicit request =>

@@ -18,8 +18,8 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
       if(!files.isEmpty) {
         Global.views.create(UUID.randomUUID(), files.head.guid, loggedIn.map(_.guid))
         Ok(html.docs_main(files.head, project, projectVersion, Html(files.head.html), filesByDirectory))
-      } else NotFound
-    }.getOrElse(NotFound)
+      } else NotFound(html.notfound(AuthenticationController.loginForm))
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def projectDocs(projectUrlKey: String, projectVersion: String, fileUrlKey: String) = StackAction { implicit request =>
@@ -29,8 +29,8 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
       Global.files.findForProjectGuidAndVersion(project.guid, projectVersion, fileUrlKey).map { file =>
         Global.views.create(UUID.randomUUID(), file.guid, loggedIn.map(_.guid))
         Ok(html.docs_main(file, project, projectVersion, Html(file.html), filesByDirectory))
-      }.getOrElse(NotFound)
-    }.getOrElse(NotFound)
+      }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def pdf(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>

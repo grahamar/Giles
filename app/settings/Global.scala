@@ -1,7 +1,12 @@
 package settings
 
+import play.api.mvc._
+import play.api.mvc.Results._
 import play.api.Application
+
+import views.html
 import dao.util.{Index, MongoUtil}
+import controllers.AuthenticationController
 
 object Global extends play.api.GlobalSettings {
 
@@ -24,5 +29,10 @@ object Global extends play.api.GlobalSettings {
     RegisterJodaTimeConversionHelpers()
     RegisterConversionHelpers()
   }
+
+//  override def onHandlerNotFound(request: RequestHeader): Result = {
+//    implicit val req = request
+//    NotFound(html.notfound(AuthenticationController.loginForm))
+//  }
 
 }

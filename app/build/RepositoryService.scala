@@ -13,6 +13,7 @@ import scala.util.Try
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.transport._
 import settings.Global
+import org.eclipse.jgit.revwalk.{RevTag, RevWalk}
 
 trait RepositoryService {
   def clone(project: Project): Try[JFile]
@@ -68,9 +69,8 @@ trait GitRepositoryService extends RepositoryService {
   }
 
   def getVersions(project: Project): Try[Seq[String]] = Try {
-    val repoDir = repositoryForProject(project)
+    val repoDir = new JFile(repositoryForProject(project), ".git")
     val versions = getVersionsForRepo(project, repoDir)
-    Logger.info("Found %d versions.".format(versions.size))
     versions
   }.recover {
     case e: Exception =>
@@ -82,9 +82,7 @@ trait GitRepositoryService extends RepositoryService {
     Logger.info("Retrieve versions for ["+project.name+"]")
     val refsIndex = "refs/tags/".length
     val repo = new Git(new FileRepository(repoDir))
-    Seq(project.head_version) ++ repo.tagList().call().asScala.map { ref =>
-      ref.getName.substring(refsIndex)
-    }.toSeq
+    Seq(project.head_version) ++ repo.tagList().call().asScala.map(_.getName.substring(refsIndex)).toSeq
   }
 
   private def checkoutRepo(project: Project, version: String, repoDir: JFile): Git = {

@@ -31,7 +31,7 @@ class ProjectDao(projects: MongoCollection) {
   }
 
   def update(project: Project) {
-    val obj = MongoDBObject("description" -> project.description, "head_version" -> project.head_version)
+    val obj = MongoDBObject("description" -> project.description, "head_version" -> project.head_version, "versions" -> project.versions)
     projects.update(q = MongoDBObject("guid" -> project.guid),
       o = MongoDBObject("$set" -> obj),
       upsert = false,
