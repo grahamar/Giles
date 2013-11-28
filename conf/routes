@@ -23,6 +23,7 @@ GET     /projects/:projectUrlKey/edit                         controllers.Projec
 GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)
 GET     /projects/:projectUrlKey/docs/:projectVersion         controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
+GET     /projects/:projectUrlKey/pdf/:projectVersion          controllers.StaticDocsController.pdf(projectUrlKey, projectVersion)
 
 GET     /dashboard                                            controllers.ApplicationController.dashboard
 
@@ -35,6 +36,8 @@ GET     /api/files                                            controllers.api.Fi
 PUT     /api/files                                            controllers.api.FilesApiController.putFiles
 PUT     /api/views                                            controllers.api.ViewsApiController.putViews
 GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
+GET     /api/users                                            controllers.api.UsersApiController.getUsers(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
+PUT     /api/users                                            controllers.api.UsersApiController.putUsers
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /favicon.ico                                          controllers.Assets.at(path="/public", file="favicon.ico")

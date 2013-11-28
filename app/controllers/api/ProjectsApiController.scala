@@ -28,11 +28,11 @@ object ProjectsApiController extends Controller {
     Global.projects.findByGuid(UUID.fromString(projectData.guid)) match {
       case None => {
         Global.projects.create(UUID.fromString(projectData.author_guid), UUID.fromString(projectData.guid), projectData.name,
-          projectData.description, projectData.repoUrl, projectData.headVersion.getOrElse("HEAD"))
+          projectData.description, projectData.repo_url, projectData.head_version.getOrElse("HEAD"))
         Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
       }
       case Some(existing: Project) => {
-        val updated = existing.copy(description = projectData.description, head_version = projectData.headVersion.getOrElse("HEAD"))
+        val updated = existing.copy(description = projectData.description, head_version = projectData.head_version.getOrElse("HEAD"))
         Global.projects.update(updated)
         Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
       }
@@ -45,8 +45,8 @@ object ProjectsApiController extends Controller {
       "name" -> nonEmptyText,
       "description" -> nonEmptyText,
       "author_guid" -> nonEmptyText,
-      "repoUrl" -> nonEmptyText,
-      "headVersion" -> optional(text)
+      "repo_url" -> nonEmptyText,
+      "head_version" -> optional(text)
     )(PutProjectFormData.apply)(PutProjectFormData.unapply)
   }
 

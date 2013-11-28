@@ -19,6 +19,7 @@ package object api {
       case _ => JsError(s"Unexpected JSON value $json")
     }
   }
+  implicit val userFormat = Json.format[User]
   implicit val viewFormat = Json.format[View]
   implicit val fileFormat = Json.format[File]
   implicit val projectFormat = Json.format[Project]

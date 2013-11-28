@@ -30,4 +30,8 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
     }.getOrElse(NotFound)
   }
 
+  def pdf(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
+    NotImplemented
+  }
+
 }

@@ -73,14 +73,39 @@
   background: none;
 }
 
+#accordion {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+}
+
+#accordion .panel {
+  border-radius: 0px !important;
+  background-color: #333333;
+  border-color: #333333;
+}
+
+#accordion .panel-default > .panel-heading {
+  color: #FFFFFF;
+  cursor: pointer;
+  background-color: #333333;
+  border-color: #333333;
+  background-image: linear-gradient(to bottom, #333333 0px, #333333 100%);
+}
+
+#accordion .panel-default > .panel-heading .panel-title {
+  font-size: 14px;
+}
+
+#project-info {
+  color: #808080;
+  font-size: 90%;
+}
+
 .content-header h1 {
   margin: 0;
   margin-left: 20px;
   display: inline-block;
-}
-
-#menu-toggle {
-  display: none;
 }
 
 .inset {

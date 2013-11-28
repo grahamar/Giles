@@ -46,6 +46,46 @@
             <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.url_key)">@file.title</a></li>
             }
         </ul>
+        <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+                <div id="accordion-panel-heading" class="panel-heading" data-toggle="collapse" data-target="#project-info">
+                    <span class="panel-title">
+                        <span class="glyphicon glyphicon-book"></span> Read the Markdown
+                        <span class="pull-right">
+                            <strong style="color: #2980B9; padding-right: 2px;">v: @version</strong><span id="chevron-toggle" class="glyphicon glyphicon-chevron-up"></span>
+                        </span>
+                    </span>
+                </div>
+                <div id="project-info" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <dl>
+                            <dt>Versions</dt>
+                            @project.versions.map { ver =>
+                            @if(ver.equals(version)){
+                            <strong>
+                                <dd><a href="@routes.StaticDocsController.projectIndex(project.url_key, ver)">@ver</a></dd>
+                            </strong>
+                            } else {
+                            <dd><a href="@routes.StaticDocsController.projectIndex(project.url_key, ver)">@ver</a></dd>
+                            }
+                            }
+                        </dl>
+                        <dl>
+                            <dt>Downloads</dt>
+                            <dd><a href="@routes.StaticDocsController.pdf(project.url_key, version)">PDF</a></dd>
+                        </dl>
+                        <dl>
+                            <dt>On Read the Markdown</dt>
+                            <dd>
+                                <a href="@routes.ProjectController.project(project.url_key)">Project Home</a>
+                            </dd>
+                        </dl>
+                        <hr>
+                        Copyright 2013. Created by Graham Rhodes.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Page content -->
@@ -70,7 +110,17 @@
 </div>
 
 <!-- JavaScript -->
-<script src="js/jquery-1.10.2.js"></script>
-<script src="js/bootstrap.js"></script>
+<script src="@routes.Assets.at("js/jquery-2.0.3.min.js")"></script>
+<script src="@routes.Assets.at("js/bootstrap-3.0.2.min.js")"></script>
+<script>
+  function toggleChevron(e) {
+    $(e.target)
+    .prev('.panel-heading')
+    .find('span#chevron-toggle')
+    .toggleClass('glyphicon-chevron-down glyphicon-chevron-up');
+  }
+  $('#accordion').on('hidden.bs.collapse', toggleChevron);
+  $('#accordion').on('shown.bs.collapse', toggleChevron);
+</script>
 </body>
 </html>
