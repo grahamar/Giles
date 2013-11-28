@@ -6,15 +6,18 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import java.util.UUID
+import org.apache.commons.io.FilenameUtils
 
 class FilesDao(files: MongoCollection) {
 
-  def create(guid: UUID, project: Project, version: String, title: String, html: String): File = {
-    val urlKey = UrlKey.generate(title)
+  def create(guid: UUID, project: Project, version: String, relativePath: String, filename: String, title: String, html: String): File = {
+    val urlKey = UrlKey.generate(FilenameUtils.concat(relativePath, title))
     val file = File(guid = guid,
       project_guid = project.guid,
       version = version,
       title = title,
+      filename = filename,
+      relative_path = relativePath,
       url_key = urlKey,
       keywords = Keywords.generate(Seq(guid.toString, title, html, urlKey)),
       html = html,
@@ -60,6 +63,8 @@ class FilesDao(files: MongoCollection) {
     query.project_guid.foreach { v => builder += "project_guid" -> v }
     query.version.foreach { v => builder += "version" -> v }
     query.title.foreach { v => builder += "title" -> v }
+    query.filename.foreach { v => builder += "filename" -> v }
+    query.relative_path.foreach { v => builder += ("relative_path" -> v) }
     query.url_key.foreach { v => builder += "url_key" -> v }
     query.query.foreach { v => builder += "keywords" -> v.toLowerCase.r }
 

@@ -1,4 +1,4 @@
-@(currentFile: models.File, project: models.Project, version: String, content: Html, files: Seq[models.File])
+@(currentFile: models.File, project: models.Project, version: String, content: Html, filesByDir: Map[String, Seq[models.File]])
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,26 +27,43 @@
 <div id="wrapper">
 
     <!-- Sidebar -->
-    <div id="sidebar-wrapper">
-
-        <ul class="sidebar-nav">
-            <li class="sidebar-brand">
-                <div class="side-nav-search">
-                    <a href="@routes.ProjectController.project(project.url_key)">
-                        <span class="glyphicon glyphicon-home" style="left: -2px;"></span>@project.name
-                    </a>
-                    @helper.form(action=routes.ApplicationController.searchProjectVersion(project.url_key, version), 'class -> "form-search", 'role -> "form") {
-                    <div class="form-group">
-                        <input type="text" id="searchbox" class="search-query form-control" name="filter" placeholder="Search Docs">
+    <div id="wrap">
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <div class="side-nav-search">
+                        <a href="@routes.ProjectController.project(project.url_key)">
+                            <span class="glyphicon glyphicon-home" style="left: -2px;"></span>@project.name
+                        </a>
+                        @helper.form(action=routes.ApplicationController.searchProjectVersion(project.url_key, version), 'class -> "form-search", 'role -> "form") {
+                        <div class="form-group">
+                            <input type="text" id="searchbox" class="search-query form-control" name="filter" placeholder="Search Docs">
+                        </div>
+                        }
                     </div>
+                </li>
+                @filesByDir.map { dirAndFiles =>
+                <li class="file">
+                @if("".equals(dirAndFiles._1)) {
+                <span>@dirAndFiles._1</span>
+                <ul>
+                @dirAndFiles._2.map { file =>
+                <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.url_key)">@file.title</a></li>
+                }
+                </ul>
+                } else {
+                <span data-toggle="collapse" data-target='#dir-@(dirAndFiles._1.replaceAll("/","-"))'>@dirAndFiles._1</span>
+                <ul id='dir-@(dirAndFiles._1.replaceAll("/","-"))' class="collapse">
+                    @dirAndFiles._2.map { file =>
+                    <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.url_key)">@file.title</a></li>
                     }
-                </div>
-            </li>
-            @files.map { file =>
-            <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.url_key)">@file.title</a></li>
-            }
-        </ul>
-        <div class="panel-group" id="accordion">
+                </ul>
+                }
+                </li>
+                }
+            </ul>
+        </div>
+        <div class="panel-group" id="footer-accordion">
             <div class="panel panel-default">
                 <div id="accordion-panel-heading" class="panel-heading" data-toggle="collapse" data-target="#project-info">
                     <span class="panel-title">
@@ -94,6 +111,11 @@
             <ol class="breadcrumb">
                 <li><a href="@routes.ProjectController.project(project.url_key)">@project.name</a></li>
                 <li><a href="@routes.StaticDocsController.projectIndex(project.url_key, version)">Docs</a></li>
+                @if(currentFile.relative_path.contains("/")) {
+                @currentFile.relative_path.split("/").map { path =>
+                <li class="active"><a href="">@path</a></li>
+                }
+                }
                 <li class="active"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, currentFile.url_key)">@currentFile.title</a></li>
             </ol>
         </div>
@@ -119,8 +141,8 @@
     .find('span#chevron-toggle')
     .toggleClass('glyphicon-chevron-down glyphicon-chevron-up');
   }
-  $('#accordion').on('hidden.bs.collapse', toggleChevron);
-  $('#accordion').on('shown.bs.collapse', toggleChevron);
+  $('#footer-accordion').on('hidden.bs.collapse', toggleChevron);
+  $('#footer-accordion').on('shown.bs.collapse', toggleChevron);
 </script>
 </body>
 </html>

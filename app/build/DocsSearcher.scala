@@ -18,7 +18,7 @@ trait DocsSearcher {
   def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String): Seq[ProjectSearchResult]
 }
 
-case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: String, fileTitle: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
+case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: String, fileTitle: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
 }
 
@@ -65,7 +65,7 @@ trait LuceneDocsSearcher extends DocsSearcher {
         }
         if(hits.length > 0) {
           Some(ProjectSearchResult(UrlKey.generate(doc.get("project")), doc.get("version"),
-            UrlKey.generate(doc.get("path")), doc.get("title"), hits, result.score))
+            UrlKey.generate(doc.get("path")), doc.get("title"), doc.get("filename"), hits, result.score))
         } else { None }
       }.flatten.sorted
     }

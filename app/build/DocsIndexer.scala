@@ -108,7 +108,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
       doc.add(new Field("body", body, fieldType))
 
       doc.add(new StringField("title",rawDoc.flatMap(getTitle).getOrElse(file.title), Store.YES))
-
+      doc.add(new StringField("filename", file.filename, Store.YES))
       doc.add(new StringField("path", file.url_key, Store.YES))
       doc.add(new StringField("project", project.url_key, Store.YES))
       doc.add(new StringField("version", version, Store.YES))

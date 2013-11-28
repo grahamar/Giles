@@ -31,15 +31,6 @@
     <div>
         <div class="col-md-9">
             <form class="form-inline" role="form" style="margin-bottom: 20px;">
-                <div class="form-group">
-                    <label class="sr-only" for="version">Build a version</label>
-                    <select id="version" class="form-control">
-                        @projectAndBuilds.builds.map { build =>
-                        <option>@build.version</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Re-Build</button>
                 <a href='@routes.ProjectController.pullNewVersions(projectAndBuilds.project.url_key)' class="btn btn-info">Pull New Versions</a>
             </form>
             <div class="well">

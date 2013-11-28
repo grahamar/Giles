@@ -2,6 +2,7 @@ package models
 
 import org.joda.time.DateTime
 import java.util.UUID
+import util.ResourceUtil
 
 case class User(guid: UUID,
                 username: String,
@@ -16,8 +17,8 @@ case class User(guid: UUID,
 
 object UrlKey {
   def generate(name: String): String = {
-    name.toLowerCase.replaceAll(" ", "-").
-      replaceAll("\\.", "").replaceAll("'", "").replaceAll("\"", "")
+    name.toLowerCase.trim.replaceAll("""\s+""", "-").replaceAll("""\.+""", "").
+      split("/").map(ResourceUtil.encodeFileName).mkString("/")
   }
 }
 object Keywords {
@@ -59,6 +60,8 @@ case class File(guid: UUID,
                 project_guid: UUID,
                 version: String,
                 title: String,
+                filename: String,
+                relative_path: String,
                 url_key: String,
                 keywords: Seq[String],
                 html: String,

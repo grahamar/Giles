@@ -4,15 +4,23 @@
 }
 
 #sidebar-wrapper {
+  margin-bottom: 60px;
+  height: 100%;
+  width: 300px;
+  position: fixed;
+  overflow-y: auto;
+  transition: all 0.4s ease 0s;
+}
+
+#wrap {
   margin-left: -300px;
+  height: 100%;
+  z-index: 1000;
+  min-height: 100%;
   left: 300px;
   width: 300px;
   background: #000;
   position: fixed;
-  height: 100%;
-  overflow-y: auto;
-  z-index: 1000;
-  transition: all 0.4s ease 0s;
 }
 
 #page-content-wrapper {
@@ -31,6 +39,11 @@
 .sidebar-nav li.file {
   line-height: 40px;
   text-indent: 20px;
+}
+
+.sidebar-nav li span {
+  color: #999999;
+  cursor: pointer;
 }
 
 .sidebar-nav li a {
@@ -73,19 +86,19 @@
   background: none;
 }
 
-#accordion {
+#footer-accordion {
   position: absolute;
   bottom: 0px;
   width: 100%;
 }
 
-#accordion .panel {
+#footer-accordion .panel {
   border-radius: 0px !important;
   background-color: #333333;
   border-color: #333333;
 }
 
-#accordion .panel-default > .panel-heading {
+#footer-accordion .panel-default > .panel-heading {
   color: #FFFFFF;
   cursor: pointer;
   background-color: #333333;
@@ -93,7 +106,7 @@
   background-image: linear-gradient(to bottom, #333333 0px, #333333 100%);
 }
 
-#accordion .panel-default > .panel-heading .panel-title {
+#footer-accordion .panel-default > .panel-heading .panel-title {
   font-size: 14px;
 }
 

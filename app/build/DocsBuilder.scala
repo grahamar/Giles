@@ -1,5 +1,6 @@
 package build
 
+import java.io.{File => JFile}
 import java.util.UUID
 
 import scala.collection.JavaConverters._
@@ -68,19 +69,28 @@ trait MarkdownDocsBuilder extends DocsBuilder {
     FileUtils.iterateFiles(inputDir, SupportedFileExtensions, true).asScala.foreach { document =>
       val extension = FilenameUtils.getExtension(document.getName)
       val filename = FilenameUtils.getName(document.getName)
-      val relativePath = FilenameUtils.getFullPath(document.getAbsolutePath).substring(inputDir.getAbsolutePath.length)
+      val relativePath = normaliseRelativePath(document, inputDir)
 
       val blocks = knockoff(FileUtils.readFileToString(document, "UTF-8"))
-      val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header)))
+      val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header))).getOrElse(filename)
       val htmlContent = toXHTML(blocks).toString()
 
       Logger.info(s"Adding File. path=...$relativePath filename=$filename extension=$extension fileTitle=$fileTitle")
-      Global.files.create(UUID.randomUUID(), project, version, filename, htmlContent)
+      Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, htmlContent)
     }
   }.recover {
     case e: Exception => {
       Global.builds.createFailure(project.guid, version, "Build failed - "+ e.getMessage)
       throw e
+    }
+  }
+
+  private def normaliseRelativePath(document: JFile, inputDir: JFile): String = {
+    val relativePath = FilenameUtils.getFullPath(document.getAbsolutePath).substring(inputDir.getAbsolutePath.length)
+    if(relativePath.startsWith("/") || relativePath.startsWith("\\")) {
+      relativePath.substring(1)
+    } else {
+      relativePath
     }
   }
 

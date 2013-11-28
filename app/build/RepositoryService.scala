@@ -69,7 +69,9 @@ trait GitRepositoryService extends RepositoryService {
 
   def getVersions(project: Project): Try[Seq[String]] = Try {
     val repoDir = repositoryForProject(project)
-    getVersionsForRepo(project, repoDir)
+    val versions = getVersionsForRepo(project, repoDir)
+    Logger.info("Found %d versions.".format(versions.size))
+    versions
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Getting versions failed - "+ e.getMessage)

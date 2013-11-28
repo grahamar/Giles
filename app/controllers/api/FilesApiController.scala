@@ -36,7 +36,7 @@ object FilesApiController extends Controller {
       case Some(project: Project) if project.versions.contains(data.version) => {
         Global.files.findByGuid(UUID.fromString(data.guid)) match {
           case None => {
-            Global.files.create(UUID.fromString(data.guid), project, data.version, data.title, data.html)
+            Global.files.create(UUID.fromString(data.guid), project, data.version, data.relative_path.getOrElse(""), data.filename, data.title, data.html)
             Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }
           case Some(existing: File) => {
@@ -55,6 +55,8 @@ object FilesApiController extends Controller {
       "project_guid" -> nonEmptyText,
       "version" -> nonEmptyText,
       "title" -> nonEmptyText,
+      "filename" -> nonEmptyText,
+      "relative_path" -> optional(text),
       "html" -> nonEmptyText
     )(PutFileFormData.apply)(PutFileFormData.unapply)
   }

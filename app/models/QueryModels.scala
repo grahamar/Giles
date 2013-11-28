@@ -86,6 +86,8 @@ case class FileQuery(guid: Option[UUID] = None,
                      version: Option[String] = None,
                      query: Option[String] = None,
                      title: Option[String] = None,
+                     filename: Option[String] = None,
+                     relative_path: Option[String] = None,
                      url_key: Option[String] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
@@ -98,6 +100,8 @@ case class FileQuery(guid: Option[UUID] = None,
     project_guid.foreach { v => params += ("project_guid" -> v) }
     version.foreach { v => params += ("version" -> v) }
     title.foreach { v => params += ("title" -> v) }
+    filename.foreach { v => params += ("filename" -> v) }
+    relative_path.foreach { v => params += ("relative_path" -> v) }
     query.foreach { v => params += ("query" -> v) }
     url_key.foreach { v => params += ("url_key" -> v) }
     limit.foreach { v => params += ("limit" -> v) }

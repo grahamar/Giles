@@ -43,7 +43,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   def pullNewVersions(urlKey: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
       DocumentationFactory.documentsBuilder.build(project)
-      Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
+      Redirect(routes.ProjectController.project(urlKey))
     }.getOrElse(BadRequest)
   }
 
