@@ -50,8 +50,8 @@ class ProjectDao(projects: MongoCollection) {
     search(ProjectQuery(url_key = Some(urlKey))).headOption
   }
 
-  def findByAuthorGuid(authorGuid: UUID): Option[Project] = {
-    search(ProjectQuery(author_guids = Some(Seq(authorGuid)))).headOption
+  def findByAuthorGuid(authorGuid: UUID): Iterable[Project] = {
+    search(ProjectQuery(author_guids = Some(Seq(authorGuid))))
   }
 
   def findRecentlyUpdated(limit: Int): Iterable[Project] = {

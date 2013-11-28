@@ -32,7 +32,7 @@
         <ul class="sidebar-nav">
             <li class="sidebar-brand">
                 <div class="side-nav-search">
-                    <a href="#">
+                    <a href="@routes.ProjectController.project(project.url_key)">
                         <span class="glyphicon glyphicon-home" style="left: -2px;"></span>@project.name
                     </a>
                     @helper.form(action=routes.ApplicationController.searchProjectVersion(project.url_key, version), 'class -> "form-search", 'role -> "form") {
