@@ -11,8 +11,9 @@ GET     /signUpForm                                           controllers.Authen
 POST    /users/create                                         controllers.AuthenticationController.createUser
 GET     /users/profile/*username                              controllers.AuthenticationController.profile(username)
 
-GET     /search                                               controllers.ApplicationController.search(f ?= "")
-GET     /search/:projectSlug                                  controllers.ApplicationController.searchProject(projectSlug, projectFilter ?= "")
+GET     /search                                               controllers.ApplicationController.search(filter ?= "")
+GET     /search/:projectUrlKey                                controllers.ApplicationController.searchProject(projectUrlKey, filter ?= "")
+GET     /search/:projectUrlKey/:projectVersion                controllers.ApplicationController.searchProjectVersion(projectUrlKey, projectVersion, filter ?= "")
 
 GET     /projects                                             controllers.ProjectController.projects
 GET     /projects/import                                      controllers.ProjectController.importProject

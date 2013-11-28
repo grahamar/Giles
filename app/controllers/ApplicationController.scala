@@ -40,8 +40,13 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
     Ok(html.search(results, filter, AuthenticationController.loginForm))
   }
 
-  def searchProject(projectSlug: String, filter: String) = StackAction { implicit request =>
-    val results: Seq[ProjectSearchResult] = DocumentationFactory.searchService.searchProject(projectSlug, filter)
+  def searchProject(projectUrlKey: String, filter: String) = StackAction { implicit request =>
+    val results: Seq[ProjectSearchResult] = DocumentationFactory.searchService.searchProject(projectUrlKey, filter)
+    Ok(html.search(results, filter, AuthenticationController.loginForm))
+  }
+
+  def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String) = StackAction { implicit request =>
+    val results: Seq[ProjectSearchResult] = DocumentationFactory.searchService.searchProjectVersion(projectUrlKey, projectVersion, filter)
     Ok(html.search(results, filter, AuthenticationController.loginForm))
   }
 

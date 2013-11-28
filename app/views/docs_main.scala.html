@@ -1,4 +1,4 @@
-@(title: String, fileTitle: String, project: models.Project, version: String, content: Html, files: Seq[models.File])
+@(currentFile: models.File, project: models.Project, version: String, content: Html, files: Seq[models.File])
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>@title</title>
+    <title>@currentFile.title — @project.name @version documentation</title>
 
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
 
@@ -33,17 +33,17 @@
             <li class="sidebar-brand">
                 <div class="side-nav-search">
                     <a href="#">
-                        <span class="glyphicon glyphicon-home" style="left: -2px;"></span>@title
+                        <span class="glyphicon glyphicon-home" style="left: -2px;"></span>@project.name
                     </a>
-                    <form method="get" action="search.html">
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Search Docs">
-                        </div>
-                    </form>
+                    @helper.form(action=routes.ApplicationController.searchProjectVersion(project.url_key, version), 'class -> "form-search", 'role -> "form") {
+                    <div class="form-group">
+                        <input type="text" id="searchbox" class="search-query form-control" name="filter" placeholder="Search Docs">
+                    </div>
+                    }
                 </div>
             </li>
             @files.map { file =>
-            <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.title)">@file.title</a></li>
+            <li class="file"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, file.url_key)">@file.title</a></li>
             }
         </ul>
     </div>
@@ -52,13 +52,10 @@
     <div id="page-content-wrapper">
         <div class="content-header">
             <ol class="breadcrumb">
+                <li><a href="@routes.ProjectController.project(project.url_key)">@project.name</a></li>
                 <li><a href="@routes.StaticDocsController.projectIndex(project.url_key, version)">Docs</a></li>
-                <li class="active"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, fileTitle)">@fileTitle</a></li>
+                <li class="active"><a href="@routes.StaticDocsController.projectDocs(project.url_key, version, currentFile.url_key)">@currentFile.title</a></li>
             </ol>
-            <h1>
-                <a id="menu-toggle" href="#" class="btn btn-default"><i class="icon-reorder"></i></a>
-                @title
-            </h1>
         </div>
         <!-- Keep all page content within the page-content inset div! -->
         <div class="page-content inset">
@@ -75,13 +72,5 @@
 <!-- JavaScript -->
 <script src="js/jquery-1.10.2.js"></script>
 <script src="js/bootstrap.js"></script>
-
-<!-- Custom JavaScript for the Menu Toggle -->
-<script>
-    $("#menu-toggle").click(function(e) {
-    e.preventDefault();
-    $("#wrapper").toggleClass("active");
-    });
-</script>
 </body>
 </html>

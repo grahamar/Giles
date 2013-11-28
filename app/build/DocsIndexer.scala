@@ -82,11 +82,11 @@ trait LuceneDocsIndexer extends DocsIndexer {
 
   private def indexFile(project: Project, version: String, file: File, index: IndexWriter): Unit = {
     ResourceUtil.doWith(new StringReader(file.html)) { stream =>
-      index.addDocument(getDocument(project, version, file.url_key, stream))
+      index.addDocument(getDocument(project, version, file, stream))
     }
   }
 
-  private def getDocument(project: Project, version: String, fileUrlKey: String, html: Reader): Document = {
+  private def getDocument(project: Project, version: String, file: File, html: Reader): Document = {
     val tidy = new Tidy()
     tidy.setQuiet(true)
     tidy.setShowWarnings(false)
@@ -106,13 +106,14 @@ trait LuceneDocsIndexer extends DocsIndexer {
       fieldType.setStoreTermVectorPositions(true)
       fieldType.setTokenized(true)
       doc.add(new Field("body", body, fieldType))
-    }
-    rawDoc.flatMap(getTitle).foreach { title =>
-      doc.add(new StringField("title", title, Store.YES))
-      doc.add(new StringField("path", fileUrlKey, Store.YES))
+
+      doc.add(new StringField("title",rawDoc.flatMap(getTitle).getOrElse(file.title), Store.YES))
+
+      doc.add(new StringField("path", file.url_key, Store.YES))
       doc.add(new StringField("project", project.url_key, Store.YES))
       doc.add(new StringField("version", version, Store.YES))
     }
+
     doc
   }
 

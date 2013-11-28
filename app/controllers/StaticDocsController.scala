@@ -12,15 +12,15 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
   def projectIndex(projectUrlKey: String, projectVersion: String) = Action {
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
       val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
-      Ok(html.docs_main(project.name, files.head.title, project, projectVersion, Html(files.head.html), files))
+      Ok(html.docs_main(files.head, project, projectVersion, Html(files.head.html), files))
     }.getOrElse(NotFound)
   }
 
-  def projectDocs(projectUrlKey: String, projectVersion: String, fileTitle: String) = Action {
+  def projectDocs(projectUrlKey: String, projectVersion: String, fileUrlKey: String) = Action {
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
       val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
-      Global.files.findForProjectGuidAndVersion(project.guid, projectVersion, fileTitle).map { file =>
-        Ok(html.docs_main(project.name, file.title, project, projectVersion, Html(file.html), files))
+      Global.files.findForProjectGuidAndVersion(project.guid, projectVersion, fileUrlKey).map { file =>
+        Ok(html.docs_main(file, project, projectVersion, Html(file.html), files))
       }.getOrElse(NotFound)
     }.getOrElse(NotFound)
   }

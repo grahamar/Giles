@@ -1,5 +1,7 @@
 package build
 
+import java.util.UUID
+
 import scala.collection.JavaConverters._
 import scala.util.Try
 import play.api.Logger
@@ -8,7 +10,6 @@ import models._
 import settings.Global
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
-import java.util.UUID
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
@@ -60,13 +61,21 @@ trait MarkdownDocsBuilder extends DocsBuilder {
       throw new BuildFailedException("No directory exists at ["+inputDir.getAbsolutePath+"].")
     }
     Logger.info("Building... project=["+project.name+"] version=["+version+"] input=["+inputDir.getAbsolutePath+"]")
+
+    import com.tristanhunt.knockoff.DefaultDiscounter._
+    import com.tristanhunt.knockoff._
+
     FileUtils.iterateFiles(inputDir, SupportedFileExtensions, true).asScala.foreach { document =>
       val extension = FilenameUtils.getExtension(document.getName)
       val filename = FilenameUtils.getName(document.getName)
       val relativePath = FilenameUtils.getFullPath(document.getAbsolutePath).substring(inputDir.getAbsolutePath.length)
-      Logger.info(s"Adding File. path=...$relativePath filename=$filename extension=$extension")
 
-      Global.files.create(UUID.randomUUID(), project, version, filename, FileUtils.readFileToString(document, "UTF-8"))
+      val blocks = knockoff(FileUtils.readFileToString(document, "UTF-8"))
+      val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header)))
+      val htmlContent = toXHTML(blocks).toString()
+
+      Logger.info(s"Adding File. path=...$relativePath filename=$filename extension=$extension fileTitle=$fileTitle")
+      Global.files.create(UUID.randomUUID(), project, version, filename, htmlContent)
     }
   }.recover {
     case e: Exception => {

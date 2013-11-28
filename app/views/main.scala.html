@@ -83,7 +83,7 @@
                 <div class="container">
                     @helper.form(action=routes.ApplicationController.search(), 'class -> "rtm-search form-search", 'role -> "form") {
                     <div class="input-group">
-                        <input type="search" id="searchbox" class="search-query input-lg form-control" name="f" value="@currentFilter" placeholder="Search all documents...">
+                        <input type="search" id="searchbox" class="search-query input-lg form-control" name="filter" value="@currentFilter" placeholder="Search all documents...">
                         <span class="input-group-btn">
                             <button id="searchsubmit" class="btn btn-lg btn-primary" type="submit">
                                 <span class="glyphicon glyphicon-search"></span>

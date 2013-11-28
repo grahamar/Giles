@@ -95,6 +95,10 @@ pre#docs-pre-content {
   word-wrap: break-word;
 }
 
+pre#docs-pre-content pre {
+  background: #FFFFFF;
+}
+
 @media (max-width:767px) {
 
     #wrapper {
