@@ -6,6 +6,8 @@ GET     /                                                     controllers.Applic
 
 # Authentication
 POST    /login                                                controllers.AuthenticationController.authenticate
+GET     /loginWithGoogle                                      controllers.AuthenticationController.loginWithGoogle
+GET     /openIDCallback                                       controllers.AuthenticationController.openIDCallback
 GET     /logout                                               controllers.AuthenticationController.logout
 GET     /signUpForm                                           controllers.AuthenticationController.signUp
 POST    /users/create                                         controllers.AuthenticationController.createUser

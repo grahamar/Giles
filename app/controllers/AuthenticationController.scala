@@ -12,6 +12,11 @@ import models._
 import controllers.auth._
 import settings.Global
 import dao.util.ProjectHelper
+import play.api.Logger
+import play.api.libs.openid.OpenID
+import play.api.libs.concurrent.{Thrown, Redeemed}
+import org.apache.commons.lang3.RandomStringUtils
+import java.util.UUID
 
 object AuthenticationController extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
 
@@ -34,6 +39,38 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
 
   def login = StackAction { implicit request =>
     ApplicationController.Home
+  }
+
+  def loginWithGoogle = AsyncStack { implicit request =>
+    OpenID.redirectURL("https://www.google.com/accounts/o8/id", routes.AuthenticationController.openIDCallback.absoluteURL(),
+      Seq("email" -> "http://schema.openid.net/contact/email",
+        "first_name" -> "http://axschema.org/namePerson/first",
+        "last_name" -> "http://axschema.org/namePerson/last",
+        "username" -> "http://schema.openid.net/namePerson/friendly")).
+      map(Redirect(_)).recover {
+        case e: Exception => ApplicationController.Home
+      }
+  }
+
+  def openIDCallback = AsyncStack { implicit request =>
+    for {
+      user <- createGoogleUser
+      result <- gotoLoginSucceeded(user.guid)
+    } yield result
+  }
+
+  def createGoogleUser()(implicit request: Request[_]): Future[User] = {
+    OpenID.verifiedId.map { info =>
+      val email =  info.attributes.getOrElse("email", "guest@readthemarkdown.io")
+      Global.users.findByEmail(email).getOrElse {
+        val userGuid = UUID.randomUUID()
+        val username = email.toLowerCase.takeWhile(!"@".equals(_))
+        val password = RandomStringUtils.randomAlphabetic(20)
+        val firstname = info.attributes.get("first_name")
+        val lastname = info.attributes.get("last_name")
+        Global.users.create(userGuid, username, email, password, firstname, lastname)
+      }
+    }
   }
 
   def logout = AsyncStack { implicit request =>
