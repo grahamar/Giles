@@ -4,6 +4,7 @@
 @currentUser.map { loggedInUser =>
 <div class="navbar-collapse collapse">
     <div class="navbar-right">
+        <p class="navbar-btn text-muted" style="display: inline-block; padding-right: 10px;">@loggedInUser.username</p>
         <a href="@routes.ApplicationController.dashboard" class="btn btn-primary navbar-btn" type="submit">Dashboard</a>
         <a href="@routes.AuthenticationController.logout" class="btn btn-primary navbar-btn" type="submit">Logout</a>
     </div>
