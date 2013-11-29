@@ -2,8 +2,10 @@ package controllers
 
 import play.api.mvc._
 import play.api.data._
+import play.api.templates.HtmlFormat
 
 import views._
+import models._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.{ProjectSearchResult, DocumentationFactory}
 import settings.Global
@@ -26,13 +28,20 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
    * Handle default path requests, redirect to computers list
    */
   def index = StackAction { implicit request =>
-    val projects = Global.projects.findRecentlyUpdated(10)
-    Ok(html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+    Ok(indexPage(AuthenticationController.loginForm))
   }
 
-  def index(loginForm: Form[Option[User]])(implicit flash: Flash, currentUser: Option[models.User]) = {
+  def indexPage(loginForm: Form[Option[User]])(implicit flash: Flash, currentUser: Option[models.User]): HtmlFormat.Appendable = {
     val projects = Global.projects.findRecentlyUpdated(10)
-    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, loginForm)
+
+    val fileRollups = Global.fileRollup.search(FileRollupQuery(limit = Some(10), order_by = Some("count"), order_direction = -1)).toSeq
+    val popularFiles = fileRollups.filter(_.count > 10).take(10).flatMap { f =>
+      Global.files.findByGuid(f.file_guid).flatMap { f =>
+        Global.projects.findByGuid(f.project_guid).map(p => PopularFile(f, p))
+      }
+    }
+
+    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, popularFiles, loginForm)
   }
 
   def search(filter: String) = StackAction { implicit request =>

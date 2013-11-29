@@ -79,7 +79,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
 
   def authenticate = AsyncStack { implicit request =>
     loginForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(ApplicationController.index(formWithErrors))),
+      formWithErrors => Future.successful(BadRequest(ApplicationController.indexPage(formWithErrors))),
       user => user.map(usr => gotoLoginSucceeded(usr.guid)).getOrElse(Future.failed(new UserIdNotSetException))
     )
   }

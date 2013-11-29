@@ -1,9 +1,35 @@
-@(recentlyUpdatedProjects: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+@(recentlyUpdatedProjects: Seq[models.ProjectAuthorsAndBuilds], popFiles: Seq[models.PopularFile], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
 @main("", loginForm) {
 <div class="container center" style="margin-top: 50px;">
+    <div>
+        <h3>Popular Files</h3>
+    </div>
+    <div class="row">
+        @Option(popFiles).map { files =>
+        <div class="well">
+            <table class="projects table table-bordered">
+                <tbody>
+                @files.map { pop =>
+                <tr class="project">
+                    <td>
+                        <a href='@routes.StaticDocsController.projectDocs(pop.project.url_key, pop.file.version, pop.file.url_key)'>
+                            <strong>@pop.project.name - @pop.file.title</strong>
+                        </a>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        }.getOrElse {
+        <div class="well">
+            <em>No popular files yet :(</em>
+        </div>
+        }
+    </div>
     <div>
         <h3>Recently Updated Projects
             <small><a href="@routes.ProjectController.projects">(All Projects)</a></small>

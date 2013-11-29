@@ -86,4 +86,6 @@ case class View(guid: UUID, file_guid: UUID, user_guid: Option[UUID], created_at
 
 case class FileRollup(file_guid: UUID, count: Long)
 
+case class PopularFile(file: File, project: Project)
+
 case class UserFileRollup(user_guid: UUID, file_guid: UUID, count: Long)
