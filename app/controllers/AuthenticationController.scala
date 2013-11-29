@@ -97,9 +97,9 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
   }
 
   def profile(username: String) = StackAction { implicit request =>
-    val maybeEasterEggUser = loggedIn
-    maybeEasterEggUser.filter(egg => "rsetti".equals(egg.username)).map { _ =>
-      Ok(html.easter_egg(AuthenticationController.loginForm))
+    val maybeBoom = loggedIn
+    maybeBoom.filter(boom => "rsetti".equals(boom.username)).map { _ =>
+      Ok(html.boom(AuthenticationController.loginForm))
     }.getOrElse {
       val user = Global.users.findByUsername(username)
       user.map{usr =>
