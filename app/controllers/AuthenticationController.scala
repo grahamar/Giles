@@ -97,11 +97,16 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
   }
 
   def profile(username: String) = StackAction { implicit request =>
-    val user = Global.users.findByUsername(username)
-    user.map{usr =>
-      val projects = Global.projects.findByAuthorGuid(usr.guid)
-      Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
-    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    val maybeEasterEggUser = loggedIn
+    maybeEasterEggUser.filter(egg => "rsetti".equals(egg.username)).map { _ =>
+      Ok(html.easter_egg(AuthenticationController.loginForm))
+    }.getOrElse {
+      val user = Global.users.findByUsername(username)
+      user.map{usr =>
+        val projects = Global.projects.findByAuthorGuid(usr.guid)
+        Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+      }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    }
   }
 
   private class UserIdNotSetException extends RuntimeException
