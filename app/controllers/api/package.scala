@@ -19,10 +19,17 @@ package object api {
       case _ => JsError(s"Unexpected JSON value $json")
     }
   }
-  implicit val userFormat = Json.format[User]
+  implicit val userFormat = Json.format[JsonUser]
   implicit val viewFormat = Json.format[View]
   implicit val fileFormat = Json.format[File]
   implicit val projectFormat = Json.format[Project]
   implicit val buildFormat = Json.format[Build]
+
+  implicit class RichUser(user: User) {
+    def toJsonUser: JsonUser = {
+      JsonUser(user.guid, user.username, user.email, user.project_guids, user.first_name, user.last_name, user.homepage,
+        user.created_at)
+    }
+  }
 
 }

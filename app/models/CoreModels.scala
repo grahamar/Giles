@@ -15,6 +15,15 @@ case class User(guid: UUID,
                 created_at: DateTime = new DateTime,
                 salt: Option[String] = None)
 
+case class JsonUser(guid: UUID,
+                    username: String,
+                    email: String,
+                    project_guids: Seq[UUID],
+                    first_name: Option[String] = None,
+                    last_name: Option[String] = None,
+                    homepage: Option[String] = None,
+                    created_at: DateTime = new DateTime)
+
 object UrlKey {
   def generate(name: String): String = {
     name.toLowerCase.trim.replaceAll("""\s+""", "-").replaceAll("""\.+""", "").

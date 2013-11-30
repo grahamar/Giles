@@ -12,7 +12,7 @@ import dao.util.FileHelper
 
 object FilesApiController extends Controller {
 
-  def getFiles(guid: Option[String], name: Option[String], project_guid: Option[String], query: Option[String], title: Option[String],
+  def getFiles(guid: Option[String], project_guid: Option[String], query: Option[String], title: Option[String],
                urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
     val fileQuery = FileQuery(guid = guid.map(UUID.fromString), query = query, url_key = urlKey, project_guid = project_guid.map(UUID.fromString),
       title = title, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
@@ -46,6 +46,7 @@ object FilesApiController extends Controller {
           case Some(existingFile: File) => {
             FileHelper.getOrCreateContent(data.html) { contentGuid =>
               Global.files.update(existingFile.copy(content_guid = contentGuid))
+              // TODO delete the file content if it's not referenced by any file?
             }
             Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }

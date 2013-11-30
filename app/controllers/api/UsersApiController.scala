@@ -15,7 +15,7 @@ object UsersApiController extends Controller {
   def getUsers(guid: Option[String], username: Option[String], email: Option[String], limit: Option[String], offset: Option[String]) = Action {
     val usersQuery =
       UserQuery(guid = guid.map(UUID.fromString), username = username, email = email, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
-    Ok(Json.toJson(Global.users.search(usersQuery).toList.map(Json.toJson(_))))
+    Ok(Json.toJson(Global.users.search(usersQuery).toList.map(u => Json.toJson(u.toJsonUser))))
   }
 
   def putUsers = Action { implicit request =>
