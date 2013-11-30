@@ -10,7 +10,7 @@ Giles can pull from your Git repository, and scour every tagged version as well 
 
 ### Getting To Know Giles
 
-Check out the complete [Getting Started Guide](https://github.com/yeoman/yeoman/wiki/Getting-Started).
+Check out the complete [Getting Started Guide](https://github.com/grahamar/Giles/blob/master/docs/Getting%20Started.md).
 
 ## Copyright and license
 
