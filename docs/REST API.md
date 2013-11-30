@@ -6,11 +6,11 @@ http://localhost:9000/api/*
 
 ## Users Endpoint
 
-List all users.
-
 ```
 http://localhost:9000/api/users
 ```
+
+List all users.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -21,6 +21,8 @@ http://localhost:9000/api/users
 | | limit | Option[String] |
 | | offset | Option[String] |
 
+
+Create a user
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `PUT` |  |
@@ -35,11 +37,11 @@ http://localhost:9000/api/users
 
 ## Projects Endpoint
 
-List all projects.
-
 ```
 http://localhost:9000/api/projects
 ```
+
+List all projects.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -54,11 +56,11 @@ http://localhost:9000/api/projects
 
 ## Versions Endpoint
 
-List all versions.
-
 ```
 http://localhost:9000/api/versions
 ```
+
+List all versions.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -68,11 +70,11 @@ http://localhost:9000/api/versions
 
 ## Files Endpoint
 
-List all files.
-
 ```
 http://localhost:9000/api/files
 ```
+
+List all files.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -88,11 +90,11 @@ http://localhost:9000/api/files
 
 ## Builds Endpoint
 
-List all builds.
-
 ```
 http://localhost:9000/api/builds
 ```
+
+List all builds.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -105,11 +107,11 @@ http://localhost:9000/api/builds
 
 ## Views Endpoint
 
-List all views.
-
 ```
 http://localhost:9000/api/views
 ```
+
+List all views.
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `PUT` |  |
