@@ -1,5 +1,7 @@
 # Giles The Librarian
 
+**Pronounced 'Jy-ils'**
+
 ### Who Is Giles?
 Giles loves documentation, he'll look after your documentation for you. Keep it versioned and in an orderly fashion.
 In other words, Giles is a simple documentation repository app, strongly influenced by the awesome project
