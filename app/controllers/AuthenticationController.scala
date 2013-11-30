@@ -64,7 +64,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
       val email =  info.attributes.getOrElse("email", "guest@readthemarkdown.io")
       Global.users.findByEmail(email).getOrElse {
         val userGuid = UUID.randomUUID()
-        val username = email.toLowerCase.takeWhile(!"@".equals(_))
+        val username = email.toLowerCase.takeWhile((ch: Char) => !'@'.equals(ch))
         val password = RandomStringUtils.randomAlphabetic(20)
         val firstname = info.attributes.get("first_name")
         val lastname = info.attributes.get("last_name")

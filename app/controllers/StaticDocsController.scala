@@ -11,13 +11,15 @@ import scala.collection.immutable.TreeMap
 
 object StaticDocsController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
+  import dao.util.FileConverters._
+
   def projectIndex(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
       val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
       val filesByDirectory = TreeMap(files.groupBy(_.relative_path).toSeq.sortBy(_._1):_*)
       if(!files.isEmpty) {
         Global.views.create(UUID.randomUUID(), files.head.guid, loggedIn.map(_.guid))
-        Ok(html.docs_main(files.head, project, projectVersion, Html(files.head.html), filesByDirectory))
+        Ok(html.docs_main(files.head, project, projectVersion, Html(files.head.withContent.content), filesByDirectory))
       } else NotFound(html.notfound(AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
@@ -28,7 +30,7 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
       val filesByDirectory = TreeMap(files.groupBy(_.relative_path).toSeq.sortBy(_._1):_*)
       Global.files.findForProjectGuidAndVersion(project.guid, projectVersion, fileUrlKey).map { file =>
         Global.views.create(UUID.randomUUID(), file.guid, loggedIn.map(_.guid))
-        Ok(html.docs_main(file, project, projectVersion, Html(file.html), filesByDirectory))
+        Ok(html.docs_main(file, project, projectVersion, Html(file.withContent.content), filesByDirectory))
       }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }

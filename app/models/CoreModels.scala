@@ -64,7 +64,7 @@ case class File(guid: UUID,
                 relative_path: String,
                 url_key: String,
                 keywords: Seq[String],
-                html: String,
+                content_guid: UUID,
                 created_at: DateTime) extends Ordered[File] {
 
   // Explicit check for files that should come first (like index or readme)
@@ -81,6 +81,10 @@ case class File(guid: UUID,
   }
 
 }
+
+case class FileContent(guid: UUID, hash_key: String, content_size: Long, content: Array[Byte])
+
+case class FileWithContent(file: File, content: String)
 
 case class View(guid: UUID, file_guid: UUID, user_guid: Option[UUID], created_at: DateTime)
 

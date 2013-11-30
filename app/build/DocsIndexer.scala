@@ -75,18 +75,22 @@ trait LuceneDocsIndexer extends DocsIndexer {
 
   private def indexProject(project: Project, version: String, index: IndexWriter): Unit = {
     Logger.debug("Indexing Project ["+project.name+"]")
-    Global.files.findAllByProjectGuidAndVersion(project.guid, version).foreach { file =>
+
+    import dao.util.FileConverters._
+
+    Global.files.findAllByProjectGuidAndVersion(project.guid, version).
+    map(_.withContent).foreach { file =>
       indexFile(project, version, file, index)
     }
   }
 
-  private def indexFile(project: Project, version: String, file: File, index: IndexWriter): Unit = {
-    ResourceUtil.doWith(new StringReader(file.html)) { stream =>
+  private def indexFile(project: Project, version: String, file: FileWithContent, index: IndexWriter): Unit = {
+    ResourceUtil.doWith(new StringReader(file.content)) { stream =>
       index.addDocument(getDocument(project, version, file, stream))
     }
   }
 
-  private def getDocument(project: Project, version: String, file: File, html: Reader): Document = {
+  private def getDocument(project: Project, version: String, file: FileWithContent, html: Reader): Document = {
     val tidy = new Tidy()
     tidy.setQuiet(true)
     tidy.setShowWarnings(false)
@@ -107,9 +111,9 @@ trait LuceneDocsIndexer extends DocsIndexer {
       fieldType.setTokenized(true)
       doc.add(new Field("body", body, fieldType))
 
-      doc.add(new StringField("title",rawDoc.flatMap(getTitle).getOrElse(file.title), Store.YES))
-      doc.add(new StringField("filename", file.filename, Store.YES))
-      doc.add(new StringField("path", file.url_key, Store.YES))
+      doc.add(new StringField("title",rawDoc.flatMap(getTitle).getOrElse(file.file.title), Store.YES))
+      doc.add(new StringField("filename", file.file.filename, Store.YES))
+      doc.add(new StringField("path", file.file.url_key, Store.YES))
       doc.add(new StringField("project", project.url_key, Store.YES))
       doc.add(new StringField("version", version, Store.YES))
     }
@@ -118,17 +122,17 @@ trait LuceneDocsIndexer extends DocsIndexer {
   }
 
   private def getTitle(rawDoc: Element): Option[String] = {
-    rawDoc.getElementsByTagName("title").toSeq.headOption.map{ titleElement =>
+    rawDoc.getElementsByTagName("title").iter.toSeq.headOption.map{ titleElement =>
       Option(titleElement.getFirstChild).map(_.asInstanceOf[Text].getData)
     }.flatten
   }
 
   private def getBody(rawDoc: Element): Option[String] = {
-    rawDoc.getElementsByTagName("body").toSeq.headOption.map(getText)
+    rawDoc.getElementsByTagName("body").iter.toSeq.headOption.map(getText)
   }
 
   private def getText(node: Node): String = {
-    val children: Iterator[Node] = node.getChildNodes
+    val children: Iterator[Node] = node.getChildNodes.iter
     val sb = new StringBuffer()
     for(child <- children) {
       child.getNodeType match {
@@ -143,8 +147,8 @@ trait LuceneDocsIndexer extends DocsIndexer {
     sb.toString
   }
 
-  private implicit def nodeListToIterable(nodeList: NodeList): Iterator[Node] = {
-    Iterator.tabulate(nodeList.getLength)(nodeList.item)
+  private implicit class RichNodeList(nodeList: NodeList) {
+    def iter: Iterator[Node] = Iterator.tabulate(nodeList.getLength)(nodeList.item)
   }
 
 }

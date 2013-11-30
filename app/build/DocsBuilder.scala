@@ -9,6 +9,7 @@ import play.api.Logger
 
 import models._
 import settings.Global
+import dao.util.FileHelper
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
 
@@ -73,7 +74,9 @@ trait MarkdownDocsBuilder extends DocsBuilder {
       val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header))).getOrElse(filename)
       val htmlContent = toXHTML(blocks).toString()
 
-      Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, htmlContent)
+      FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
+        Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, contentGuid)
+      }
     }
   }.recover {
     case e: Exception => {

@@ -8,6 +8,7 @@ import play.api.data.Forms._
 import models._
 import settings.Global
 import java.util.UUID
+import dao.util.FileHelper
 
 object FilesApiController extends Controller {
 
@@ -36,11 +37,16 @@ object FilesApiController extends Controller {
       case Some(project: Project) if project.versions.contains(data.version) => {
         Global.files.findByGuid(UUID.fromString(data.guid)) match {
           case None => {
-            Global.files.create(UUID.fromString(data.guid), project, data.version, data.relative_path.getOrElse(""), data.filename, data.title, data.html)
+            FileHelper.getOrCreateContent(data.html) { contentGuid =>
+              Global.files.create(UUID.fromString(data.guid), project, data.version,
+                data.relative_path.getOrElse(""), data.filename, data.title, contentGuid)
+            }
             Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }
-          case Some(existing: File) => {
-            Global.files.update(existing.copy(html = data.html))
+          case Some(existingFile: File) => {
+            FileHelper.getOrCreateContent(data.html) { contentGuid =>
+              Global.files.update(existingFile.copy(content_guid = contentGuid))
+            }
             Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }
           case _ => InternalServerError

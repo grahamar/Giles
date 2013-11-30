@@ -10,7 +10,7 @@ import org.apache.commons.io.FilenameUtils
 
 class FilesDao(files: MongoCollection) {
 
-  def create(guid: UUID, project: Project, version: String, relativePath: String, filename: String, title: String, html: String): File = {
+  def create(guid: UUID, project: Project, version: String, relativePath: String, filename: String, title: String, contentGuid: UUID): File = {
     val urlKey = UrlKey.generate(FilenameUtils.concat(relativePath, title))
     val file = File(guid = guid,
       project_guid = project.guid,
@@ -19,8 +19,8 @@ class FilesDao(files: MongoCollection) {
       filename = filename,
       relative_path = relativePath,
       url_key = urlKey,
-      keywords = Keywords.generate(Seq(guid.toString, title, html, urlKey)),
-      html = html,
+      keywords = Keywords.generate(Seq(guid.toString, title, urlKey)),
+      content_guid = contentGuid,
       created_at = new DateTime())
 
     files.insert(grater[File].asDBObject(file))
@@ -29,7 +29,7 @@ class FilesDao(files: MongoCollection) {
   }
 
   def update(file: File) {
-    val obj = MongoDBObject("html" -> file.html)
+    val obj = MongoDBObject("content_guid" -> file.content_guid)
     files.update(q = MongoDBObject("guid" -> file.guid),
       o = MongoDBObject("$set" -> obj),
       upsert = false,

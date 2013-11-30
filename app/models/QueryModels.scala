@@ -111,6 +111,20 @@ case class FileQuery(guid: Option[UUID] = None,
 
 }
 
+case class FileContentsQuery(guid: Option[UUID] = None,
+                     hash_key: Option[String] = None,
+                     content_size: Option[Long] = None) {
+
+  def params = {
+    val params = scala.collection.mutable.ListBuffer[(String, Any)]()
+    guid.foreach { v => params += ("guid" -> v) }
+    hash_key.foreach { v => params += ("hash_key" -> v) }
+    content_size.foreach { v => params += ("content_size" -> v) }
+    params.toList
+  }
+
+}
+
 case class ViewQuery(guid: Option[UUID] = None,
                      file_guid: Option[UUID] = None,
                      user_guid: Option[UUID] = None,
