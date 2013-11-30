@@ -61,7 +61,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
 
   def createGoogleUser()(implicit request: Request[_]): Future[User] = {
     OpenID.verifiedId.map { info =>
-      val email =  info.attributes.getOrElse("email", "guest@readthemarkdown.io")
+      val email =  info.attributes.getOrElse("email", "guest@giles.io")
       Global.users.findByEmail(email).getOrElse {
         val userGuid = UUID.randomUUID()
         val username = email.toLowerCase.takeWhile((ch: Char) => !'@'.equals(ch))

@@ -1,5 +1,5 @@
 hosts=["localhost:27017"]
-dbname=read_the_markdown_dev
+dbname=giles_dev
 autoUpdate=true
 writeConcern=Safe
 ensureIndex=true

@@ -1,6 +1,6 @@
 import play.Project._
 
-name := "read-the-markdown"
+name := "giles"
 
 version := "0.0.1"
 
