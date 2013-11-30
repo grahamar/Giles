@@ -12,6 +12,6 @@ Giles can pull from your Git repository, and scour every tagged version as well 
 
 Check out the complete [Getting Started Guide](https://github.com/grahamar/Giles/blob/master/docs/Getting%20Started.md).
 
-## Copyright and license
+### Copyright and license
 
 Copyright 2013 Gilt Groupe, Inc., under the [Apache v2.0](LICENSE) license
