@@ -34,7 +34,7 @@ GET     /api/projects                                         controllers.api.Pr
 PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects
 GET     /api/versions                                         controllers.api.VersionsApiController.getVersions(projectGuid, version: Option[String])
 PUT     /api/versions                                         controllers.api.VersionsApiController.putVersions
-GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], name: Option[String], project_guid: Option[String], query: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], project_guid: Option[String], query: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
 PUT     /api/files                                            controllers.api.FilesApiController.putFiles
 PUT     /api/views                                            controllers.api.ViewsApiController.putViews
 GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
