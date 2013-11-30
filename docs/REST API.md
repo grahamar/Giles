@@ -11,6 +11,7 @@ http://localhost:9000/api/users
 ```
 
 List all users.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -23,6 +24,7 @@ List all users.
 
 
 Create a user
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `PUT` |  |
@@ -42,6 +44,7 @@ http://localhost:9000/api/projects
 ```
 
 List all projects.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -61,6 +64,7 @@ http://localhost:9000/api/versions
 ```
 
 List all versions.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -75,6 +79,7 @@ http://localhost:9000/api/files
 ```
 
 List all files.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -95,6 +100,7 @@ http://localhost:9000/api/builds
 ```
 
 List all builds.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
@@ -112,6 +118,7 @@ http://localhost:9000/api/views
 ```
 
 List all views.
+
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `PUT` |  |
