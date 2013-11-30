@@ -10,7 +10,7 @@ http://localhost:9000/api/*
 http://localhost:9000/api/users
 ```
 
-List all users.
+**List all users.**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
@@ -23,7 +23,7 @@ List all users.
 | | offset | Option[String] |
 
 
-Create a user
+**Create a user**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
@@ -43,7 +43,7 @@ Create a user
 http://localhost:9000/api/projects
 ```
 
-List all projects.
+**List all projects.**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
@@ -57,13 +57,26 @@ List all projects.
 | | limit | Option[String] |
 | | offset | Option[String] |
 
+**Create a project.**
+
+| Details  |  Value | Type Required/Optional  |
+| ---- | ----- | ---- |
+| Method | `PUT` |  |
+| Endpoint | `/api/projects` |  |
+| URI parameters | guid | Required[UUID] |
+| | name | Required[String] |
+| | description | Required[String] |
+| | author_guid | Required[UUID] |
+| | repo_url | Required[String] |
+| | head_version | Option[String] |
+
 ## Versions Endpoint
 
 ```
 http://localhost:9000/api/versions
 ```
 
-List all versions.
+**List all versions.**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
@@ -72,26 +85,48 @@ List all versions.
 | URI parameters | projectGuid | Required[UUID] |
 | | version | Option[String] |
 
+**Create a proejct version.**
+
+| Details  |  Value | Type Required/Optional  |
+| ---- | ----- | ---- |
+| Method | `PUT` |  |
+| Endpoint | `/api/versions` |  |
+| URI parameters | project_guid | Required[UUID] |
+| | version | Required[String] |
+
 ## Files Endpoint
 
 ```
 http://localhost:9000/api/files
 ```
 
-List all files.
+**List all files.**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
 | Method | `GET` |  |
 | Endpoint | `/api/files` |  |
-| URI parameters | guid | Option[String] |
-| | name | Option[String] |
-| | project_guid | Option[String] |
+| URI parameters | guid | Option[UUID] |
+| | project_guid | Option[UUID] |
 | | query | Option[String] |
 | | title | Option[String] |
 | | urlKey | Option[String] |
 | | limit | Option[String] |
 | | offset | Option[String] |
+
+**Create a project file**
+
+| Details  |  Value | Type Required/Optional  |
+| ---- | ----- | ---- |
+| Method | `PUT` |  |
+| Endpoint | `/api/files` |  |
+| URI parameters | guid | Required[UUID] |
+| | project_guid | Required[UUID] |
+| | version | Required[String] |
+| | title | Required[String] |
+| | filename | Required[String] |
+| | relative_path | Required[String] |
+| | html | Required[String] |
 
 ## Builds Endpoint
 
@@ -117,7 +152,7 @@ List all builds.
 http://localhost:9000/api/views
 ```
 
-List all views.
+**List all views.**
 
 | Details  |  Value | Type Required/Optional  |
 | ---- | ----- | ---- |
@@ -130,7 +165,7 @@ List all views.
 
 ### Example CURL scripts
 
-Create A Project
+**Create A Project**
 ```
 curl -X PUT -d guid="d363ab8a-a329-4b9e-89b4-37a8478118c1" -d name="Test Project" -d description="Test Project" -d author_guid="688f6c92-d2aa-43f4-890b-25c60523b53e" -d repo_url="https://github.com/grahamar/example-rtm-project.git" -d head_version="HEAD" localhost:9000/api/projects
 ```
