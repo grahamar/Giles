@@ -113,6 +113,8 @@
 #project-info {
   color: #808080;
   font-size: 90%;
+  overflow-y: auto;
+  transition: all 0.4s ease 0s;
 }
 
 .content-header h1 {

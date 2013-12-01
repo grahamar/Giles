@@ -2,9 +2,9 @@ package dao.util
 
 import java.util.UUID
 
-import util.{Decompress, Compress, HashingUtils}
 import settings.Global
 import models.{FileWithContent, FileContent}
+import util.{Decompress, Compress, HashingUtils}
 
 object FileHelper {
   def getOrCreateContent[T](html: String)(f: UUID => T) = {

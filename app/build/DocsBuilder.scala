@@ -1,7 +1,6 @@
 package build
 
 import java.io.{File => JFile}
-import java.util.UUID
 
 import scala.collection.JavaConverters._
 import scala.util.Try
@@ -9,7 +8,6 @@ import play.api.Logger
 
 import models._
 import settings.Global
-import dao.util.FileHelper
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
 
@@ -20,10 +18,8 @@ sealed trait DocsBuilder {
   def clean(project: Project, version: String): Try[Unit]
 }
 
-trait MarkdownDocsBuilder extends DocsBuilder {
-  self: DirectoryHandler with RepositoryService with DocsIndexer =>
-
-  private val SupportedFileExtensions = Array("md", "markdown")
+trait AbstractDocsBuilder extends DocsBuilder {
+  self: DirectoryHandler with RepositoryService with DocsIndexer with DocTypeBuilder =>
 
   def build(project: Project): Try[Unit] = {
     for {
@@ -64,19 +60,11 @@ trait MarkdownDocsBuilder extends DocsBuilder {
     }
     Logger.info("Building... project=["+project.name+"] version=["+version+"] input=["+inputDir.getAbsolutePath+"]")
 
-    import com.tristanhunt.knockoff.DefaultDiscounter._
-    import com.tristanhunt.knockoff._
-
-    FileUtils.iterateFiles(inputDir, SupportedFileExtensions, true).asScala.foreach { document =>
+    FileUtils.iterateFiles(inputDir, supportedFileExtensions, true).asScala.foreach { document =>
       val filename = FilenameUtils.getName(document.getName)
       val relativePath = normaliseRelativePath(document, inputDir)
-      val blocks = knockoff(FileUtils.readFileToString(document, "UTF-8"))
-      val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header))).getOrElse(filename)
-      val htmlContent = toXHTML(blocks).toString()
 
-      FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
-        Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, contentGuid)
-      }
+      buildDocument(project, version, document, filename, relativePath)
     }
   }.recover {
     case e: Exception => {

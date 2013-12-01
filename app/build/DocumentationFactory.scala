@@ -3,7 +3,7 @@ package build
 object DocumentationFactory {
 
   private lazy val docsBuilder =
-    new DirectoryHandlerImpl with MarkdownDocsBuilder with GitRepositoryService with LuceneDocsIndexer with LuceneDocsSearcher
+    new MultipleDocTypesBuilder with DirectoryHandlerImpl with GitRepositoryService with LuceneDocsIndexer with LuceneDocsSearcher
 
   def documentsBuilder: DocsBuilder = {
     docsBuilder
