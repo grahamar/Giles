@@ -22,6 +22,8 @@ GET     /projects/import                                      controllers.Projec
 POST    /projects/create                                      controllers.ProjectController.createProject
 GET     /projects/:projectUrlKey                              controllers.ProjectController.project(projectUrlKey)
 GET     /projects/:projectUrlKey/edit                         controllers.ProjectController.editProject(projectUrlKey)
+POST    /projects/:projectUrlKey/favourite                    controllers.ProjectController.favouriteProject(projectUrlKey)
+POST    /projects/:projectUrlKey/unfavourite                  controllers.ProjectController.unfavouriteProject(projectUrlKey)
 GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)
 GET     /projects/:projectUrlKey/docs/:projectVersion         controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
@@ -30,16 +32,18 @@ GET     /projects/:projectUrlKey/pdf/:projectVersion          controllers.Static
 GET     /dashboard                                            controllers.ApplicationController.dashboard
 
 # Api
-GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid: Option[String], name: Option[String], author_guids: Option[String], query: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid: Option[String], name: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
 PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects
 GET     /api/versions                                         controllers.api.VersionsApiController.getVersions(projectGuid, version: Option[String])
 PUT     /api/versions                                         controllers.api.VersionsApiController.putVersions
-GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], project_guid: Option[String], query: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], project_guid: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
 PUT     /api/files                                            controllers.api.FilesApiController.putFiles
 PUT     /api/views                                            controllers.api.ViewsApiController.putViews
 GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
 GET     /api/users                                            controllers.api.UsersApiController.getUsers(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
 PUT     /api/users                                            controllers.api.UsersApiController.putUsers
+
+GET     /assets/javascripts/routes                            controllers.ApplicationController.javascriptRoutes
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /favicon.ico                                          controllers.Assets.at(path="/public", file="favicon.ico")

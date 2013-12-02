@@ -1,9 +1,10 @@
-@(projectsAuthorsAndBuilds: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+@(projectsAuthorsAndBuilds: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[java.util.UUID],
+loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @main("", loginForm) {
 <div class="container" style="margin-top: 50px;">
     <div class="row">
-        @tags.projects(projectsAuthorsAndBuilds)
+        @tags.projects(projectsAuthorsAndBuilds, userFavourites)
     </div>
 </div>
 }

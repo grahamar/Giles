@@ -10,6 +10,7 @@ import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.{ProjectSearchResult, DocumentationFactory}
 import settings.Global
 import dao.util.ProjectHelper
+import play.api.Routes
 
 /**
  * Manage a database of computers
@@ -33,7 +34,7 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
 
   def indexPage(loginForm: Form[Option[User]])(implicit flash: Flash, currentUser: Option[models.User]): HtmlFormat.Appendable = {
     val projects = Global.projects.findRecentlyUpdated(10)
-
+    val userFavourites = currentUser.map(Global.favourites.findAllByUser(_).map(_.project_guid).toSeq).getOrElse(Seq.empty)
     val fileRollups = Global.fileRollup.search(FileRollupQuery(limit = Some(10), order_by = Some("count"), order_direction = -1)).toSeq
     val popularFiles = fileRollups.filter(_.count > 10).take(10).flatMap { f =>
       Global.files.findByGuid(f.file_guid).flatMap { f =>
@@ -41,7 +42,7 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
       }
     }
 
-    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, popularFiles, loginForm)
+    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, popularFiles, userFavourites, loginForm)
   }
 
   def search(filter: String) = StackAction { implicit request =>
@@ -61,10 +62,21 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
 
   def dashboard = StackAction { implicit request =>
     val maybeUser = loggedIn
-    maybeUser.map{ usr =>
-      val projects = Global.projects.findByAuthorGuid(usr.guid)
-      Ok(html.dashboard(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
-    }.getOrElse(Home)
+    maybeUser.map{ usr => {
+      val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
+      val userFavourites = Global.favourites.findAllByUser(usr).map(_.project_guid).toSeq
+      Ok(html.dashboard(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, userFavourites, AuthenticationController.loginForm))
+    }}.getOrElse(Home)
+  }
+
+  def javascriptRoutes = Action { implicit request =>
+    import routes.javascript._
+    Ok(
+      Routes.javascriptRouter("jsRoutes")(
+        ProjectController.favouriteProject,
+        ProjectController.unfavouriteProject
+      )
+    ).as("text/javascript")
   }
 
 }

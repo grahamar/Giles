@@ -11,9 +11,9 @@ import java.util.UUID
 
 object ProjectsApiController extends Controller {
 
-  def getProjects(guid: Option[String], name: Option[String], author_guids: Option[String], query:Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
+  def getProjects(guid: Option[String], name: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
     val projectQuery =
-      ProjectQuery(guid = guid.map(UUID.fromString), name = name, query = query, url_key = urlKey, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
+      ProjectQuery(guid = guid.map(UUID.fromString), name = name, url_key = urlKey, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
     Ok(Json.toJson(Global.projects.search(projectQuery).toList.map(Json.toJson(_))))
   }
 
@@ -27,7 +27,7 @@ object ProjectsApiController extends Controller {
   def createProject(projectData: PutProjectFormData)(implicit request: Request[Any]) = {
     Global.projects.findByGuid(UUID.fromString(projectData.guid)) match {
       case None => {
-        Global.projects.create(UUID.fromString(projectData.author_guid), UUID.fromString(projectData.guid), projectData.name,
+        Global.projects.create(projectData.author_username, UUID.fromString(projectData.guid), projectData.name,
           projectData.description, projectData.repo_url, projectData.head_version.getOrElse("HEAD"))
         Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
       }
@@ -44,7 +44,7 @@ object ProjectsApiController extends Controller {
     mapping("guid" -> nonEmptyText,
       "name" -> nonEmptyText,
       "description" -> nonEmptyText,
-      "author_guid" -> nonEmptyText,
+      "author_username" -> nonEmptyText,
       "repo_url" -> nonEmptyText,
       "head_version" -> optional(text)
     )(PutProjectFormData.apply)(PutProjectFormData.unapply)

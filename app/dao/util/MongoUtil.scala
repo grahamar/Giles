@@ -3,8 +3,8 @@ package dao.util
 import scala.collection.JavaConverters._
 import play.api.Play.{current, resource}
 
-import com.mongodb.{Mongo, DBObject, ServerAddress}
-import com.mongodb.casbah.{MongoCollection, MongoOptions, MongoConnection, MongoDB}
+import com.mongodb._
+import com.mongodb.casbah.{MongoCollection, MongoConnection, MongoDB}
 import com.mongodb.casbah.commons.MongoDBObject
 import com.typesafe.config.{ConfigFactory, Config}
 
@@ -44,11 +44,10 @@ private[util] trait MongoInit {
   val mongoConfig: Config
 
   lazy val mongo: Mongo = {
-    val hosts = mongoConfig.getStringList("hosts").asScala
-    val dbName = mongoConfig.getString("dbname")
     val connsPerHost = 16
+    val hosts = mongoConfig.getStringList("hosts").asScala
     val servers = hosts.map(_.split(":")).map((hp: Array[String]) => new ServerAddress(hp(0), hp(1).toInt))
-    new Mongo(servers.toList.asJava,  MongoOptions(connectionsPerHost = connsPerHost))
+    new MongoClient(servers.toList.asJava,  MongoClientOptions.builder().connectionsPerHost(connsPerHost).build())
   }
 
   lazy val mongoDb: MongoDB = {

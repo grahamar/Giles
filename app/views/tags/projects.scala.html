@@ -1,4 +1,4 @@
-@(userProjects: Seq[models.ProjectAuthorsAndBuilds])
+@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[java.util.UUID])(implicit currentUser: Option[models.User])
 
 <div class="well">
     <table class="projects table table-bordered">
@@ -6,11 +6,18 @@
         @userProjects.map { projectAndAuthors =>
         <tr class="project">
             <td>
+                @currentUser.map { _ =>
+                @userFavourites.find(_ == projectAndAuthors.project.guid).map { _ =>
+                <img class="unfavourite" data-project="@projectAndAuthors.project.url_key" src='@routes.Assets.at("img/star.png")' style="width: 24px;" />
+                }.getOrElse {
+                <img class="favourite" data-project="@projectAndAuthors.project.url_key" src='@routes.Assets.at("img/star-empty.png")' style="width: 24px;" />
+                }
+                }
                 <a href='@routes.ProjectController.project(projectAndAuthors.project.url_key)'><strong>@projectAndAuthors.project.name</strong></a>
-                @if(!projectAndAuthors.authors.isEmpty){
-                (@{Html(projectAndAuthors.authors.map { author =>
-                val authorProfileLink = routes.AuthenticationController.profile(author.username).toString
-                <a class="text-muted" href={authorProfileLink}>{author.username}</a>
+                @if(!projectAndAuthors.project.author_usernames.isEmpty){
+                (@{Html(projectAndAuthors.project.author_usernames.map { author =>
+                val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                <a class="text-muted" href={authorProfileLink}>{author}</a>
                 }.mkString(", "))})
                 }
                 <div class="pull-right">

@@ -13,13 +13,16 @@ import scala.util.Try
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.transport._
 import settings.Global
-import org.eclipse.jgit.revwalk.{RevTag, RevWalk}
+import org.eclipse.jgit.revwalk.{RevCommit, RevTag, RevWalk}
+import scala.collection.immutable.TreeMap
+import util.Util
 
 trait RepositoryService {
   def clone(project: Project): Try[JFile]
   def checkout(project: Project, version: String): Try[JFile]
-  def clean(project: Project): Try[Unit]
+  def cleanRepo(project: Project): Try[Unit]
   def getVersions(project: Project): Try[Seq[String]]
+  def getAuthors(project: Project): Try[Seq[String]]
 }
 
 trait GitRepositoryService extends RepositoryService {
@@ -30,7 +33,7 @@ trait GitRepositoryService extends RepositoryService {
   def clone(project: Project): Try[JFile] = Try {
     val checkoutDir = repositoryForProject(project)
     if(checkoutDir.exists()) {
-      clean(project)
+      cleanRepo(project)
     }
     cloneProjectTo(project, checkoutDir)
     checkoutDir
@@ -53,7 +56,7 @@ trait GitRepositoryService extends RepositoryService {
       throw e
   }
 
-  def clean(project: Project): Try[Unit] = Try {
+  def cleanRepo(project: Project): Try[Unit] = Try {
     val repoDir = repositoryForProject(project)
     if(repoDir.exists()) {
       Logger.info("Cleaning repository ["+repoDir.getAbsolutePath+"]")
@@ -70,12 +73,30 @@ trait GitRepositoryService extends RepositoryService {
 
   def getVersions(project: Project): Try[Seq[String]] = Try {
     val repoDir = new JFile(repositoryForProject(project), ".git")
-    val versions = getVersionsForRepo(project, repoDir)
-    versions
+    getVersionsForRepo(project, repoDir)
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Getting versions failed - "+ e.getMessage)
       throw e
+  }
+
+  def getAuthors(project: Project): Try[Seq[String]] = Try {
+    val repoDir = new JFile(repositoryForProject(project), ".git")
+    getAuthorsForRepo(project, repoDir)
+  }.recover {
+    case e: Exception =>
+      Global.builds.createFailure(project.guid, project.head_version, "Getting authors failed - "+ e.getMessage)
+      throw e
+  }
+
+  private def getAuthorsForRepo(project: Project, repoDir: JFile): Seq[String] = {
+    Logger.info("Retrieve authors for ["+project.name+"]")
+    val git = new Git(new FileRepository(repoDir))
+    // Assuming that over 500 commits we should have a good idea of the project authors
+    // Order by most commits in that period and take the top 4
+    Util.topAuthorUsernames(4, git.log().call().asScala.take(500).map { (rev: RevCommit) =>
+      rev.getAuthorIdent.getEmailAddress.takeWhile((ch: Char) => !'@'.equals(ch))
+    }.toSeq)
   }
 
   private def getVersionsForRepo(project: Project, repoDir: JFile) = {

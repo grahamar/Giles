@@ -6,13 +6,15 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import java.util.UUID
+import play.api.Logger
 
 class BuildDao(builds: MongoCollection) {
 
-  def create(guid: UUID, projectGuid: UUID, version: String, message: String, status: String): Build = {
+  def create(guid: UUID, projectGuid: UUID, version: String, authors: Seq[String], message: String, status: String): Build = {
     val build = Build(guid = guid,
       project_guid = projectGuid,
       version = version,
+      authors = authors,
       message = message,
       status = status,
       created_at = new DateTime())
@@ -20,12 +22,12 @@ class BuildDao(builds: MongoCollection) {
     build
   }
 
-  def createSuccess(projectGuid: UUID, version: String): Build = {
-    create(UUID.randomUUID(), projectGuid, version, "", "success")
+  def createSuccess(projectGuid: UUID, version: String, authors: Seq[String]): Build = {
+    create(UUID.randomUUID(), projectGuid, version, authors, "", "success")
   }
 
   def createFailure(projectGuid: UUID, version: String, message: String): Build = {
-    create(UUID.randomUUID(), projectGuid, version, message, "failure")
+    create(UUID.randomUUID(), projectGuid, version, Seq.empty, message, "failure")
   }
 
   def findByGuid(guid: UUID): Option[Build] = {

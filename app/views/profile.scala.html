@@ -1,4 +1,5 @@
-@(user: models.User, userProjects: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+@(user: models.User, userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[models.ProjectAuthorsAndBuilds],
+loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
@@ -17,15 +18,38 @@
         </div>
     </div>
     <div class="col-md-9 well">
+        <h3>Favourite Projects</h3>
+        <table class="projects table table-bordered">
+            <tbody>
+            @userFavourites.map { favouriteProject =>
+            <tr class="project">
+                <td>
+                    <a href='@routes.ProjectController.project(favouriteProject.project.url_key)'><strong>@favouriteProject.project.name</strong></a>
+                    @if(!favouriteProject.project.author_usernames.isEmpty){
+                    (@{Html(favouriteProject.project.author_usernames.map { author =>
+                    val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                    <a class="text-muted" href="{authorProfileLink}">{author}</a>
+                    }.mkString(", "))})
+                    }
+                    <div class="pull-right">
+                        @viewDocs(favouriteProject)
+                    </div>
+                </td>
+            </tr>
+            }
+            </tbody>
+        </table>
+        <h3>My Projects</h3>
         <table class="projects table table-bordered">
             <tbody>
             @userProjects.map { projectAndBuilds =>
             <tr class="project">
                 <td>
                     <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key)'><strong>@projectAndBuilds.project.name</strong></a>
-                    @if(!projectAndBuilds.authors.isEmpty){
-                    (@{Html(projectAndBuilds.authors.map { author =>
-                    <a class="text-muted" href="#">{author.username}</a>
+                    @if(!projectAndBuilds.project.author_usernames.isEmpty){
+                    (@{Html(projectAndBuilds.project.author_usernames.map { author =>
+                    val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                    <a class="text-muted" href="{authorProfileLink}">{author}</a>
                     }.mkString(", "))})
                     }
                     <div class="pull-right">

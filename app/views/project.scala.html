@@ -5,10 +5,10 @@
     <div class="jumbotron">
         <div class="container">
             <h1>@projectAndBuilds.project.name</h1>
-            <p>@if(!projectAndBuilds.authors.isEmpty){
-            (@{Html(projectAndBuilds.authors.map { author =>
-            val authorProfileLink = routes.AuthenticationController.profile(author.username).toString
-            <a class="text-primary" href={authorProfileLink}>{author.username}</a>
+            <p>@if(!projectAndBuilds.project.author_usernames.isEmpty){
+            (@{Html(projectAndBuilds.project.author_usernames.map { author =>
+            val authorProfileLink = routes.AuthenticationController.profile(author).toString
+            <a class="text-primary" href={authorProfileLink}>{author}</a>
             }.mkString(", "))})
             }</p>
         </div>
@@ -42,6 +42,12 @@
                                 <a href='@routes.StaticDocsController.projectIndex(projectAndBuilds.project.url_key, build.version)'>
                                     <strong>@build.version</strong>
                                 </a>
+                                @if(!build.authors.isEmpty){
+                                (@{Html(build.authors.map { author =>
+                                val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                                <a class="text-muted" href={authorProfileLink}>{author}</a>
+                                }.mkString(", "))})
+                                }
                                 @{build.status match {
                                   case "failure" =>
                                     <span class="text-danger" style="padding-left: 2px;">(Build Failed)</span>

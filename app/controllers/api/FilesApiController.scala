@@ -12,9 +12,9 @@ import dao.util.FileHelper
 
 object FilesApiController extends Controller {
 
-  def getFiles(guid: Option[String], project_guid: Option[String], query: Option[String], title: Option[String],
+  def getFiles(guid: Option[String], project_guid: Option[String], title: Option[String],
                urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
-    val fileQuery = FileQuery(guid = guid.map(UUID.fromString), query = query, url_key = urlKey, project_guid = project_guid.map(UUID.fromString),
+    val fileQuery = FileQuery(guid = guid.map(UUID.fromString), url_key = urlKey, project_guid = project_guid.map(UUID.fromString),
       title = title, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
     Ok(Json.toJson(Global.files.search(fileQuery).toList.map(Json.toJson(_))))
   }

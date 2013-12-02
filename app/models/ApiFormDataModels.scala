@@ -3,7 +3,7 @@ package models
 case class PutUserFormData(guid: String, username: String, email: String, password: String, first_name: Option[String],
                            last_name: Option[String], homepage: Option[String])
 
-case class PutProjectFormData(guid: String, name: String, description: String, author_guid: String,
+case class PutProjectFormData(guid: String, name: String, description: String, author_username: String,
                               repo_url: String, head_version: Option[String] = Some("HEAD"))
 
 case class PutVersionFormData(project_guid: String, version: String)

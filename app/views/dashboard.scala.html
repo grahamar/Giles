@@ -1,4 +1,5 @@
-@(userProjects: Seq[models.ProjectAuthorsAndBuilds], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[java.util.UUID],
+loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
@@ -8,7 +9,7 @@
         <div>
             <h3>My Projects</h3>
         </div>
-        @projects(userProjects)
+        @projects(userProjects, userFavourites)
     </div>
     }
 }.getOrElse {

@@ -19,7 +19,6 @@ class FilesDao(files: MongoCollection) {
       filename = filename,
       relative_path = relativePath,
       url_key = urlKey,
-      keywords = Keywords.generate(Seq(guid.toString, title, urlKey)),
       content_guid = contentGuid,
       created_at = new DateTime())
 
@@ -66,7 +65,6 @@ class FilesDao(files: MongoCollection) {
     query.filename.foreach { v => builder += "filename" -> v }
     query.relative_path.foreach { v => builder += ("relative_path" -> v) }
     query.url_key.foreach { v => builder += "url_key" -> v }
-    query.query.foreach { v => builder += "keywords" -> v.toLowerCase.r }
 
     files.find(builder.result()).
       skip(query.pagination.offsetOrDefault).

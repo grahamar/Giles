@@ -10,12 +10,13 @@ import models._
 import settings.Global
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
+import util.Util
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
 
   def build(project: Project): Try[Unit]
-  def clean(project: Project, version: String): Try[Unit]
+  def cleanBuild(project: Project, version: String): Try[Unit]
 }
 
 trait AbstractDocsBuilder extends DocsBuilder {
@@ -23,17 +24,18 @@ trait AbstractDocsBuilder extends DocsBuilder {
 
   def build(project: Project): Try[Unit] = {
     for {
-      _         <- clean(project)
+      _         <- cleanRepo(project)
       _         <- clone(project)
       versions  <- getVersions(project)
     } yield {
       val newVersions = versions.diff(project.versions)
-      Global.projects.update(project.copy(versions = project.versions ++ newVersions))
-      buildProjectAndVersions(project, Seq(project.head_version) ++ newVersions)
+      val updatedProject = project.copy(versions = project.versions ++ newVersions)
+      Global.projects.update(updatedProject)
+      buildProjectAndVersions(updatedProject, Seq(project.head_version) ++ newVersions)
     }
   }
 
-  def clean(project: Project, version: String): Try[Unit] = Try {
+  def cleanBuild(project: Project, version: String): Try[Unit] = Try {
     Global.files.findAllByProjectGuidAndVersion(project.guid, version).foreach { file =>
       Global.files.delete(file.guid)
     }
@@ -41,16 +43,23 @@ trait AbstractDocsBuilder extends DocsBuilder {
 
   private def buildProjectAndVersions(project: Project, versions: Seq[String]): Seq[Try[Build]] = {
     versions.map { version =>
-      checkout(project, version).flatMap { _ =>
-        clean(project, version).flatMap { _ =>
-          build(project, version).flatMap { _ =>
-            index(project, version).map { _ =>
-              Global.builds.createSuccess(project.guid, version)
-            }
-          }
-        }
+      for {
+        _       <- checkout(project, version)
+        authors <- getAuthors(project)
+        _       <- cleanBuild(project, version)
+        _       <- build(project, version)
+        _       <- index(project, version)
+      } yield {
+        val build = Global.builds.createSuccess(project.guid, version, authors)
+        updateProjectAuthors(project)
+        build
       }
     }
+  }
+
+  private def updateProjectAuthors(project: Project): Unit = {
+    val topAuthors = Util.topAuthorUsernames(4, Global.builds.search(BuildQuery()).flatMap(_.authors).toSeq)
+    Global.projects.update(project.copy(author_usernames = topAuthors))
   }
 
   private def build(project: Project, version: String): Try[Unit] = Try {

@@ -103,8 +103,9 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
     }.getOrElse {
       val user = Global.users.findByUsername(username)
       user.map{usr =>
-        val projects = Global.projects.findByAuthorGuid(usr.guid)
-        Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, AuthenticationController.loginForm))
+        val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
+        val userFavourites = loggedIn.map(ProjectHelper.getFavouriteProjectsForUser(_).toSeq).getOrElse(Seq.empty)
+        Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, userFavourites, AuthenticationController.loginForm))
       }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
     }
   }

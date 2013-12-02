@@ -30,21 +30,20 @@ object UrlKey {
       split("/").map(ResourceUtil.encodeFileName).mkString("/")
   }
 }
-object Keywords {
-  def generate(values: Seq[String]): Seq[String] = {
-    values.map(_.toLowerCase)
-  }
-}
+
+case class Favourite(guid: UUID,
+                     user_guid: UUID,
+                     project_guid: UUID)
 
 case class Project(guid: UUID,
                    name: String,
                    description: String,
                    url_key: String,
                    repo_url: String,
-                   keywords: Seq[String],
                    head_version: String,
                    versions: Seq[String],
-                   author_guids: Seq[UUID],
+                   author_usernames: Seq[String],
+                   created_by: String,
                    created_at: DateTime,
                    updated_at: DateTime)
 
@@ -56,6 +55,7 @@ class ProjectAuthorsAndBuilds(val project: Project, val authors: Seq[User], val 
 case class Build(guid: UUID,
                  project_guid: UUID,
                  version: String,
+                 authors: Seq[String],
                  message: String,
                  created_at: DateTime,
                  status: String = "failure")
@@ -72,7 +72,6 @@ case class File(guid: UUID,
                 filename: String,
                 relative_path: String,
                 url_key: String,
-                keywords: Seq[String],
                 content_guid: UUID,
                 created_at: DateTime) extends Ordered[File] {
 

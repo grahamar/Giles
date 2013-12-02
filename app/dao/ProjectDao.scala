@@ -9,17 +9,17 @@ import java.util.UUID
 
 class ProjectDao(projects: MongoCollection) {
 
-  def create(createdByGuid: UUID, guid: UUID, name: String, description: String = "", repoUrl: String, headVersion: String = "HEAD"): Project = {
+  def create(createdByUsername: String, guid: UUID, name: String, description: String = "", repoUrl: String, headVersion: String = "HEAD"): Project = {
     val urlKey = UrlKey.generate(name)
     val project = Project(guid = guid,
       name = name,
       description = description,
       url_key = urlKey,
       repo_url = repoUrl,
-      keywords = Keywords.generate(Seq(guid.toString, name, urlKey)),
       head_version = headVersion,
       versions = Seq(headVersion),
-      author_guids = Seq(createdByGuid),
+      author_usernames = Seq.empty,
+      created_by = createdByUsername,
       created_at = new DateTime(),
       updated_at = new DateTime())
     create(project)
@@ -31,7 +31,8 @@ class ProjectDao(projects: MongoCollection) {
   }
 
   def update(project: Project) {
-    val obj = MongoDBObject("description" -> project.description, "head_version" -> project.head_version, "versions" -> project.versions)
+    val obj = MongoDBObject("description" -> project.description, "head_version" -> project.head_version,
+      "versions" -> project.versions, "author_usernames" -> project.author_usernames)
     projects.update(q = MongoDBObject("guid" -> project.guid),
       o = MongoDBObject("$set" -> obj),
       upsert = false,
@@ -50,8 +51,12 @@ class ProjectDao(projects: MongoCollection) {
     search(ProjectQuery(url_key = Some(urlKey))).headOption
   }
 
-  def findByAuthorGuid(authorGuid: UUID): Iterable[Project] = {
-    search(ProjectQuery(author_guids = Some(Seq(authorGuid))))
+  def findByAuthorUsername(authorUsername: String): Iterable[Project] = {
+    search(ProjectQuery(author_usernames = Some(Seq(authorUsername))))
+  }
+
+  def findByCreatedBy(createdByUsername: String): Iterable[Project] = {
+    search(ProjectQuery(created_by = Some(createdByUsername)))
   }
 
   def findRecentlyUpdated(limit: Int): Iterable[Project] = {
@@ -68,8 +73,8 @@ class ProjectDao(projects: MongoCollection) {
     query.guid.foreach { v => builder += "guid" -> v }
     query.name.foreach { v => builder += "name" -> v }
     query.url_key.foreach { v => builder += "url_key" -> v }
-    query.author_guids.foreach { v => builder += "author_guids" -> v }
-    query.query.foreach { v => builder += "keywords" -> v.toLowerCase.r }
+    query.author_usernames.foreach { v => builder += "author_usernames" -> MongoDBObject("$in" -> v) }
+    query.created_by.foreach { v => builder += ("created_by" -> v) }
 
     val sortBuilder = MongoDBObject.newBuilder
     query.order_by.foreach { field => sortBuilder += field -> query.order_direction }
