@@ -11,11 +11,17 @@ import org.apache.lucene.search._
 import org.apache.lucene.index.{DirectoryReader, Term}
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
+import org.apache.lucene.document.Document
 
 trait DocsSearcher {
-  def search(filter: String): Seq[ProjectSearchResult]
+  def searchAllPublications(filter: String): Seq[PublicationSearchResult]
+  def searchAllProjects(filter: String): Seq[ProjectSearchResult]
   def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult]
   def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String): Seq[ProjectSearchResult]
+}
+
+case class PublicationSearchResult(publicationUrlKey: String, publicationTitle: String, hits: Seq[String], score: Float) extends Ordered[PublicationSearchResult] {
+  def compare(that: PublicationSearchResult) = that.score.compareTo(this.score)
 }
 
 case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: String, fileTitle: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
@@ -29,22 +35,26 @@ trait LuceneDocsSearcher extends DocsSearcher {
 
   private val LuceneVersion = LucVersion.LUCENE_43
 
-  def search(filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body") ++
-      search(filter, "title")
+  def searchAllProjects(filter: String): Seq[ProjectSearchResult] = {
+    search(filter, "body")(toProjectResult) ++ search(filter, "title")(toProjectResult)
+  }
+
+  def searchAllPublications(filter: String): Seq[PublicationSearchResult] = {
+    search(filter, "pub-body")(toPublicationResult) ++ search(filter, "pub-title")(toPublicationResult)
   }
 
   def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body", Some(projectUrlKey)) ++
-      search(filter, "title", Some(projectUrlKey))
+    search(filter, "body", Some(projectUrlKey))(toProjectResult) ++
+      search(filter, "title", Some(projectUrlKey))(toProjectResult)
   }
 
   def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body", Some(projectUrlKey), Some(projectVersion)) ++
-      search(filter, "title", Some(projectUrlKey), Some(projectVersion))
+    search(filter, "body", Some(projectUrlKey), Some(projectVersion))(toProjectResult) ++
+      search(filter, "title", Some(projectUrlKey), Some(projectVersion))(toProjectResult)
   }
 
-  private def search(filter: String, field: String, projectUrlKey: Option[String] = None, projectVersion: Option[String] = None): Seq[ProjectSearchResult] = {
+  private def search[T](filter: String, field: String, projectUrlKey: Option[String] = None,
+                        projectVersion: Option[String] = None)(func: ((Document, Array[String], Float)) => T)(implicit ordering: Ordering[T]): Seq[T] = {
     val parser = new QueryParser(LuceneVersion, field, new StandardAnalyzer(LuceneVersion))
     parser.setAllowLeadingWildcard(true)
     val booleanQuery = new BooleanQuery()
@@ -58,17 +68,26 @@ trait LuceneDocsSearcher extends DocsSearcher {
       val results = collector.topDocs().scoreDocs
       val highlighter = new FastVectorHighlighter()
       val fieldQuery = highlighter.getFieldQuery(booleanQuery)
-      results.map { result =>
+      results.flatMap { result =>
         val doc = indexSearcher.doc(result.doc)
         val hits = highlighter.getBestFragments(fieldQuery, indexReader, result.doc, field, 200, 5).map { hit =>
           "..."+hit.replaceAll("<b>", "<b class='highlight'>")+"..."
         }
         if(hits.length > 0) {
-          Some(ProjectSearchResult(UrlKey.generate(doc.get("project")), doc.get("version"),
-            UrlKey.generate(doc.get("path")), doc.get("title"), doc.get("filename"), hits, result.score))
+          Some(func((doc, hits, result.score)))
         } else { None }
-      }.flatten.sorted
+      }.sorted
     }
+  }
+
+  private def toProjectResult(result: (Document, Array[String], Float)): ProjectSearchResult = {
+    ProjectSearchResult(UrlKey.generate(result._1.get("project")), result._1.get("version"),
+      UrlKey.generate(result._1.get("path")), result._1.get("title"), result._1.get("filename"), result._2, result._3)
+  }
+
+  private def toPublicationResult(result: (Document, Array[String], Float)): PublicationSearchResult = {
+    PublicationSearchResult(UrlKey.generate(result._1.get("publication")), result._1.get("pub-title"),
+      result._2, result._3)
   }
 
 }

@@ -46,7 +46,7 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
   }
 
   def search(filter: String) = StackAction { implicit request =>
-    val results: Seq[ProjectSearchResult] = DocumentationFactory.searchService.search(filter)
+    val results: Seq[ProjectSearchResult] = DocumentationFactory.searchService.searchAllProjects(filter)
     Ok(html.search(results, filter, AuthenticationController.loginForm))
   }
 

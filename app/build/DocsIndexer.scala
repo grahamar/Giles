@@ -23,6 +23,8 @@ import org.w3c.dom.{NodeList, Node, Text, Element}
 
 trait DocsIndexer {
   def index(project: Project, version: String): Try[Unit]
+  def index(publication: PublicationWithContent): Try[Unit]
+  def cleanPublicationIndex(publication: Publication): Try[Unit]
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit]
 }
 
@@ -54,6 +56,22 @@ trait LuceneDocsIndexer extends DocsIndexer {
       throw e
   }
 
+  def cleanPublicationIndex(publication: Publication): Try[Unit] = Try {
+    val indexWriter: IndexWriter = {
+      val dir = FSDirectory.open(indexDir)
+      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
+      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
+      new IndexWriter(dir, iwc)
+    }
+
+    val booleanQuery = new BooleanQuery()
+    booleanQuery.add(new TermQuery(new Term("publication", publication.url_key)), BooleanClause.Occur.MUST)
+    doWith(indexWriter) { writer =>
+      writer.deleteDocuments(booleanQuery)
+      writer.commit()
+    }
+  }
+
   def index(project: Project, version: String): Try[Unit] = {
     cleanProjectAndVersionIndex(project, version).map { _ =>
       val index: IndexWriter = {
@@ -70,6 +88,43 @@ trait LuceneDocsIndexer extends DocsIndexer {
       case e: Exception =>
         Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
         throw e
+    }
+  }
+
+  def index(publication: PublicationWithContent): Try[Unit] = Try {
+    val index: IndexWriter = {
+      val dir = FSDirectory.open(indexDir)
+      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
+      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
+      new IndexWriter(dir, iwc)
+    }
+    doWith(index) { indx =>
+      val tidy = new Tidy()
+      tidy.setQuiet(true)
+      tidy.setShowWarnings(false)
+
+      ResourceUtil.doWith(new StringReader(publication.content)) { stream =>
+        val root = tidy.parseDOM(stream, null)
+        val rawDoc = Option(root.getDocumentElement)
+
+        val doc = new org.apache.lucene.document.Document()
+        rawDoc.flatMap(getBody).foreach { body =>
+          val fieldType = new FieldType()
+          fieldType.setIndexed(true)
+          fieldType.setStored(true)
+          fieldType.setStoreTermVectors(true)
+          fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS)
+          fieldType.setStoreTermVectorOffsets(true)
+          fieldType.setStoreTermVectorPayloads(true)
+          fieldType.setStoreTermVectorPositions(true)
+          fieldType.setTokenized(true)
+          doc.add(new Field("pub-body", body, fieldType))
+
+          doc.add(new StringField("pub-title",rawDoc.flatMap(getTitle).getOrElse(publication.publication.title), Store.YES))
+          doc.add(new StringField("publication", publication.publication.url_key, Store.YES))
+        }
+      }
+      indx.commit()
     }
   }
 

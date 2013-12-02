@@ -13,6 +13,10 @@ object DocumentationFactory {
     docsBuilder
   }
 
+  def indexService: DocsIndexer = {
+    docsBuilder
+  }
+
   def searchService: DocsSearcher = {
     docsBuilder
   }

@@ -14,6 +14,7 @@ import settings.Global
 import dao.util.FileHelper
 import dao.util.PublicationConverters._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
+import build.DocumentationFactory
 
 object PublicationController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -37,7 +38,11 @@ object PublicationController extends Controller with OptionalAuthUser with AuthC
 
   def createPublication(data: PublicationData, currentUser: User)(implicit request: RequestHeader): SimpleResult = {
     val publication = FileHelper.getOrCreateContent(data.content) { contentGuid =>
-      Global.publications.create(UUID.randomUUID(), currentUser, data.title, contentGuid)
+      val pub = Global.publications.create(UUID.randomUUID(), currentUser, data.title, contentGuid)
+      DocumentationFactory.indexService.cleanPublicationIndex(pub).map { _ =>
+        DocumentationFactory.indexService.index(pub.withContent)
+      }
+      pub
     }
     Redirect(routes.PublicationController.publication(publication.url_key))
   }
