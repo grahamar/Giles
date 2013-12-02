@@ -85,3 +85,8 @@ span.help-inline {
 .highlight {
     background-color: #FFFF00;
 }
+
+.editable-buttons {
+    left: -80px;
+    position: relative;
+}

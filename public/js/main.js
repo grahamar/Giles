@@ -1,4 +1,9 @@
 $(document).ready(function(){
+
+  $.fn.editable.defaults.mode = 'inline';
+  $.fn.editable.defaults.ajaxOptions = {contentType: "application/json; charset=UTF-8"};
+  $.fn.editable.defaults.params = function(params) { return JSON.stringify(params); }
+
   $('img.favourite').click(function(e){favourite(e, this)});
   $('img.unfavourite').click(function(e){unfavourite(e, this)});
 

@@ -31,6 +31,12 @@ GET     /projects/:projectUrlKey/pdf/:projectVersion          controllers.Static
 
 GET     /dashboard                                            controllers.ApplicationController.dashboard
 
+POST    /publications                                         controllers.PublicationController.postPublication
+GET     /publications/create                                  controllers.PublicationController.create
+GET     /publications/:username                               controllers.PublicationController.publicationsForUser(username)
+GET     /publication/:pubUrlKey                               controllers.PublicationController.publication(pubUrlKey)
+POST    /publication/update                                   controllers.PublicationController.editPublication
+
 # Api
 GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid: Option[String], name: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
 PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects

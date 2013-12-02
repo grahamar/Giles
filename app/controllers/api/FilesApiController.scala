@@ -46,7 +46,7 @@ object FilesApiController extends Controller {
           case Some(existingFile: File) => {
             FileHelper.getOrCreateContent(data.html) { contentGuid =>
               Global.files.update(existingFile.copy(content_guid = contentGuid))
-              // TODO delete the file content if it's not referenced by any file?
+              FileHelper.cleanupContent(existingFile.content_guid)
             }
             Ok(Json.toJson(Global.files.findByGuid(UUID.fromString(data.guid))))
           }

@@ -11,6 +11,7 @@ object Global extends play.api.GlobalSettings {
   private lazy val userIndexes = Seq(Index(field="username", unique=true))
   private lazy val fileContentIndexes = Seq(Index(field="hash_key", unique=true))
   private lazy val favouriteIndexes = Seq(Index(field="user_guid"))
+  private lazy val publicationIndexes = Seq(Index(field="user_guid"), Index(field="url_key", unique=true))
 
   lazy val projects = new dao.ProjectDao(MongoUtil.collectionWithIndexes("projects", projectIndexes))
   lazy val favourites = new dao.FavouriteDao(MongoUtil.collectionWithIndexes("favourites", favouriteIndexes))
@@ -21,6 +22,7 @@ object Global extends play.api.GlobalSettings {
   lazy val fileRollup = new dao.FileViewRollupDao()
   lazy val userFileRollup = new dao.UserFileViewRollupDao()
   lazy val views = new dao.ViewsDao(MongoUtil.collectionWithIndexes("views", viewIndexes), fileRollup, userFileRollup)
+  lazy val publications = new dao.PublicationDao(MongoUtil.collectionWithIndexes("publications", publicationIndexes))
 
   override def onStart(app: Application) {
 

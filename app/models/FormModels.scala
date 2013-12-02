@@ -17,6 +17,8 @@ case class UserData(username: String, email: String, password: String, rePasswor
   }
 }
 
+case class PublicationData(title: String, content: String)
+
 case class ProjectImportData(name: String, description: String, repoUrl: String, headVersion: String)
 
 object DefaultProjectImportData extends ProjectImportData("", "", "", "HEAD")

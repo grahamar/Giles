@@ -1,0 +1,23 @@
+@(publications: Seq[models.Publication], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 50px;">
+    <div class="row">
+        <div class="well">
+            <table class="projects table table-bordered">
+                <tbody>
+                @publications.map { publication =>
+                <tr class="project">
+                    <td>
+                        <a href='@routes.PublicationController.publication(publication.url_key)'>
+                            <strong>@publication.title</strong>
+                        </a>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+}

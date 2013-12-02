@@ -74,7 +74,8 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
     Ok(
       Routes.javascriptRouter("jsRoutes")(
         ProjectController.favouriteProject,
-        ProjectController.unfavouriteProject
+        ProjectController.unfavouriteProject,
+        PublicationController.editPublication
       )
     ).as("text/javascript")
   }

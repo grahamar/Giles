@@ -1,0 +1,32 @@
+@(pub: models.PublicationWithContent, loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+
+@main("", loginForm) {
+<div class="container" style="margin-top: 50px;">
+    <div class="row">
+        <h1 id="publication-title" data-pk="@pub.publication.url_key" data-type="text">@pub.publication.title</h1>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="publication-content" data-pk="@pub.publication.url_key" data-type="wysihtml5">
+                    @Html(pub.content)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@currentUser.map { loggedInUser =>
+@if(loggedInUser.guid == pub.publication.user_guid){
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('#publication-title').editable({
+            url: jsRoutes.controllers.PublicationController.editPublication().url,
+            title: 'Enter publication title',
+        });
+        $('#publication-content').editable({
+            url: jsRoutes.controllers.PublicationController.editPublication().url,
+            title: 'Enter publication content',
+        });
+    });
+</script>
+}
+}
+}

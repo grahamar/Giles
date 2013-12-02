@@ -7,6 +7,8 @@ import play.api.Logger
 
 object ResourceUtil {
 
+  import scala.language.reflectiveCalls
+
   def doWith[T <: { def close() }, R](toClose: T)(f: T => R): R = {
     try {
       f(toClose)

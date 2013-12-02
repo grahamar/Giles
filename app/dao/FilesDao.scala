@@ -43,6 +43,10 @@ class FilesDao(files: MongoCollection) {
     search(FileQuery(project_guid = Some(projectGuid), version = Some(version)))
   }
 
+  def findByContentGuid(contentGuid: UUID): Iterable[File] = {
+    search(FileQuery(content_guid = Some(contentGuid)))
+  }
+
   def findForProjectGuidAndVersion(projectGuid: UUID, version: String, fileUrlKey: String): Option[File] = {
     search(FileQuery(
       project_guid = Some(projectGuid),
@@ -65,6 +69,7 @@ class FilesDao(files: MongoCollection) {
     query.filename.foreach { v => builder += "filename" -> v }
     query.relative_path.foreach { v => builder += ("relative_path" -> v) }
     query.url_key.foreach { v => builder += "url_key" -> v }
+    query.content_guid.foreach { v => builder += ("content_guid" -> v) }
 
     files.find(builder.result()).
       skip(query.pagination.offsetOrDefault).

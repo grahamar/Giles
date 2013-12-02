@@ -117,6 +117,7 @@ case class FileQuery(guid: Option[UUID] = None,
                      filename: Option[String] = None,
                      relative_path: Option[String] = None,
                      url_key: Option[String] = None,
+                     content_guid: Option[UUID] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
@@ -130,6 +131,28 @@ case class FileQuery(guid: Option[UUID] = None,
     title.foreach { v => params += ("title" -> v) }
     filename.foreach { v => params += ("filename" -> v) }
     relative_path.foreach { v => params += ("relative_path" -> v) }
+    url_key.foreach { v => params += ("url_key" -> v) }
+    content_guid.foreach { v => params += ("content_guid" -> v) }
+    limit.foreach { v => params += ("limit" -> v) }
+    offset.foreach { v => params += ("offset" -> v) }
+    params.toList
+  }
+
+}
+
+case class PublicationQuery(guid: Option[UUID] = None,
+                            user_guid: Option[UUID] = None,
+                            title: Option[String] = None,
+                            url_key: Option[String] = None,
+                            limit: Option[Int] = None,
+                            offset: Option[Int] = None) {
+
+  lazy val pagination = Pagination(limit, offset)
+
+  def params = {
+    val params = scala.collection.mutable.ListBuffer[(String, Any)]()
+    guid.foreach { v => params += ("guid" -> v) }
+    title.foreach { v => params += ("title" -> v) }
     url_key.foreach { v => params += ("url_key" -> v) }
     limit.foreach { v => params += ("limit" -> v) }
     offset.foreach { v => params += ("offset" -> v) }

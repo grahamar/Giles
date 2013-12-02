@@ -90,9 +90,13 @@ case class File(guid: UUID,
 
 }
 
+case class Publication(guid: UUID, user_guid: UUID, title: String, url_key: String, content_guid: UUID, created_at: DateTime)
+
 case class FileContent(guid: UUID, hash_key: String, content_size: Long, content: Array[Byte])
 
 case class FileWithContent(file: File, content: String)
+
+case class PublicationWithContent(publication: Publication, content: String)
 
 case class View(guid: UUID, file_guid: UUID, user_guid: Option[UUID], created_at: DateTime)
 
