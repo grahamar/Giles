@@ -42,8 +42,6 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
       }
     }
 
-    DocumentationFactory.searchService.termFrequencies
-
     html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, popularFiles, userFavourites, loginForm)
   }
 
