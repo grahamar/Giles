@@ -1,3 +1,7 @@
+# Giles The Librarian
+#
+# VERSION       1.0
+
 FROM ubuntu
 
 MAINTAINER Graham Rhodes (graham.a.r@gmail.com)
