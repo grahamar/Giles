@@ -26,7 +26,7 @@ class ProjectDaoTest extends PlaySpecification with Mockito with BeforeAfter {
 
     "successfully create a project in mongo" in new WithApplication {
       val guid = UUID.randomUUID()
-      val userGuid = UUID.randomUUID()
+      val userGuid = Gen.alphaStr.sample.get
       val name = Gen.alphaStr.sample.get
       val description = Gen.alphaStr.sample.get
       val repoUrl = Gen.alphaStr.sample.get

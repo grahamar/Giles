@@ -3,6 +3,7 @@ package build
 import java.io.{Reader, StringReader}
 
 import scala.util.Try
+import scala.collection.JavaConverters._
 import play.api.Logger
 
 import models._
@@ -20,6 +21,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode
 import org.apache.lucene.store.FSDirectory
 import org.w3c.tidy.Tidy
 import org.w3c.dom.{NodeList, Node, Text, Element}
+import org.apache.lucene.analysis.util.CharArraySet
 
 trait DocsIndexer {
   def index(project: Project, version: String): Try[Unit]
@@ -28,19 +30,24 @@ trait DocsIndexer {
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit]
 }
 
+object LuceneDocsIndexer {
+  private val LuceneVersion = LucVersion.LUCENE_43
+  private def indexWriterConfig: IndexWriterConfig = {
+    val iwc = new IndexWriterConfig(LuceneDocsIndexer.LuceneVersion, new StandardAnalyzer(LuceneDocsIndexer.LuceneVersion))
+    iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
+    iwc
+  }
+}
+
 trait LuceneDocsIndexer extends DocsIndexer {
   self: DirectoryHandler =>
 
   import ResourceUtil._
 
-  private val LuceneVersion = LucVersion.LUCENE_43
-
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit] = Try {
     val indexWriter: IndexWriter = {
       val dir = FSDirectory.open(indexDir)
-      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
-      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
-      new IndexWriter(dir, iwc)
+      new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
     }
 
     val booleanQuery = new BooleanQuery()
@@ -59,9 +66,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
   def cleanPublicationIndex(publication: Publication): Try[Unit] = Try {
     val indexWriter: IndexWriter = {
       val dir = FSDirectory.open(indexDir)
-      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
-      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
-      new IndexWriter(dir, iwc)
+      new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
     }
 
     val booleanQuery = new BooleanQuery()
@@ -76,9 +81,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
     cleanProjectAndVersionIndex(project, version).map { _ =>
       val index: IndexWriter = {
         val dir = FSDirectory.open(indexDir)
-        val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
-        iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
-        new IndexWriter(dir, iwc)
+        new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
       }
       doWith(index) { indx =>
         indexProject(project, version, indx)
@@ -94,9 +97,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
   def index(publication: PublicationWithContent): Try[Unit] = Try {
     val index: IndexWriter = {
       val dir = FSDirectory.open(indexDir)
-      val iwc = new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion))
-      iwc.setOpenMode(OpenMode.CREATE_OR_APPEND)
-      new IndexWriter(dir, iwc)
+      new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
     }
     doWith(index) { indx =>
       val tidy = new Tidy()

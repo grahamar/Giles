@@ -24,6 +24,8 @@ libraryDependencies ++= Seq(
     "commons-io"         %  "commons-io"                    % "2.4",
     "com.novus"          %% "salat-core"                    % "1.9.4",
     "org.planet42"       %% "laika"                         % "0.4.0",
+    "dnsjava"            %  "dnsjava"                       % "2.1.1",
+    "javax.mail"         %  "mail"                          % "1.4.7",
     "org.mockito"        %  "mockito-core"                  % "1.9.5"                   % "test",
     "org.scalacheck"     %% "scalacheck"                    % "1.10.1"                  % "test",
     "org.scalatest"      %% "scalatest"                     % "2.0"                     % "test"

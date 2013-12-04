@@ -10,7 +10,7 @@ import models._
 import settings.Global
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
-import util.Util
+import util.{EmailUtil, Util}
 
 sealed trait DocsBuilder {
   self: DirectoryHandler with RepositoryService with DocsIndexer =>
@@ -52,13 +52,17 @@ trait AbstractDocsBuilder extends DocsBuilder {
       } yield {
         val build = Global.builds.createSuccess(project.guid, version, authors)
         updateProjectAuthors(project)
+        if(!version.equals(project.head_version)) {
+          Global.favourites.findAllByProject(project).flatMap(fav => Global.users.findByGuid(fav.user_guid)).
+            foreach(EmailUtil.sendNewVersionEmail(_, project, version))
+        }
         build
       }
     }
   }
 
   private def updateProjectAuthors(project: Project): Unit = {
-    val topAuthors = Util.topAuthorUsernames(4, Global.builds.search(BuildQuery()).flatMap(_.authors).toSeq)
+    val topAuthors = Util.topAuthorUsernames(4, Global.builds.search(BuildQuery(project_guid = Some(project.guid))).flatMap(_.authors).toSeq)
     Global.projects.update(project.copy(author_usernames = topAuthors))
   }
 

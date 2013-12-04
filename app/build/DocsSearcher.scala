@@ -5,13 +5,16 @@ import scala.math.Ordered
 import models._
 
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.util.{Version => LucVersion}
+import org.apache.lucene.util.{Version => LucVersion, BytesRef}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.search._
-import org.apache.lucene.index.{DirectoryReader, Term}
+import org.apache.lucene.index.{TermsEnum, MultiFields, DirectoryReader, Term}
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
 import org.apache.lucene.document.Document
+import org.apache.commons.lang3.builder.CompareToBuilder
+import play.api.Logger
+import scala.collection.immutable.VectorBuilder
 
 trait DocsSearcher {
   def searchAllPublications(filter: String): Seq[PublicationSearchResult]

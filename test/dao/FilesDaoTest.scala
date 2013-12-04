@@ -22,7 +22,7 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
     val name = Gen.alphaStr.sample.get
     val description = Gen.alphaStr.sample.get
     val repoUrl = Gen.alphaStr.sample.get
-    projects.create(UUID.randomUUID(), UUID.randomUUID(), name, description, repoUrl)
+    projects.create(Gen.alphaStr.sample.get, UUID.randomUUID(), name, description, repoUrl)
   }
 
   def before = {
@@ -39,7 +39,7 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
       val title = Gen.alphaStr.sample.get
       val html = Gen.alphaStr.sample.get
 
-      val file = files.create(guid, project, "test-version", title, html)
+      val file = files.create(guid, project, "test-version", "", "", title, UUID.randomUUID())
 
       file.guid must_== guid
 
@@ -54,7 +54,7 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
       val title = Gen.alphaStr.sample.get
       val html = Gen.alphaStr.sample.get
 
-      val file = files.create(guid, project, "special-test-version", title, html)
+      val file = files.create(guid, project, "special-test-version", "", "", title, UUID.randomUUID())
 
       file.guid must_== guid
 

@@ -1,0 +1,91 @@
+@(project: models.Project, version: String)
+
+<html>
+<head>
+</head>
+<body>
+<table width="100%" cellspacing="0" cellpadding="0" border="0" style="">
+    <tbody>
+    <tr>
+        <td align="center">
+            <table width="580" cellspacing="25" cellpadding="0" border="0" style="border: 1px solid rgb(204, 204, 204); background-color: rgb(57, 57, 57);">
+                <tbody>
+                <tr>
+                    <td>
+                        <table width="580" cellspacing="0" cellpadding="0" border="0">
+                            <tbody>
+                            <tr>
+                                <td valign="bottom" align="left" style="min-height: 68px"><a style="text-decoration: none;" href="@routes.ApplicationController.index">
+                                    <div style="font: 26px arial,tahoma,san-serif; height: 30px; width: 180px; margin: 4px 0pt 4px 4px; color: rgb(51, 153, 255);">Giles</div>
+                                </a></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <table width="556" cellspacing="0" cellpadding="0" border="0">
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                <table width="556" cellspacing="0" cellpadding="0" border="0">
+                                                    <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <table width="580" height="130" cellspacing="16" cellpadding="0" border="0" style="background-color: rgb(57, 57, 57);">
+                                                                <tbody>
+                                                                <tr>
+                                                                    <td width="580" valign="top" align="left" style="font-size: 16px; font-family: 'Helvetica',sans-serif; color: rgb(255, 255, 255);">
+                                                                        <table width="548" height="130" cellspacing="0" cellpadding="0" border="0" style="line-height: 15px; background-color: rgb(57, 57, 57);">
+                                                                            <tbody>
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <p style="font-family: 'Lucida Grande',sans-serif; font-size: 13px; font-weight: normal; color: rgb(255, 255, 255); text-decoration: none;">
+                                                                                        Giles knows <a href="@routes.ProjectController.project(project.url_key).toString()" style="text-decoration: none; color: rgb(255, 255, 255);"><b>@project.name</b></a> is one of your favourite projects.<br>
+                                                                                        <br>
+                                                                                        <a href="@routes.StaticDocsController.projectIndex(project.url_key, version).toString()" style="color: rgb(255, 255, 255); text-decoration: none;">
+                                                                                            Documentation for version <b>@version</b>
+                                                                                        </a> has just been added, you should check it out!
+                                                                                    </p><br>
+                                                                                </td>
+                                                                            </tr>
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <table width="580" cellspacing="0" cellpadding="0" border="0">
+                                                                <tbody>
+                                                                <tr>
+                                                                    <td>
+                                                                        <p style="font-size: 12px; margin-top: 4px; color: rgb(164, 164, 164);">
+                                                                            This message is automatically generated by Giles for you because you favourited the project <b>@project.name</b>.
+                                                                        </p>
+                                                                    </td>
+                                                                </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
