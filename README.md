@@ -18,6 +18,11 @@ database and index it for your perusal.
 
 Check out the complete [Getting Started Guide](docs/Getting Started.md).
 
+### Running Giles
+
+There's manual steps in the Getting started documentation.
+Or you can install [Docker](http://www.docker.io/) and pull the [latest image](https://index.docker.io/u/grahamar/giles/)
+
 ### Copyright and license
 
 Copyright 2013 Gilt Groupe, Inc., under the [Apache v2.0](LICENSE) license
