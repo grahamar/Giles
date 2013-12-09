@@ -28,3 +28,4 @@ dist
 /.builds
 /.git_checkouts
 /.index
+/*.sh
