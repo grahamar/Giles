@@ -1,51 +1,72 @@
 package controllers.api
 
+import javax.ws.rs.QueryParam
+
 import play.api.mvc._
-import play.api.libs.json._
 import play.api.data.Form
 import play.api.data.Forms._
 
 import settings.Global
 import models._
-import java.util.UUID
+import com.wordnik.swagger.annotations._
 
-object ProjectsApiController extends Controller {
+@Api(value = "/api/projects", description = "Operations for projects")
+object ProjectsApiController extends BaseApiController {
 
-  def getProjects(guid: Option[String], name: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String]) = Action {
-    val projectQuery =
-      ProjectQuery(guid = guid.map(UUID.fromString), name = name, url_key = urlKey, limit = limit.map(_.toInt), offset = offset.map(_.toInt))
-    Ok(Json.toJson(Global.projects.search(projectQuery).toList.map(Json.toJson(_))))
+  @ApiOperation(value = "Find projects", notes = "Returns a list of projects", response = classOf[Project], responseContainer = "List", httpMethod = "GET")
+  def getProjects(@ApiParam(value = "GUID of the project to fetch", required = false) @QueryParam("guid") guid: String,
+                  @ApiParam(value = "Name of the project to fetch", required = false) @QueryParam("name") name: String,
+                  @ApiParam(value = "URL key of the project to fetch", required = false) @QueryParam("url_key") url_key: String,
+                  @ApiParam(value = "Number of projects to return", required = false) @QueryParam("limit") limit: String,
+                  @ApiParam(value = "Page offset of the projects to fetch", required = false) @QueryParam("offset") offset: String) = Action { implicit request =>
+    val projectQuery = ProjectQuery(guid = Option(guid), name = Option(name), url_key = Option(url_key), limit = Option(limit).map(_.toInt), offset = Option(offset).map(_.toInt))
+    JsonResponse(Global.projects.search(projectQuery).toList)
   }
 
+  @ApiOperation(value = "Add/Update a project", response = classOf[Project], httpMethod = "PUT")
+  @ApiResponses(Array(new ApiResponse(code = 400, message = "Validation exception")))
+  @ApiImplicitParams(Array(
+    new ApiImplicitParam(value = "Unique GUID for the new project", name = "guid", required = true, dataType = "UUID", paramType = "body"),
+    new ApiImplicitParam(value = "Name of the new build", name = "name", required = true, dataType = "String", paramType = "body"),
+    new ApiImplicitParam(value = "Description of the new project", name = "description", required = false, dataType = "String", paramType = "body"),
+    new ApiImplicitParam(value = "Username of the user putting the new project", name = "created_by", required = false, dataType = "String", paramType = "body"),
+    new ApiImplicitParam(value = "Repository URL of the project", name = "repo_url", required = true, dataType = "URL", paramType = "body"),
+    new ApiImplicitParam(value = "A list of project author names", name = "author_usernames", required = true, dataType = "List", paramType = "body"),
+    new ApiImplicitParam(value = "The latest/head version.", name = "head_version", defaultValue = "HEAD", required = false, dataType = "String", paramType = "body")
+  ))
   def putProjects = Action { implicit request =>
-    putProjectForm.bindFromRequest.fold(
-      formWithErrors => BadRequest(formWithErrors.errorsAsJson),
-      projectData => createProject(projectData)
-    )
+    withApiKeyProtection { userGuid =>
+      putProjectForm.bindFromRequest.fold(
+        formWithErrors => BadRequest(formWithErrors.errorsAsJson),
+        projectData => createProject(projectData, userGuid)
+      )
+    }
   }
 
-  def createProject(projectData: PutProjectFormData)(implicit request: Request[Any]) = {
-    Global.projects.findByGuid(UUID.fromString(projectData.guid)) match {
+  def createProject(projectData: PutProjectFormData, callingUserGuid: String)(implicit request: Request[Any]) = {
+    Global.projects.findByGuid(projectData.guid) match {
       case None => {
-        Global.projects.create(projectData.author_username, UUID.fromString(projectData.guid), projectData.name,
-          projectData.description, projectData.repo_url, projectData.head_version.getOrElse("HEAD"))
-        Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
+        val createdBy = projectData.created_by.getOrElse(Global.users.findByGuid(callingUserGuid).get.username)
+        Global.projects.create(createdBy, projectData.guid, projectData.name,
+          projectData.description.getOrElse(""), projectData.repo_url, projectData.author_usernames, projectData.head_version.getOrElse("HEAD"))
+        JsonResponse(Global.projects.findByGuid(projectData.guid))
       }
       case Some(existing: Project) => {
-        val updated = existing.copy(description = projectData.description, head_version = projectData.head_version.getOrElse("HEAD"))
+        val updated = existing.copy(description = projectData.description.getOrElse(""), head_version = projectData.head_version.getOrElse("HEAD"))
         Global.projects.update(updated)
-        Ok(Json.toJson(Global.projects.findByGuid(UUID.fromString(projectData.guid))))
+        JsonResponse(Global.projects.findByGuid(projectData.guid))
       }
       case _ => InternalServerError
     }
   }
 
   val putProjectForm = Form {
-    mapping("guid" -> nonEmptyText,
+    mapping("guid" -> nonEmptyText.verifying(o => isUUID(o)),
       "name" -> nonEmptyText,
-      "description" -> nonEmptyText,
-      "author_username" -> nonEmptyText,
+      "description" -> optional(text),
+      "created_by" -> optional(text),
       "repo_url" -> nonEmptyText,
+      "author_usernames" -> seq(text),
       "head_version" -> optional(text)
     )(PutProjectFormData.apply)(PutProjectFormData.unapply)
   }

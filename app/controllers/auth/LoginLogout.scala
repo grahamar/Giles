@@ -5,7 +5,7 @@ import play.api.mvc.{SimpleResult, RequestHeader, Controller}
 import jp.t2v.lab.play2.auth.AuthConfig
 import scala.concurrent.{Future, ExecutionContext}
 import play.api.libs.Crypto
-import util.SessionUtil
+import util.HashingUtils
 
 trait LoginLogout {
   self: Controller with AuthConfig =>
@@ -25,7 +25,7 @@ trait LoginLogout {
   }
 
   def gotoLogoutSucceeded(result: => Future[SimpleResult])(implicit request: RequestHeader, ctx: ExecutionContext): Future[SimpleResult] = {
-    request.session.get(cookieName) flatMap SessionUtil.verifyHmac foreach idContainer.remove
+    request.session.get(cookieName) flatMap HashingUtils.verifyHmac foreach idContainer.remove
     result.map(_.withNewSession)
   }
 

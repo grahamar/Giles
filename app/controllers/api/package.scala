@@ -1,29 +1,12 @@
 package controllers
 
-import play.api.libs.json._
 import models._
 import java.util.UUID
+import scala.util.Try
 
 package object api {
-  implicit val writeUUID = new Writes[UUID] {
-    override def writes(status: UUID): JsValue =
-      JsObject(Seq("class" -> JsString(status.toString), "data" -> JsString(status.toString)))
-  }
-  implicit val readUUID = new Reads[UUID] {
-    override def reads(json: JsValue): JsResult[UUID] = json match {
-      case JsObject(Seq(("class", JsString(name)), ("data", JsString(data)))) =>
-        name match {
-          case "BuildSuccess"  => JsSuccess[UUID](UUID.fromString(data))
-          case _      => JsError(s"Unknown class '$name'")
-        }
-      case _ => JsError(s"Unexpected JSON value $json")
-    }
-  }
-  implicit val userFormat = Json.format[JsonUser]
-  implicit val viewFormat = Json.format[View]
-  implicit val fileFormat = Json.format[File]
-  implicit val projectFormat = Json.format[Project]
-  implicit val buildFormat = Json.format[Build]
+
+  implicit val formats = org.json4s.DefaultFormats
 
   implicit class RichUser(user: User) {
     def toJsonUser: JsonUser = {
@@ -32,4 +15,5 @@ package object api {
     }
   }
 
+  def isUUID(value: String): Boolean = Try(UUID.fromString(value)).isSuccess
 }

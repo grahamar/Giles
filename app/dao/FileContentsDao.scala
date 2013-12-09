@@ -4,11 +4,10 @@ import models._
 
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import java.util.UUID
 
 class FileContentsDao(contents: MongoCollection) {
 
-  def create(guid: UUID, hashKey: String, contentSize: Long, content: Array[Byte]): FileContent = {
+  def create(guid: String, hashKey: String, contentSize: Long, content: Array[Byte]): FileContent = {
     val fileContent = FileContent(guid = guid,
       hash_key = hashKey,
       content_size = contentSize,
@@ -19,7 +18,7 @@ class FileContentsDao(contents: MongoCollection) {
     fileContent
   }
 
-  def findByGuid(guid: UUID): Option[FileContent] = {
+  def findByGuid(guid: String): Option[FileContent] = {
     search(FileContentsQuery(guid = Some(guid))).headOption
   }
 
@@ -27,7 +26,7 @@ class FileContentsDao(contents: MongoCollection) {
     search(FileContentsQuery(hash_key = Some(hashKey), content_size = Some(contentSize))).headOption
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     contents.remove(MongoDBObject("guid" -> guid))
   }
 

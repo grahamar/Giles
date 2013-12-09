@@ -1,8 +1,6 @@
 package models
 
-import java.util.UUID
-
-case class UserQuery(guid: Option[UUID] = None,
+case class UserQuery(guid: Option[String] = None,
                      username: Option[String] = None,
                      email: Option[String] = None,
                      limit: Option[Int] = None,
@@ -22,9 +20,9 @@ case class UserQuery(guid: Option[UUID] = None,
 
 }
 
-case class FavouriteQuery(guid: Option[UUID] = None,
-                          user_guid: Option[UUID] = None,
-                          project_guid: Option[UUID] = None,
+case class FavouriteQuery(guid: Option[String] = None,
+                          user_guid: Option[String] = None,
+                          project_guid: Option[String] = None,
                           limit: Option[Int] = None,
                           offset: Option[Int] = None,
                           order_by: Option[String] = None,
@@ -50,8 +48,37 @@ case class FavouriteQuery(guid: Option[UUID] = None,
 
 }
 
-case class BuildQuery(guid: Option[UUID] = None,
-                      project_guid: Option[UUID] = None,
+case class ApiKeyQuery(guid: Option[String] = None,
+                       user_guid: Option[String] = None,
+                       api_key: Option[String] = None,
+                       application_name: Option[String] = None,
+                       limit: Option[Int] = None,
+                       offset: Option[Int] = None,
+                       order_by: Option[String] = None,
+                       order_direction: Int = 1) {
+
+  lazy val pagination = Pagination(limit, offset)
+
+  lazy val sortOrder = order_by.map { field => SortOrder(field, order_direction) }
+
+  def params = {
+    val params = scala.collection.mutable.ListBuffer[(String, Any)]()
+    guid.foreach { v => params += ("guid" -> v) }
+    user_guid.foreach { v => params += ("user_guid" -> v) }
+    api_key.foreach { v => params += ("api_key" -> v) }
+    application_name.foreach { v => params += ("application_name" -> v) }
+    limit.foreach { v => params += ("limit" -> v) }
+    offset.foreach { v => params += ("offset" -> v) }
+    order_by.foreach { v =>
+      params += ("order_by" -> v.toString)
+      params += ("order_direction" -> order_direction)
+    }
+    params.toList
+  }
+}
+
+case class BuildQuery(guid: Option[String] = None,
+                      project_guid: Option[String] = None,
                       version: Option[String] = None,
                       limit: Option[Int] = None,
                       offset: Option[Int] = None,
@@ -78,7 +105,7 @@ case class BuildQuery(guid: Option[UUID] = None,
 
 }
 
-case class ProjectQuery(guid: Option[UUID] = None,
+case class ProjectQuery(guid: Option[String] = None,
                         name: Option[String] = None,
                         author_usernames: Option[Seq[String]] = None,
                         url_key: Option[String] = None,
@@ -110,14 +137,14 @@ case class ProjectQuery(guid: Option[UUID] = None,
 
 }
 
-case class FileQuery(guid: Option[UUID] = None,
-                     project_guid: Option[UUID] = None,
+case class FileQuery(guid: Option[String] = None,
+                     project_guid: Option[String] = None,
                      version: Option[String] = None,
                      title: Option[String] = None,
                      filename: Option[String] = None,
                      relative_path: Option[String] = None,
                      url_key: Option[String] = None,
-                     content_guid: Option[UUID] = None,
+                     content_guid: Option[String] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
@@ -140,8 +167,8 @@ case class FileQuery(guid: Option[UUID] = None,
 
 }
 
-case class PublicationQuery(guid: Option[UUID] = None,
-                            user_guid: Option[UUID] = None,
+case class PublicationQuery(guid: Option[String] = None,
+                            user_guid: Option[String] = None,
                             title: Option[String] = None,
                             url_key: Option[String] = None,
                             limit: Option[Int] = None,
@@ -161,7 +188,7 @@ case class PublicationQuery(guid: Option[UUID] = None,
 
 }
 
-case class FileContentsQuery(guid: Option[UUID] = None,
+case class FileContentsQuery(guid: Option[String] = None,
                      hash_key: Option[String] = None,
                      content_size: Option[Long] = None) {
 
@@ -175,9 +202,9 @@ case class FileContentsQuery(guid: Option[UUID] = None,
 
 }
 
-case class ViewQuery(guid: Option[UUID] = None,
-                     file_guid: Option[UUID] = None,
-                     user_guid: Option[UUID] = None,
+case class ViewQuery(guid: Option[String] = None,
+                     file_guid: Option[String] = None,
+                     user_guid: Option[String] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
@@ -195,7 +222,7 @@ case class ViewQuery(guid: Option[UUID] = None,
 
 }
 
-case class FileRollupQuery(file_guid: Option[UUID] = None,
+case class FileRollupQuery(file_guid: Option[String] = None,
                            limit: Option[Int] = None,
                            offset: Option[Int] = None,
                            order_by: Option[String] = None,
@@ -219,8 +246,8 @@ case class FileRollupQuery(file_guid: Option[UUID] = None,
 
 }
 
-case class UserFileRollupQuery(user_guid: Option[UUID] = None,
-                               file_guid: Option[UUID] = None,
+case class UserFileRollupQuery(user_guid: Option[String] = None,
+                               file_guid: Option[String] = None,
                                limit: Option[Int] = None,
                                offset: Option[Int] = None,
                                order_by: Option[String] = None,

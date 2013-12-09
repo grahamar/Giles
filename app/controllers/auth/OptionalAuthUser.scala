@@ -5,7 +5,7 @@ import scala.concurrent.{Future, ExecutionContext}
 
 import play.api.mvc.{Controller, RequestHeader}
 
-import util.SessionUtil
+import util.HashingUtils
 
 import jp.t2v.lab.play2.auth.{AuthConfig, OptionalAuthElement}
 
@@ -15,7 +15,7 @@ trait OptionalAuthUser extends OptionalAuthElement {
   override def restoreUser(implicit request: RequestHeader, context: ExecutionContext): Future[Option[User]] = {
     val userIdOpt = for {
       value <- request.session.get(cookieName)
-      token <- SessionUtil.verifyHmac(value)
+      token <- HashingUtils.verifyHmac(value)
       userId <- idContainer.get(token)
     } yield (token, userId)
     userIdOpt map { case (token, userId) =>

@@ -12,11 +12,11 @@ import models._
 import controllers.auth._
 import settings.Global
 import dao.util.ProjectHelper
-import play.api.Logger
 import play.api.libs.openid.OpenID
-import play.api.libs.concurrent.{Thrown, Redeemed}
 import org.apache.commons.lang3.RandomStringUtils
 import java.util.UUID
+import play.api.templates.HtmlFormat
+import util.HashingUtils
 
 object AuthenticationController extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
 
@@ -35,6 +35,11 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
       "homepage" -> text
     )(UserData.apply)(UserData.unapply).
     verifying("Passwords don't match", data => data.password.equals(data.rePassword))
+  }
+
+  val createApiKeyForm = Form {
+    mapping("application_name" -> nonEmptyText
+    )(ApiKeyData.apply)(ApiKeyData.unapply)
   }
 
   def login = StackAction { implicit request =>
@@ -63,7 +68,7 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
     OpenID.verifiedId.map { info =>
       val email =  info.attributes.getOrElse("email", "guest@giles.io")
       Global.users.findByEmail(email).getOrElse {
-        val userGuid = UUID.randomUUID()
+        val userGuid = UUID.randomUUID().toString
         val username = email.toLowerCase.takeWhile((ch: Char) => !'@'.equals(ch))
         val password = RandomStringUtils.randomAlphabetic(20)
         val firstname = info.attributes.get("first_name")
@@ -90,8 +95,8 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
 
   def createUser = StackAction { implicit request =>
     createUserForm.bindFromRequest.fold(
-      formWithErrors => Future.successful(BadRequest(html.signUp(formWithErrors, loginForm))),
-      user => Future.successful(Global.users.create(user.toUser))
+      formWithErrors => BadRequest(html.signUp(formWithErrors, loginForm)),
+      user => Global.users.create(user.toUser)
     )
     ApplicationController.Home
   }
@@ -99,14 +104,33 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
   def profile(username: String) = StackAction { implicit request =>
     val maybeBoom = loggedIn
     maybeBoom.filter(boom => "rsetti".equals(boom.username)).map { _ =>
-      Ok(html.boom(AuthenticationController.loginForm))
+      new Status(418)(html.boom(AuthenticationController.loginForm))
     }.getOrElse {
-      val user = Global.users.findByUsername(username)
-      user.map{usr =>
-        val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
-        val userFavourites = loggedIn.map(ProjectHelper.getFavouriteProjectsForUser(_).toSeq).getOrElse(Seq.empty)
-        Ok(html.profile(usr, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, userFavourites, AuthenticationController.loginForm))
-      }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+      Global.users.findByUsername(username).map(usr => Ok(profilePage(usr))).
+        getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    }
+  }
+
+  def profilePage(user: User, apiKeyForm: Form[ApiKeyData] = createApiKeyForm)(implicit flash: Flash, currentUser: Option[models.User]): HtmlFormat.Appendable = {
+    val projects = (Global.projects.findByAuthorUsername(user.username) ++ Global.projects.findByCreatedBy(user.username)).toSet
+    val userFavourites = currentUser.map(ProjectHelper.getFavouriteProjectsForUser(_).toSeq).getOrElse(Seq.empty)
+    val userApiKeys = currentUser.map(Global.apiKeys.findUser(_).toSeq).getOrElse(Seq.empty)
+    html.profile(user, ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, userFavourites, userApiKeys, apiKeyForm, AuthenticationController.loginForm)
+  }
+
+  def createApiKey = StackAction { implicit request =>
+    loggedIn.map { currentUser =>
+      createApiKeyForm.bindFromRequest.fold(
+        formWithErrors => {
+          BadRequest(profilePage(currentUser, formWithErrors))
+        },
+        apiKeyData => {
+          Global.apiKeys.create(UUID.randomUUID().toString, currentUser.guid, apiKeyData.application_name, HashingUtils.calculateUserApiKey(apiKeyData.application_name))
+          Redirect(routes.AuthenticationController.profile(currentUser.username))
+        }
+      )
+    }.getOrElse {
+      Unauthorized(ApplicationController.indexPage(loginForm))
     }
   }
 

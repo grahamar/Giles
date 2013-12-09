@@ -6,11 +6,10 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import java.util.UUID
-import play.api.Logger
 
 class BuildDao(builds: MongoCollection) {
 
-  def create(guid: UUID, projectGuid: UUID, version: String, authors: Seq[String], message: String, status: String): Build = {
+  def create(guid: String, projectGuid: String, version: String, authors: Seq[String], message: String, status: String): Build = {
     val build = Build(guid = guid,
       project_guid = projectGuid,
       version = version,
@@ -22,15 +21,15 @@ class BuildDao(builds: MongoCollection) {
     build
   }
 
-  def createSuccess(projectGuid: UUID, version: String, authors: Seq[String]): Build = {
-    create(UUID.randomUUID(), projectGuid, version, authors, "", "success")
+  def createSuccess(projectGuid: String, version: String, authors: Seq[String]): Build = {
+    create(UUID.randomUUID().toString, projectGuid, version, authors, "", "success")
   }
 
-  def createFailure(projectGuid: UUID, version: String, message: String): Build = {
-    create(UUID.randomUUID(), projectGuid, version, Seq.empty, message, "failure")
+  def createFailure(projectGuid: String, version: String, message: String): Build = {
+    create(UUID.randomUUID().toString, projectGuid, version, Seq.empty, message, "failure")
   }
 
-  def findByGuid(guid: UUID): Option[Build] = {
+  def findByGuid(guid: String): Option[Build] = {
     search(BuildQuery(guid = Some(guid))).headOption
   }
 
@@ -38,11 +37,17 @@ class BuildDao(builds: MongoCollection) {
     search(BuildQuery(project_guid = Some(project.guid))).take(project.versions.size)
   }
 
-  def findByProjectGuidAndVersion(projectGuid: UUID, version: String): Option[Build] = {
+  def findByProjectGuidAndVersion(projectGuid: String, version: String): Option[Build] = {
     search(BuildQuery(project_guid = Some(projectGuid), version = Some(version))).headOption
   }
 
-  def delete(guid: UUID) = {
+  def update(build: Build) = {
+    val obj = MongoDBObject("authors" -> build.authors)
+    builds.update(q = MongoDBObject("guid" -> build.guid),
+      o = MongoDBObject("$set" -> obj), upsert = false, multi = false)
+  }
+
+  def delete(guid: String) = {
     // TODO: Soft delete?
     builds.remove(MongoDBObject("guid" -> guid))
   }

@@ -48,7 +48,7 @@ object MarkdownDocsBuilder extends DocTypeBuilder {
     val htmlContent = toXHTML(blocks).toString()
 
     FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
-      Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, contentGuid)
+      Global.files.create(UUID.randomUUID().toString, project, version, relativePath, filename, fileTitle, contentGuid)
     }
   }
 
@@ -72,7 +72,7 @@ object ReTextDocsBuilder extends DocTypeBuilder {
     val htmlContent = Render as HTML from htmlDoc toString()
 
     FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
-      Global.files.create(UUID.randomUUID(), project, version, relativePath, filename, fileTitle, contentGuid)
+      Global.files.create(UUID.randomUUID().toString, project, version, relativePath, filename, fileTitle, contentGuid)
     }
   }
 

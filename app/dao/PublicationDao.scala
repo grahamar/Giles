@@ -1,7 +1,5 @@
 package dao
 
-import java.util.UUID
-
 import models._
 
 import com.novus.salat._
@@ -10,7 +8,7 @@ import org.joda.time.DateTime
 
 class PublicationDao(publications: MongoCollection) {
 
-  def create(guid: UUID, user: User, title: String, contentGuid: UUID): Publication = {
+  def create(guid: String, user: User, title: String, contentGuid: String): Publication = {
     val urlKey = UrlKey.generate(title)
     val publication = Publication(guid = guid,
       user_guid = user.guid,
@@ -22,7 +20,7 @@ class PublicationDao(publications: MongoCollection) {
     publication
   }
 
-  def update(file: Publication) {
+  def update(file: Publication) = {
     val obj = MongoDBObject("content_guid" -> file.content_guid)
     publications.update(q = MongoDBObject("guid" -> file.guid),
       o = MongoDBObject("$set" -> obj),
@@ -30,7 +28,7 @@ class PublicationDao(publications: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: UUID): Option[Publication] = {
+  def findByGuid(guid: String): Option[Publication] = {
     search(PublicationQuery(guid = Some(guid))).headOption
   }
 
@@ -42,7 +40,7 @@ class PublicationDao(publications: MongoCollection) {
     search(PublicationQuery(url_key = Some(urlKey))).headOption
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     // TODO: Soft delete?
     publications.remove(MongoDBObject("guid" -> guid))
   }

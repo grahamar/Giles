@@ -18,7 +18,7 @@ case object NormalUser extends Permission
 
 trait AuthConfigImpl extends AuthConfig {
 
-  type Id = UUID
+  type Id = String
 
   type User = models.User
 

@@ -6,11 +6,10 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
-import java.util.UUID
 
 class UserDao(users: MongoCollection) {
 
-  def create(guid: UUID, username: String, email: String, password: String, firstName: Option[String] = None, lastName: Option[String] = None): User = {
+  def create(guid: String, username: String, email: String, password: String, firstName: Option[String] = None, lastName: Option[String] = None): User = {
     val user = User(guid = guid,
       username = username,
       email = email,
@@ -29,7 +28,7 @@ class UserDao(users: MongoCollection) {
     usr
   }
 
-  def update(user: User) {
+  def update(user: User) = {
     val obj = MongoDBObject("username" -> user.username, "email" -> user.email, "password" -> user.password,
                 "first_name" -> user.first_name, "last_name" -> user.last_name, "homepage" -> user.homepage)
     users.update(q = MongoDBObject("guid" -> user.guid),
@@ -38,7 +37,7 @@ class UserDao(users: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: UUID): Option[User] = {
+  def findByGuid(guid: String): Option[User] = {
     search(UserQuery(guid = Some(guid))).headOption
   }
 
@@ -54,7 +53,7 @@ class UserDao(users: MongoCollection) {
     findByEmail(email).filter{user => user.salt.exists(salt => BCrypt.checkpw(password, user.password))}
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     // TODO: Soft delete?
     users.remove(MongoDBObject("guid" -> guid))
   }

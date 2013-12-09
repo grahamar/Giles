@@ -5,12 +5,12 @@ import models._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
-import java.util.UUID
 import org.apache.commons.io.FilenameUtils
+import play.api.Logger
 
 class FilesDao(files: MongoCollection) {
 
-  def create(guid: UUID, project: Project, version: String, relativePath: String, filename: String, title: String, contentGuid: UUID): File = {
+  def create(guid: String, project: Project, version: String, relativePath: String, filename: String, title: String, contentGuid: String): File = {
     val urlKey = UrlKey.generate(FilenameUtils.concat(relativePath, title))
     val file = File(guid = guid,
       project_guid = project.guid,
@@ -27,7 +27,7 @@ class FilesDao(files: MongoCollection) {
     file
   }
 
-  def update(file: File) {
+  def update(file: File) = {
     val obj = MongoDBObject("content_guid" -> file.content_guid)
     files.update(q = MongoDBObject("guid" -> file.guid),
       o = MongoDBObject("$set" -> obj),
@@ -35,19 +35,19 @@ class FilesDao(files: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: UUID): Option[File] = {
+  def findByGuid(guid: String): Option[File] = {
     search(FileQuery(guid = Some(guid))).headOption
   }
 
-  def findAllByProjectGuidAndVersion(projectGuid: UUID, version: String): Iterable[File] = {
+  def findAllByProjectGuidAndVersion(projectGuid: String, version: String): Iterable[File] = {
     search(FileQuery(project_guid = Some(projectGuid), version = Some(version)))
   }
 
-  def findByContentGuid(contentGuid: UUID): Iterable[File] = {
+  def findByContentGuid(contentGuid: String): Iterable[File] = {
     search(FileQuery(content_guid = Some(contentGuid)))
   }
 
-  def findForProjectGuidAndVersion(projectGuid: UUID, version: String, fileUrlKey: String): Option[File] = {
+  def findForProjectGuidAndVersion(projectGuid: String, version: String, fileUrlKey: String): Option[File] = {
     search(FileQuery(
       project_guid = Some(projectGuid),
       version = Some(version),
@@ -55,7 +55,7 @@ class FilesDao(files: MongoCollection) {
     )).headOption
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     // TODO: Soft delete?
     files.remove(MongoDBObject("guid" -> guid))
   }
@@ -74,7 +74,7 @@ class FilesDao(files: MongoCollection) {
     files.find(builder.result()).
       skip(query.pagination.offsetOrDefault).
       limit(query.pagination.limitOrDefault).
-      toList.map(grater[File].asObject(_)).sorted
+      toList.map(grater[File].asObject(_))
   }
 
 }

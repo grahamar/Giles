@@ -1,5 +1,5 @@
-@(user: models.User, userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[models.ProjectAuthorsAndBuilds],
-loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
+@(user: models.User, userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[models.ProjectAuthorsAndBuilds], userApiKeys: Seq[models.ApiKey],
+createApiKeyForm: Form[models.ApiKeyData], loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
 
@@ -11,55 +11,93 @@ loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option
             <span class="divider col-md-1"></span>
             <h4>@user.first_name @user.last_name</h4>
             <h5 class="text-muted">(@user.username)</h5>
-            @user.homepage.map{ hp =>
+            @user.homepage.map { hp =>
             <span class="divider col-md-1"></span>
             <a href="@hp">@hp</a>
             }
         </div>
     </div>
-    <div class="col-md-9 well">
-        <h3>Favourite Projects</h3>
-        <table class="projects table table-bordered">
-            <tbody>
-            @userFavourites.map { favouriteProject =>
-            <tr class="project">
-                <td>
-                    <a href='@routes.ProjectController.project(favouriteProject.project.url_key)'><strong>@favouriteProject.project.name</strong></a>
-                    @if(!favouriteProject.project.author_usernames.isEmpty){
-                    (@{Html(favouriteProject.project.author_usernames.map { author =>
-                    val authorProfileLink = routes.AuthenticationController.profile(author).toString
-                    <a class="text-muted" href="{authorProfileLink}">{author}</a>
-                    }.mkString(", "))})
-                    }
-                    <div class="pull-right">
-                        @viewDocs(favouriteProject)
-                    </div>
-                </td>
-            </tr>
-            }
-            </tbody>
-        </table>
-        <h3>My Projects</h3>
-        <table class="projects table table-bordered">
-            <tbody>
-            @userProjects.map { projectAndBuilds =>
-            <tr class="project">
-                <td>
-                    <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key)'><strong>@projectAndBuilds.project.name</strong></a>
-                    @if(!projectAndBuilds.project.author_usernames.isEmpty){
-                    (@{Html(projectAndBuilds.project.author_usernames.map { author =>
-                    val authorProfileLink = routes.AuthenticationController.profile(author).toString
-                    <a class="text-muted" href="{authorProfileLink}">{author}</a>
-                    }.mkString(", "))})
-                    }
-                    <div class="pull-right">
-                        @viewDocs(projectAndBuilds)
-                    </div>
-                </td>
-            </tr>
-            }
-            </tbody>
-        </table>
+    <div class="col-md-9">
+        <div class="well">
+            <h3>Favourite Projects</h3>
+            <table class="projects table table-bordered">
+                <tbody>
+                @userFavourites.map { favouriteProject =>
+                <tr class="project">
+                    <td>
+                        <a href='@routes.ProjectController.project(favouriteProject.project.url_key)'><strong>@favouriteProject.project.name</strong></a>
+                        @if(!favouriteProject.project.author_usernames.isEmpty){
+                        (@{Html(favouriteProject.project.author_usernames.map { author =>
+                        val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                        <a class="text-muted" href="{authorProfileLink}">{author}</a>
+                        }.mkString(", "))})
+                        }
+                        <div class="pull-right">
+                            @viewDocs(favouriteProject)
+                        </div>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="well">
+            <h3>My Projects</h3>
+            <table class="projects table table-bordered">
+                <tbody>
+                @userProjects.map { projectAndBuilds =>
+                <tr class="project">
+                    <td>
+                        <a href='@routes.ProjectController.project(projectAndBuilds.project.url_key)'><strong>@projectAndBuilds.project.name</strong></a>
+                        @if(!projectAndBuilds.project.author_usernames.isEmpty){
+                        (@{Html(projectAndBuilds.project.author_usernames.map { author =>
+                        val authorProfileLink = routes.AuthenticationController.profile(author).toString
+                        <a class="text-muted" href="{authorProfileLink}">{author}</a>
+                        }.mkString(", "))})
+                        }
+                        <div class="pull-right">
+                            @viewDocs(projectAndBuilds)
+                        </div>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @currentUser.map { user =>
+        <div class="panel">
+            <h3>API Keys</h3>
+            @helper.form(action=routes.AuthenticationController.createApiKey, 'class -> "form-inline") {
+            <div class="row">
+                @createApiKeyForm.globalError.map { error =>
+                <p class="form-group text-danger">@error.message</p>
+                }
+                @flash.get("success").map { message =>
+                <p class="form-group text-success">@message</p>
+                }
+                <div class="form-group col-xs-8">
+                    <label for="application_name" class="sr-only">Application Name</label>
+                    <input type="text" id="application_name" class="form-control" placeholder="Name of the application requesting API access" name="application_name" value='@createApiKeyForm("application_name").value'/>
+                </div>
+                <button class="btn btn-primary" type="submit">Generate API Key</button>
+                }
+            </div>
+            <table class="projects table table-bordered">
+                <tbody>
+                @userApiKeys.map { key =>
+                <tr class="project">
+                    <td>
+                        <strong>@key.application_name</strong>
+                        <div class="pull-right">
+                            <strong>@key.api_key</strong>
+                        </div>
+                    </td>
+                </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        }
     </div>
 </div>
 }

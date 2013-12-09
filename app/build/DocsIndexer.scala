@@ -25,9 +25,11 @@ import org.apache.lucene.analysis.util.CharArraySet
 
 trait DocsIndexer {
   def index(project: Project, version: String): Try[Unit]
+  def index(project: Project, version: String, file: FileWithContent): Try[Unit]
   def index(publication: PublicationWithContent): Try[Unit]
   def cleanPublicationIndex(publication: Publication): Try[Unit]
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit]
+  def cleanProjectAndVersionFileIndex(project: Project, version: String, file: File): Try[Unit]
 }
 
 object LuceneDocsIndexer {
@@ -43,6 +45,26 @@ trait LuceneDocsIndexer extends DocsIndexer {
   self: DirectoryHandler =>
 
   import ResourceUtil._
+
+  def cleanProjectAndVersionFileIndex(project: Project, version: String, file: File): Try[Unit] = Try {
+    val indexWriter: IndexWriter = {
+      val dir = FSDirectory.open(indexDir)
+      new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
+    }
+
+    val booleanQuery = new BooleanQuery()
+    booleanQuery.add(new TermQuery(new Term("project", project.url_key)), BooleanClause.Occur.MUST)
+    booleanQuery.add(new TermQuery(new Term("version", version)), BooleanClause.Occur.MUST)
+    booleanQuery.add(new TermQuery(new Term("path", file.url_key)), BooleanClause.Occur.MUST)
+    doWith(indexWriter) { writer =>
+      writer.deleteDocuments(booleanQuery)
+      writer.commit()
+    }
+  }.recover {
+    case e: Exception =>
+      Global.builds.createFailure(project.guid, version, "Cleaning Index failed - "+ e.getMessage)
+      throw e
+  }
 
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit] = Try {
     val indexWriter: IndexWriter = {
@@ -74,6 +96,23 @@ trait LuceneDocsIndexer extends DocsIndexer {
     doWith(indexWriter) { writer =>
       writer.deleteDocuments(booleanQuery)
       writer.commit()
+    }
+  }
+
+  def index(project: Project, version: String, file: FileWithContent): Try[Unit] = {
+    cleanProjectAndVersionFileIndex(project, version, file.file).map { _ =>
+      val index: IndexWriter = {
+        val dir = FSDirectory.open(indexDir)
+        new IndexWriter(dir, LuceneDocsIndexer.indexWriterConfig)
+      }
+      doWith(index) { indx =>
+        indexFile(project, version, file, indx)
+        indx.commit()
+      }
+    }.recover {
+      case e: Exception =>
+        Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
+        throw e
     }
   }
 

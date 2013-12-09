@@ -98,10 +98,11 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
         Future {
           val newProject = Global.projects.create(
             createdByUsername = usr.username,
-            guid = UUID.randomUUID(),
+            guid = UUID.randomUUID().toString,
             name = project.name,
             description = project.description,
             repoUrl = project.repoUrl,
+            authorUsernames = Seq.empty,
             headVersion = project.headVersion)
           DocumentationFactory.documentsBuilder.build(newProject)
           Global.users.update(usr.copy(project_guids = usr.project_guids ++ Seq(newProject.guid)))

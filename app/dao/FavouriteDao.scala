@@ -9,17 +9,17 @@ import com.mongodb.casbah.Imports._
 
 class FavouriteDao(favourites: MongoCollection) {
 
-  def create(guid: UUID, user: User, project: Project): Favourite = {
+  def create(guid: String, user: User, project: Project): Favourite = {
     val favourite = Favourite(guid = guid, user_guid = user.guid, project_guid = project.guid)
     favourites.insert(grater[Favourite].asDBObject(favourite))
     favourite
   }
 
   def create(user: User, project: Project): Favourite = {
-    create(UUID.randomUUID(), user, project)
+    create(UUID.randomUUID().toString, user, project)
   }
 
-  def findByGuid(guid: UUID): Option[Favourite] = {
+  def findByGuid(guid: String): Option[Favourite] = {
     search(FavouriteQuery(guid = Some(guid))).headOption
   }
 
@@ -35,7 +35,7 @@ class FavouriteDao(favourites: MongoCollection) {
     search(FavouriteQuery(user_guid = Some(user.guid), project_guid = Some(project.guid))).headOption
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     favourites.remove(MongoDBObject("guid" -> guid))
   }
 

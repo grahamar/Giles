@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 case class UserData(username: String, email: String, password: String, rePassword: String,
                     firstName: String, lastName: String, homepage: String) {
   def toUser: User = {
-    User(guid = UUID.randomUUID(),
+    User(guid = UUID.randomUUID().toString,
       username = username,
       email = email,
       password = password,
@@ -16,6 +16,8 @@ case class UserData(username: String, email: String, password: String, rePasswor
       created_at = new DateTime())
   }
 }
+
+case class ApiKeyData(application_name: String)
 
 case class PublicationData(title: String, content: String)
 

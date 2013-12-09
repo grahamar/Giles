@@ -5,20 +5,19 @@ import util.{Index, MongoUtil}
 
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
-import java.util.UUID
 
 class FileViewRollupDao {
 
   private lazy val fileViewsAllTime = MongoUtil.collection("file_views_all_time", Seq(Index(field="file_guid", unique=true)))
 
-  def increment(fileGuid: UUID) {
+  def increment(fileGuid: String) {
     fileViewsAllTime.update(q = MongoDBObject("file_guid" -> fileGuid),
       o = $inc("count" -> 1),
       upsert = true,
       multi = false)
   }
 
-  def numberViews(fileGuid: UUID): Long = {
+  def numberViews(fileGuid: String): Long = {
     val result = fileViewsAllTime.find(MongoDBObject("file_guid" -> fileGuid)).toList.map(grater[FileRollup].asObject(_))
     result.headOption match {
       case Some(rollup: FileRollup) => rollup.count
@@ -32,7 +31,7 @@ class FileViewRollupDao {
       order_direction = -1))
   }
 
-  def delete(fileGuid: UUID) {
+  def delete(fileGuid: String) {
     fileViewsAllTime.remove(MongoDBObject("file_guid" -> fileGuid))
   }
 

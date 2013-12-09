@@ -38,7 +38,7 @@ object PublicationController extends Controller with OptionalAuthUser with AuthC
 
   def createPublication(data: PublicationData, currentUser: User)(implicit request: RequestHeader): SimpleResult = {
     val publication = FileHelper.getOrCreateContent(data.content) { contentGuid =>
-      val pub = Global.publications.create(UUID.randomUUID(), currentUser, data.title, contentGuid)
+      val pub = Global.publications.create(UUID.randomUUID().toString, currentUser, data.title, contentGuid)
       DocumentationFactory.indexService.cleanPublicationIndex(pub).map { _ =>
         DocumentationFactory.indexService.index(pub.withContent)
       }

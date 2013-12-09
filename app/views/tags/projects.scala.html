@@ -1,4 +1,4 @@
-@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[java.util.UUID])(implicit currentUser: Option[models.User])
+@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[String])(implicit currentUser: Option[models.User])
 
 <div class="well">
     <table class="projects table table-bordered">
@@ -13,7 +13,11 @@
                 <img class="favourite" data-project="@projectAndAuthors.project.url_key" src='@routes.Assets.at("img/star-empty.png")' style="width: 24px;" />
                 }
                 }
+                @projectAndAuthors.latestBuild.map { latest =>
+                <a href='@routes.StaticDocsController.projectIndex(projectAndAuthors.project.url_key, latest.version)'><strong>@projectAndAuthors.project.name</strong></a>
+                }.getOrElse {
                 <a href='@routes.ProjectController.project(projectAndAuthors.project.url_key)'><strong>@projectAndAuthors.project.name</strong></a>
+                }
                 @if(!projectAndAuthors.project.author_usernames.isEmpty){
                 (@{Html(projectAndAuthors.project.author_usernames.map { author =>
                 val authorProfileLink = routes.AuthenticationController.profile(author).toString

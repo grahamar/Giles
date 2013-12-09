@@ -5,11 +5,10 @@ import models._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
-import java.util.UUID
 
 class ProjectDao(projects: MongoCollection) {
 
-  def create(createdByUsername: String, guid: UUID, name: String, description: String = "", repoUrl: String, headVersion: String = "HEAD"): Project = {
+  def create(createdByUsername: String, guid: String, name: String, description: String = "", repoUrl: String, authorUsernames: Seq[String], headVersion: String = "HEAD"): Project = {
     val urlKey = UrlKey.generate(name)
     val project = Project(guid = guid,
       name = name,
@@ -18,7 +17,7 @@ class ProjectDao(projects: MongoCollection) {
       repo_url = repoUrl,
       head_version = headVersion,
       versions = Seq(headVersion),
-      author_usernames = Seq.empty,
+      author_usernames = authorUsernames,
       created_by = createdByUsername,
       created_at = new DateTime(),
       updated_at = new DateTime())
@@ -30,7 +29,7 @@ class ProjectDao(projects: MongoCollection) {
     project
   }
 
-  def update(project: Project) {
+  def update(project: Project) = {
     val obj = MongoDBObject("description" -> project.description, "head_version" -> project.head_version,
       "versions" -> project.versions, "author_usernames" -> project.author_usernames)
     projects.update(q = MongoDBObject("guid" -> project.guid),
@@ -39,7 +38,7 @@ class ProjectDao(projects: MongoCollection) {
       multi = false)
   }
 
-  def findByGuid(guid: UUID): Option[Project] = {
+  def findByGuid(guid: String): Option[Project] = {
     search(ProjectQuery(guid = Some(guid))).headOption
   }
 
@@ -63,7 +62,7 @@ class ProjectDao(projects: MongoCollection) {
     search(ProjectQuery(limit = Some(limit), order_by = Some("updated_at"), order_direction = -1))
   }
 
-  def delete(guid: UUID) = {
+  def delete(guid: String) = {
     // TODO: Soft delete?
     projects.remove(MongoDBObject("guid" -> guid))
   }

@@ -1,4 +1,4 @@
-@(recentlyUpdatedProjects: Seq[models.ProjectAuthorsAndBuilds], popFiles: Seq[models.PopularFile], userFavourites: Seq[java.util.UUID],
+@(recentlyUpdatedProjects: Seq[models.ProjectAuthorsAndBuilds], popFiles: Seq[models.PopularFile], userFavourites: Seq[String],
 loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._

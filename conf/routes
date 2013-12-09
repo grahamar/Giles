@@ -12,6 +12,7 @@ GET     /logout                                               controllers.Authen
 GET     /signUpForm                                           controllers.AuthenticationController.signUp
 POST    /users/create                                         controllers.AuthenticationController.createUser
 GET     /users/profile/*username                              controllers.AuthenticationController.profile(username)
+POST    /users/profile/create-api-key                         controllers.AuthenticationController.createApiKey
 
 GET     /search                                               controllers.ApplicationController.search(filter ?= "")
 GET     /search/:projectUrlKey                                controllers.ApplicationController.searchProject(projectUrlKey, filter ?= "")
@@ -38,19 +39,30 @@ GET     /publication/:pubUrlKey                               controllers.Public
 POST    /publication/update                                   controllers.PublicationController.editPublication
 
 # Api
-GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid: Option[String], name: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+OPTIONS /api/projects                                         controllers.api.ProjectsApiController.getOptions
+GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid ?= null, name ?= null, url_key ?= null, limit ?= null, offset ?= null)
 PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects
-GET     /api/versions                                         controllers.api.VersionsApiController.getVersions(projectGuid, version: Option[String])
-PUT     /api/versions                                         controllers.api.VersionsApiController.putVersions
-GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid: Option[String], project_guid: Option[String], title: Option[String], urlKey: Option[String], limit: Option[String], offset: Option[String])
+OPTIONS /api/files                                            controllers.api.FilesApiController.getOptions
+GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid ?= null, project_guid, filename ?= null, version, title ?= null, url_key ?= null, limit ?= null, offset ?= null)
 PUT     /api/files                                            controllers.api.FilesApiController.putFiles
-PUT     /api/views                                            controllers.api.ViewsApiController.putViews
-GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
-GET     /api/users                                            controllers.api.UsersApiController.getUsers(guid: Option[String], projectGuid: Option[String], version: Option[String], limit: Option[String], offset: Option[String])
+OPTIONS /api/builds                                           controllers.api.BuildsApiController.getOptions
+GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(project_guid, guid ?= null, version ?= null, limit ?= null, offset ?= null)
+PUT     /api/builds                                           controllers.api.BuildsApiController.putBuilds
+OPTIONS /api/users                                            controllers.api.UsersApiController.getOptions
+GET     /api/users                                            controllers.api.UsersApiController.getUsers(guid ?= null, username ?= null, email ?= null, limit ?= null, offset ?= null)
 PUT     /api/users                                            controllers.api.UsersApiController.putUsers
 
-GET     /assets/javascripts/routes                            controllers.ApplicationController.javascriptRoutes
+
+# API Docs
+GET     /api-docs                                             controllers.ApiHelpController.getResources
+GET     /api-docs/api/projects                                controllers.ApiHelpController.getResource(path = "/api/projects")
+GET     /api-docs/api/files                                   controllers.ApiHelpController.getResource(path = "/api/files")
+GET     /api-docs/api/builds                                  controllers.ApiHelpController.getResource(path = "/api/builds")
+GET     /api-docs/api/users                                   controllers.ApiHelpController.getResource(path = "/api/users")
+
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /favicon.ico                                          controllers.Assets.at(path="/public", file="favicon.ico")
+GET     /assets/javascripts/routes                            controllers.ApplicationController.javascriptRoutes
 GET     /assets/*file                                         controllers.Assets.at(path="/public", file)

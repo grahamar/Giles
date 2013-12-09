@@ -1,4 +1,4 @@
-@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[java.util.UUID],
+@(userProjects: Seq[models.ProjectAuthorsAndBuilds], userFavourites: Seq[String],
 loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option[models.User])
 
 @import tags._
