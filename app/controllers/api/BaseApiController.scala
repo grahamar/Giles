@@ -2,12 +2,10 @@ package controllers.api
 
 import play.api.mvc._
 
-import com.wordnik.swagger.core.util.ScalaJsonUtil
-import org.joda.time.{DateTimeZone, DateTime}
+import settings.Global
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.joda.JodaModule
-import settings.Global
-import util.HashingUtils
+import com.wordnik.swagger.core.util.ScalaJsonUtil
 
 class BaseApiController extends Controller {
 
@@ -20,7 +18,7 @@ class BaseApiController extends Controller {
     new SimpleResult(header = ResponseHeader(200), body = play.api.libs.iteratee.Enumerator(jsonValue.getBytes)).as("application/json")
       .withHeaders(
       ("Access-Control-Allow-Origin", "*"),
-      ("Access-Control-Allow-Methods", "GET, PUT"),
+      ("Access-Control-Allow-Methods", "GET, PUT, OPTIONS"),
       ("Access-Control-Allow-Headers", "Content-Type, X-API-Key, X-API-Application"))
   }
 
@@ -29,7 +27,7 @@ class BaseApiController extends Controller {
     new SimpleResult(header = ResponseHeader(code), body = play.api.libs.iteratee.Enumerator(jsonValue.getBytes)).as("application/json")
       .withHeaders(
       ("Access-Control-Allow-Origin", "*"),
-      ("Access-Control-Allow-Methods", "GET, PUT"),
+      ("Access-Control-Allow-Methods", "GET, PUT, OPTIONS"),
       ("Access-Control-Allow-Headers", "Content-Type, X-API-Key, X-API-Application"))
   }
 

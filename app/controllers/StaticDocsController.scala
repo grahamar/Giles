@@ -37,4 +37,10 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
 
   def pdf(projectUrlKey: String, projectVersion: String) = TODO
 
+  def swagger(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
+    Global.projects.findByUrlKey(projectUrlKey).map { project =>
+      Ok(html.swagger(controllers.api.routes.SwaggerApiController.getResourceListing(project.guid, projectVersion).url, AuthenticationController.loginForm))
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+  }
+
 }

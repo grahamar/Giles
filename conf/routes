@@ -2,67 +2,76 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                                                     controllers.ApplicationController.index
+GET     /                                                                   controllers.ApplicationController.index
 
 # Authentication
-POST    /login                                                controllers.AuthenticationController.authenticate
-GET     /loginWithGoogle                                      controllers.AuthenticationController.loginWithGoogle
-GET     /openIDCallback                                       controllers.AuthenticationController.openIDCallback
-GET     /logout                                               controllers.AuthenticationController.logout
-GET     /signUpForm                                           controllers.AuthenticationController.signUp
-POST    /users/create                                         controllers.AuthenticationController.createUser
-GET     /users/profile/*username                              controllers.AuthenticationController.profile(username)
-POST    /users/profile/create-api-key                         controllers.AuthenticationController.createApiKey
+POST    /login                                                              controllers.AuthenticationController.authenticate
+GET     /loginWithGoogle                                                    controllers.AuthenticationController.loginWithGoogle
+GET     /openIDCallback                                                     controllers.AuthenticationController.openIDCallback
+GET     /logout                                                             controllers.AuthenticationController.logout
+GET     /signUpForm                                                         controllers.AuthenticationController.signUp
+POST    /users/create                                                       controllers.AuthenticationController.createUser
+GET     /users/profile/*username                                            controllers.AuthenticationController.profile(username)
+POST    /users/profile/create-api-key                                       controllers.AuthenticationController.createApiKey
 
-GET     /search                                               controllers.ApplicationController.search(filter ?= "")
-GET     /search/:projectUrlKey                                controllers.ApplicationController.searchProject(projectUrlKey, filter ?= "")
-GET     /search/:projectUrlKey/:projectVersion                controllers.ApplicationController.searchProjectVersion(projectUrlKey, projectVersion, filter ?= "")
+GET     /search                                                             controllers.ApplicationController.search(filter ?= "")
+GET     /search/:projectUrlKey                                              controllers.ApplicationController.searchProject(projectUrlKey, filter ?= "")
+GET     /search/:projectUrlKey/:projectVersion                              controllers.ApplicationController.searchProjectVersion(projectUrlKey, projectVersion, filter ?= "")
 
-GET     /projects                                             controllers.ProjectController.projects
-GET     /projects/import                                      controllers.ProjectController.importProject
-POST    /projects/create                                      controllers.ProjectController.createProject
-GET     /projects/:projectUrlKey                              controllers.ProjectController.project(projectUrlKey)
-GET     /projects/:projectUrlKey/edit                         controllers.ProjectController.editProject(projectUrlKey)
-POST    /projects/:projectUrlKey/favourite                    controllers.ProjectController.favouriteProject(projectUrlKey)
-POST    /projects/:projectUrlKey/unfavourite                  controllers.ProjectController.unfavouriteProject(projectUrlKey)
-GET     /projects/:projectUrlKey/pull                         controllers.ProjectController.pullNewVersions(projectUrlKey)
-GET     /projects/:projectUrlKey/docs/:projectVersion         controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
-GET     /projects/:projectUrlKey/docs/:projectVersion/*file   controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
-GET     /projects/:projectUrlKey/pdf/:projectVersion          controllers.StaticDocsController.pdf(projectUrlKey, projectVersion)
+GET     /projects                                                           controllers.ProjectController.projects
+GET     /projects/import                                                    controllers.ProjectController.importProject
+GET     /projects/import-swagger                                            controllers.ProjectController.importSwagger
+POST    /projects/create                                                    controllers.ProjectController.createProject
+POST    /projects/create-swagger-resource                                   controllers.ProjectController.createProjectSwaggerResource
+POST    /projects/create-swagger-api                                        controllers.ProjectController.createProjectSwaggerApi
+GET     /projects/:projectUrlKey                                            controllers.ProjectController.project(projectUrlKey)
+GET     /projects/:projectUrlKey/versions                                   controllers.ProjectController.projectVersions(projectUrlKey)
+GET     /projects/:projectUrlKey/edit                                       controllers.ProjectController.editProject(projectUrlKey)
+POST    /projects/:projectUrlKey/favourite                                  controllers.ProjectController.favouriteProject(projectUrlKey)
+POST    /projects/:projectUrlKey/unfavourite                                controllers.ProjectController.unfavouriteProject(projectUrlKey)
+GET     /projects/:projectUrlKey/pull                                       controllers.ProjectController.pullNewVersions(projectUrlKey)
+GET     /projects/:projectUrlKey/docs/:projectVersion                       controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
+GET     /projects/:projectUrlKey/docs/:projectVersion/*file                 controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
+GET     /projects/:projectUrlKey/pdf/:projectVersion                        controllers.StaticDocsController.pdf(projectUrlKey, projectVersion)
+GET     /projects/:projectUrlKey/swagger/:projectVersion                    controllers.StaticDocsController.swagger(projectUrlKey, projectVersion)
 
-GET     /dashboard                                            controllers.ApplicationController.dashboard
+GET     /dashboard                                                          controllers.ApplicationController.dashboard
 
-POST    /publications                                         controllers.PublicationController.postPublication
-GET     /publications/create                                  controllers.PublicationController.create
-GET     /publications/:username                               controllers.PublicationController.publicationsForUser(username)
-GET     /publication/:pubUrlKey                               controllers.PublicationController.publication(pubUrlKey)
-POST    /publication/update                                   controllers.PublicationController.editPublication
+POST    /publications                                                       controllers.PublicationController.postPublication
+GET     /publications/create                                                controllers.PublicationController.create
+GET     /publications/:username                                             controllers.PublicationController.publicationsForUser(username)
+GET     /publication/:pubUrlKey                                             controllers.PublicationController.publication(pubUrlKey)
+POST    /publication/update                                                 controllers.PublicationController.editPublication
 
 # Api
-OPTIONS /api/projects                                         controllers.api.ProjectsApiController.getOptions
-GET     /api/projects                                         controllers.api.ProjectsApiController.getProjects(guid ?= null, name ?= null, url_key ?= null, limit ?= null, offset ?= null)
-PUT     /api/projects                                         controllers.api.ProjectsApiController.putProjects
-OPTIONS /api/files                                            controllers.api.FilesApiController.getOptions
-GET     /api/files                                            controllers.api.FilesApiController.getFiles(guid ?= null, project_guid, filename ?= null, version, title ?= null, url_key ?= null, limit ?= null, offset ?= null)
-PUT     /api/files                                            controllers.api.FilesApiController.putFiles
-OPTIONS /api/builds                                           controllers.api.BuildsApiController.getOptions
-GET     /api/builds                                           controllers.api.BuildsApiController.getBuilds(project_guid, guid ?= null, version ?= null, limit ?= null, offset ?= null)
-PUT     /api/builds                                           controllers.api.BuildsApiController.putBuilds
-OPTIONS /api/users                                            controllers.api.UsersApiController.getOptions
-GET     /api/users                                            controllers.api.UsersApiController.getUsers(guid ?= null, username ?= null, email ?= null, limit ?= null, offset ?= null)
-PUT     /api/users                                            controllers.api.UsersApiController.putUsers
+OPTIONS /api/projects                                                       controllers.api.ProjectsApiController.getOptions
+GET     /api/projects                                                       controllers.api.ProjectsApiController.getProjects(guid ?= null, name ?= null, url_key ?= null, limit ?= null, offset ?= null)
+PUT     /api/projects                                                       controllers.api.ProjectsApiController.putProjects
+OPTIONS /api/files                                                          controllers.api.FilesApiController.getOptions
+GET     /api/files                                                          controllers.api.FilesApiController.getFiles(guid ?= null, project_guid, filename ?= null, version, title ?= null, url_key ?= null, limit ?= null, offset ?= null)
+PUT     /api/files                                                          controllers.api.FilesApiController.putFiles
+OPTIONS /api/swagger-api                                                    controllers.api.SwaggerApiController.getOptions
+GET     /api/swagger-api/:project_guid/:version                             controllers.api.SwaggerApiController.getResourceListing(project_guid, version)
+GET     /api/swagger-api/:project_guid/:version/*path                       controllers.api.SwaggerApiController.getApiListing(project_guid, version, path)
+PUT     /api/swagger-api                                                    controllers.api.SwaggerApiController.putApi
+OPTIONS /api/builds                                                         controllers.api.BuildsApiController.getOptions
+GET     /api/builds                                                         controllers.api.BuildsApiController.getBuilds(project_guid, guid ?= null, version ?= null, limit ?= null, offset ?= null)
+PUT     /api/builds                                                         controllers.api.BuildsApiController.putBuilds
+OPTIONS /api/users                                                          controllers.api.UsersApiController.getOptions
+GET     /api/users                                                          controllers.api.UsersApiController.getUsers(guid ?= null, username ?= null, email ?= null, limit ?= null, offset ?= null)
+PUT     /api/users                                                          controllers.api.UsersApiController.putUsers
 
 
 # API Docs
-GET     /api-docs                                             controllers.ApiHelpController.getResources
-GET     /api-docs/api/projects                                controllers.ApiHelpController.getResource(path = "/api/projects")
-GET     /api-docs/api/files                                   controllers.ApiHelpController.getResource(path = "/api/files")
-GET     /api-docs/api/builds                                  controllers.ApiHelpController.getResource(path = "/api/builds")
-GET     /api-docs/api/users                                   controllers.ApiHelpController.getResource(path = "/api/users")
+GET     /api-docs                                                           controllers.ApiHelpController.getResources
+GET     /api-docs/api/projects                                              controllers.ApiHelpController.getResource(path = "/api/projects")
+GET     /api-docs/api/files                                                 controllers.ApiHelpController.getResource(path = "/api/files")
+GET     /api-docs/api/builds                                                controllers.ApiHelpController.getResource(path = "/api/builds")
+GET     /api-docs/api/users                                                 controllers.ApiHelpController.getResource(path = "/api/users")
 
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /favicon.ico                                          controllers.Assets.at(path="/public", file="favicon.ico")
-GET     /assets/javascripts/routes                            controllers.ApplicationController.javascriptRoutes
-GET     /assets/*file                                         controllers.Assets.at(path="/public", file)
+GET     /favicon.ico                                                        controllers.Assets.at(path="/public", file="favicon.ico")
+GET     /assets/javascripts/routes                                          controllers.ApplicationController.javascriptRoutes
+GET     /assets/*file                                                       controllers.Assets.at(path="/public", file)

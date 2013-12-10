@@ -24,7 +24,7 @@ object UsersApiController extends BaseApiController {
     JsonResponse(Global.users.search(usersQuery).toList.map(_.toJsonUser))
   }
 
-  @ApiOperation(value = "Add/Update a user", response = classOf[JsonUser], httpMethod = "PUT")
+  @ApiOperation(value = "Add/Update a user", response = classOf[JsonUser], httpMethod = "PUT", authorizations = "apiKey")
   @ApiResponses(Array(new ApiResponse(code = 400, message = "Validation exception")))
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "Unique GUID for the new user", name = "guid", required = true, dataType = "UUID", paramType = "body"),

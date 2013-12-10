@@ -133,10 +133,8 @@ pre#docs-pre-content {
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   word-wrap: break-word;
-}
-
-pre#docs-pre-content pre {
-  background: #FFFFFF;
+  background-color: #FFFFFF;
+  border: 0px none;
 }
 
 @media (max-width:767px) {

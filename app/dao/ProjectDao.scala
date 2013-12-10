@@ -16,7 +16,7 @@ class ProjectDao(projects: MongoCollection) {
       url_key = urlKey,
       repo_url = repoUrl,
       head_version = headVersion,
-      versions = Seq(headVersion),
+      versions = Seq.empty,
       author_usernames = authorUsernames,
       created_by = createdByUsername,
       created_at = new DateTime(),

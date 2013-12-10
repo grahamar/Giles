@@ -1,0 +1,1 @@
+{"apiVersion":"beta","swaggerVersion":"1.2","apis":[{"path":"/api/builds","description":"Operations for document builds"},{"path":"/api/files","description":"Operations for project files"},{"path":"/api/users","description":"Operations for users"},{"path":"/api/projects","description":"Operations for projects"}]}

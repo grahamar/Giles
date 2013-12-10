@@ -29,7 +29,7 @@ object BuildsApiController extends BaseApiController {
     }
   }
 
-  @ApiOperation(value = "Add/Update a build", response = classOf[Build], httpMethod = "PUT")
+  @ApiOperation(value = "Add/Update a build", response = classOf[Build], httpMethod = "PUT", authorizations = "apiKey")
   @ApiResponses(Array(new ApiResponse(code = 400, message = "Validation exception")))
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "Unique GUID for the new build", name = "guid", required = true, dataType = "UUID", paramType = "body"),

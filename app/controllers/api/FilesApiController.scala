@@ -37,7 +37,7 @@ object FilesApiController extends BaseApiController {
     }
   }
 
-  @ApiOperation(value = "Add/Update a file", response = classOf[File], httpMethod = "PUT")
+  @ApiOperation(value = "Add/Update a file", response = classOf[File], httpMethod = "PUT", authorizations = "apiKey")
   @ApiResponses(Array(new ApiResponse(code = 400, message = "Validation exception")))
   @ApiImplicitParams(Array(
     new ApiImplicitParam(value = "Unique GUID for the new file", name = "guid", required = true, dataType = "UUID", paramType = "body"),

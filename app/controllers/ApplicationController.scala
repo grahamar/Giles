@@ -70,12 +70,12 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
   }
 
   def javascriptRoutes = Action { implicit request =>
-    import routes.javascript._
     Ok(
       Routes.javascriptRouter("jsRoutes")(
-        ProjectController.favouriteProject,
-        ProjectController.unfavouriteProject,
-        PublicationController.editPublication
+        routes.javascript.ProjectController.favouriteProject,
+        routes.javascript.ProjectController.unfavouriteProject,
+        routes.javascript.ProjectController.projectVersions,
+        routes.javascript.PublicationController.editPublication
       )
     ).as("text/javascript")
   }
