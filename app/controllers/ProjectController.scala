@@ -182,7 +182,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       "repo" -> nonEmptyText,
       "head_version" -> nonEmptyText
     )(ProjectImportData.apply)(ProjectImportData.unapply)
-  }.fill(DefaultProjectImportData)
+  }
 
   val importProjectResourceForm = Form {
     mapping(
