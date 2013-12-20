@@ -52,4 +52,16 @@ $(document).ready(function(){
     });
     return false; // prevent default
   }
+
+
+  var clip = new ZeroClipboard($('.zeroclipboard-button'), {
+    moviePath: "/assets/ZeroClipboard.swf"
+  });
+
+  clip.on("load", function(client) {
+    client.on("complete", function(client, args) {
+      console.log("Copied text to clipboard: " + args.text );
+    });
+  });
+
 });

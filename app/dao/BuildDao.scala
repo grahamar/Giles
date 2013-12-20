@@ -6,6 +6,7 @@ import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
 import java.util.UUID
+import play.api.Logger
 
 class BuildDao(builds: MongoCollection) {
 
@@ -34,7 +35,14 @@ class BuildDao(builds: MongoCollection) {
   }
 
   def findLatestByProject(project: Project): Iterable[Build] = {
-    search(BuildQuery(project_guid = Some(project.guid))).take(project.versions.size)
+    val builds = project.versions.flatMap(v => search(BuildQuery(project_guid = Some(project.guid), version = Some(v))))
+    val latestBuildByVersion: Map[String, DateTime] = builds.groupBy(_.version).toMap.mapValues{ buildsForVersion =>
+      buildsForVersion.map(_.created_at).sorted(Ordering.fromLessThan((ths: DateTime, tht: DateTime) => tht.isBefore(ths))).head
+    }
+    builds.filter { b =>
+      val latestBuildForVersion = latestBuildByVersion.get(b.version)
+      b.created_at.equals(latestBuildForVersion.get)
+    }.sorted(Ordering.by[Build, String](_.version).reverse)
   }
 
   def findByProjectGuidAndVersion(projectGuid: String, version: String): Option[Build] = {

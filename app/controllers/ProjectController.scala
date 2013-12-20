@@ -23,24 +23,23 @@ import util.SwaggerUtil
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
   def project(urlKey: String) = StackAction { implicit request =>
-    val maybeUser = loggedIn
     Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
-      maybeUser.map { currentUser =>
-        if(project.created_by.equals(currentUser.username) || project.author_usernames.contains(currentUser.username)) {
-          Redirect(routes.ProjectController.editProject(urlKey))
-        } else {
-          Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
-        }
-      }.getOrElse {
-        Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
-      }
+      Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), editProjectorm, AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def editProject(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
-      Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), AuthenticationController.loginForm))
-    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    val maybeUser = loggedIn
+    maybeUser.map { loggedInUser =>
+      Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+        editProjectorm.bindFromRequest.fold(
+          formWithErrors =>
+            BadRequest(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), formWithErrors, AuthenticationController.loginForm)),
+          data => Global.projects.update(project.copy(repo_url = data.repo_url, head_version = data.head_version))
+        )
+        Redirect(routes.ProjectController.project(urlKey))
+      }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+    }.getOrElse(Unauthorized)
   }
 
   def favouriteProject(urlKey: String) = StackAction { implicit request =>
@@ -199,6 +198,13 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       "version" -> nonEmptyText,
       "json" -> nonEmptyText
     )(SwaggerImportData.apply)(SwaggerImportData.unapply)
+  }
+
+  val editProjectorm = Form {
+    mapping(
+      "repo_url" -> nonEmptyText,
+      "head_version" -> nonEmptyText
+    )(ProjectEditData.apply)(ProjectEditData.unapply)
   }
 
 }

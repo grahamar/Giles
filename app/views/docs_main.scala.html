@@ -77,7 +77,7 @@
                     <div class="panel-body">
                         <dl>
                             <dt>Versions</dt>
-                            @project.versions.map { ver =>
+                            @project.versions.sorted.reverse.take(10).map { ver =>
                             @if(ver.equals(version)){
                                 <dd>
                                     <a href="@routes.StaticDocsController.projectIndex(project.url_key, ver)">
@@ -87,6 +87,9 @@
                             } else {
                             <dd><a href="@routes.StaticDocsController.projectIndex(project.url_key, ver)">@ver</a></dd>
                             }
+                            }
+                            @if(project.versions.size > 10) {
+                            <dd><a href="@routes.ProjectController.project(project.url_key)">...</a></dd>
                             }
                         </dl>
                         <!--<dl>

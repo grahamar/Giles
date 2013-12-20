@@ -68,6 +68,7 @@
         <script type="text/javascript" src='@routes.Assets.at("js/wysihtml5/wysihtml5-0.3.0.min.js")'></script>
         <script type="text/javascript" src='@routes.Assets.at("js/wysihtml5/bootstrap-wysihtml5-0.0.2.min.js")'></script>
         <script type="text/javascript" src='@routes.Assets.at("js/wysihtml5/wysihtml5.js")'></script>
+        <script type="text/javascript" src='@routes.Assets.at("js/ZeroClipboard.min.js")'></script>
         <script type="text/javascript" src='@routes.Assets.at("js/main.js")'></script>
 
     </head>
@@ -93,10 +94,10 @@
                             <ul class="nav navbar-nav">
                                 <li><a href="@routes.ApplicationController.dashboard">Projects</a></li>
                                 <li><a href="@routes.ProjectController.importProject">Import Project</a></li>
-                                <li><a href="@routes.ProjectController.importSwagger">Import Project Swagger Resources</a></li>
+                                <!--<li><a href="@routes.ProjectController.importSwagger">Import Project Swagger Resources</a></li> -->
                                 <li><a href="@routes.AuthenticationController.profile(loggedInUser.username)">Profile</a></li>
-                                <li><a href="@routes.PublicationController.publicationsForUser(loggedInUser.username)">Publications</a></li>
-                                <li><a href="@routes.PublicationController.create">Create Publication</a></li>
+                                <!--<li><a href="@routes.PublicationController.publicationsForUser(loggedInUser.username)">Publications</a></li>-->
+                                <!--<li><a href="@routes.PublicationController.create">Create Publication</a></li>-->
                             </ul>
                         </div>
                     </div>

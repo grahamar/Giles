@@ -26,7 +26,7 @@ POST    /projects/create-swagger-resource                                   cont
 POST    /projects/create-swagger-api                                        controllers.ProjectController.createProjectSwaggerApi
 GET     /projects/:projectUrlKey                                            controllers.ProjectController.project(projectUrlKey)
 GET     /projects/:projectUrlKey/versions                                   controllers.ProjectController.projectVersions(projectUrlKey)
-GET     /projects/:projectUrlKey/edit                                       controllers.ProjectController.editProject(projectUrlKey)
+POST    /projects/:projectUrlKey/edit                                       controllers.ProjectController.editProject(projectUrlKey)
 POST    /projects/:projectUrlKey/favourite                                  controllers.ProjectController.favouriteProject(projectUrlKey)
 POST    /projects/:projectUrlKey/unfavourite                                controllers.ProjectController.unfavouriteProject(projectUrlKey)
 GET     /projects/:projectUrlKey/pull                                       controllers.ProjectController.pullNewVersions(projectUrlKey)

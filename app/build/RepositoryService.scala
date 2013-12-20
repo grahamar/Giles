@@ -38,10 +38,21 @@ trait GitRepositoryService extends RepositoryService {
     cloneProjectTo(project, checkoutDir)
     checkoutDir
   }.recover {
-    case e: Exception =>
-      Global.builds.createFailure(project.guid, project.head_version, "Clone failed - "+ e.getMessage)
-      Logger.error("Exception", e)
+    case e: Exception => {
+      val exceptionMsg = e.getMessage
+      val buildFailureMessage =
+        // Really crude attempt to help the user for this quite specific issue.
+        if(project.repo_url.contains("gerrit") && exceptionMsg.endsWith(": not authorized")) {
+          s"""Clone failed - $exceptionMsg
+            |It looks like you might be using Gerrit without any SSH key set up.
+            |Have you tried using https://<gerrit host>/git/<project name>.git?""".stripMargin
+        } else {
+          "Clone failed - "+ exceptionMsg
+        }
+      Global.builds.createFailure(project.guid, project.head_version, buildFailureMessage)
+      Logger.error("Exception - "+buildFailureMessage, e)
       throw e
+    }
   }
 
   def checkout(project: Project, version: String): Try[JFile] = Try {
