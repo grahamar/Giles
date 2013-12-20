@@ -40,6 +40,7 @@ trait GitRepositoryService extends RepositoryService {
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Clone failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
   }
 
@@ -53,6 +54,7 @@ trait GitRepositoryService extends RepositoryService {
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, version, "Checkout failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
   }
 
@@ -68,6 +70,7 @@ trait GitRepositoryService extends RepositoryService {
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Clean failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
   }
 
@@ -77,6 +80,7 @@ trait GitRepositoryService extends RepositoryService {
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Getting versions failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
   }
 
@@ -86,6 +90,7 @@ trait GitRepositoryService extends RepositoryService {
   }.recover {
     case e: Exception =>
       Global.builds.createFailure(project.guid, project.head_version, "Getting authors failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
   }
 

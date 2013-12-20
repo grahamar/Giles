@@ -82,6 +82,7 @@ trait AbstractDocsBuilder extends DocsBuilder {
   }.recover {
     case e: Exception => {
       Global.builds.createFailure(project.guid, version, "Build failed - "+ e.getMessage)
+      Logger.error("Exception", e)
       throw e
     }
   }
