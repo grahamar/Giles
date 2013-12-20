@@ -78,7 +78,7 @@ case class File(guid: String,
 
   // Explicit check for files that should come first (like index or readme)
   override def compare(other: File): Int = {
-    if (url_key == other.url_key) {
+    if (filename == other.filename) {
       0
     } else if (filename.toLowerCase.startsWith("readme")  || filename.toLowerCase.startsWith("index")) {
       -1
