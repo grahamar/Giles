@@ -33,4 +33,4 @@ via the REST API (unless the update web hook is triggered...).
 Once you have signed in, either by creating an account or using your [Google OpenID](https://developers.google.com/accounts/docs/OpenID).
 You can import a project from your dashboard page.
 
-![](http://i.imgur.com/YQfdDBa.png)
+![](http://i.imgur.com/B255blE.png)
