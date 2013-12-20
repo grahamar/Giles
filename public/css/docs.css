@@ -132,7 +132,8 @@ pre#docs-pre-content {
   white-space: -moz-pre-wrap;
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
-  word-wrap: break-word;
+  word-break: normal;
+  word-wrap: normal;
   background-color: #FFFFFF;
   border: 0px none;
 }

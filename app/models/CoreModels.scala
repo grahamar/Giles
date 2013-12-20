@@ -80,9 +80,9 @@ case class File(guid: String,
   override def compare(other: File): Int = {
     if (url_key == other.url_key) {
       0
-    } else if ("readme".equals(url_key)  || "index".equals(url_key)) {
+    } else if (filename.toLowerCase.startsWith("readme")  || filename.toLowerCase.startsWith("index")) {
       -1
-    } else if ("readme".equals(other.url_key) || "index".equals(other.url_key)) {
+    } else if (other.filename.toLowerCase.startsWith("readme") || other.filename.toLowerCase.startsWith("index")) {
       1
     } else {
       url_key.compare(other.url_key)
