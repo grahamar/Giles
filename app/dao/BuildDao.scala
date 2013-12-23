@@ -45,7 +45,7 @@ class BuildDao(builds: MongoCollection) {
     builds.filter { b =>
       val latestBuildForVersion = latestBuildByVersion.get(b.version)
       b.created_at.equals(latestBuildForVersion.get)
-    }.sorted.reverse
+    }.sorted
   }
 
   def findByProjectGuidAndVersion(projectGuid: String, version: String): Option[Build] = {

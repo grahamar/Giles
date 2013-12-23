@@ -7,9 +7,17 @@ object Util {
       sortBy(_._2)(Ordering[Int].reverse).take(amount).map(_._1).diff(filteredUsernames)
   }
 
-  implicit val ord = new Ordering[models.Build] {
+  implicit val ord = BuildOrdering
+  implicit val versionOrd = VersionOrdering
+
+  object BuildOrdering extends Ordering[models.Build] {
     def compare(build1: models.Build, build2: models.Build) =
       compareBuildVersions(build1.version, build2.version)
+  }
+
+  object VersionOrdering extends Ordering[String] {
+    def compare(version1: String, version2: String) =
+      compareBuildVersions(version1, version2)
   }
 
   private def groupIt(str:String) = {
@@ -19,7 +27,7 @@ object Util {
 
   private val dec="""(\d+)""".r
 
-  def compareBuildVersions(version1: String, version2: String): Int = {
+  def compareBuildVersions(version2: String, version1: String): Int = {
     (groupIt(version1), groupIt(version2)) match {
       case ("","") => 0
       case (_, "HEAD") => -1
