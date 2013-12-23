@@ -23,7 +23,7 @@ class UserDaoTest extends PlaySpecification with Mockito with BeforeAfter {
   "UserDao" should {
 
     "successfully create a user in mongo" in new WithApplication {
-      val guid = UUID.randomUUID()
+      val guid = UUID.randomUUID().toString
       val username = Gen.alphaStr.sample.get
       val email = Gen.alphaStr.sample.get
       val user = users.create(guid, username, email, Gen.alphaStr.sample.get)

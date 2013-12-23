@@ -6,4 +6,31 @@ object Util {
     authors.groupBy(auth => auth).mapValues(_.size).toSeq.
       sortBy(_._2)(Ordering[Int].reverse).take(amount).map(_._1).diff(filteredUsernames)
   }
+
+  implicit val ord = new Ordering[models.Build] {
+    def compare(build1: models.Build, build2: models.Build) =
+      compareBuildVersions(build1.version, build2.version)
+  }
+
+  private def groupIt(str:String) = {
+    if (str.nonEmpty && str.head.isDigit) str.takeWhile(_.isDigit)
+    else str.takeWhile(!_.isDigit)
+  }
+
+  private val dec="""(\d+)""".r
+
+  def compareBuildVersions(version1: String, version2: String): Int = {
+    (groupIt(version1), groupIt(version2)) match {
+      case ("","") => 0
+      case (_, "HEAD") => -1
+      case ("HEAD", _) => 1
+      case (dec(x),dec(y)) if x.toInt == y.toInt =>
+        compareBuildVersions(version1.substring(x.size), version2.substring(y.size))
+      case (dec(x),dec(y)) => x.toInt - y.toInt
+      case (x,y) if x == y =>
+        compareBuildVersions(version1.substring(x.size), version2.substring(y.size))
+      case (x,y) => x compareTo y
+    }
+  }
+
 }

@@ -22,7 +22,7 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
     val name = Gen.alphaStr.sample.get
     val description = Gen.alphaStr.sample.get
     val repoUrl = Gen.alphaStr.sample.get
-    projects.create(Gen.alphaStr.sample.get, UUID.randomUUID(), name, description, repoUrl)
+    projects.create(Gen.alphaStr.sample.get, UUID.randomUUID().toString, name, description, repoUrl, Seq.empty)
   }
 
   def before = {
@@ -35,11 +35,11 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
   "FilesDao" should {
 
     "successfully create files in mongo" in new WithApplication {
-      val guid = UUID.randomUUID()
+      val guid = UUID.randomUUID().toString
       val title = Gen.alphaStr.sample.get
       val html = Gen.alphaStr.sample.get
 
-      val file = files.create(guid, project, "test-version", "", "", title, UUID.randomUUID())
+      val file = files.create(guid, project, "test-version", "", "", title, UUID.randomUUID().toString)
 
       file.guid must_== guid
 
@@ -50,11 +50,11 @@ class FilesDaoTest extends PlaySpecification with Mockito with BeforeAfter {
     }
 
     "successfully find all files by project & version" in new WithApplication {
-      val guid = UUID.randomUUID()
+      val guid = UUID.randomUUID().toString
       val title = Gen.alphaStr.sample.get
       val html = Gen.alphaStr.sample.get
 
-      val file = files.create(guid, project, "special-test-version", "", "", title, UUID.randomUUID())
+      val file = files.create(guid, project, "special-test-version", "", "", title, UUID.randomUUID().toString)
 
       file.guid must_== guid
 

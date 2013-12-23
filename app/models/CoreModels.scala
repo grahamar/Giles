@@ -2,6 +2,9 @@ package models
 
 import org.joda.time.DateTime
 import util.ResourceUtil
+import scala.util.Try
+import play.api.Logger
+import org.apache.commons.collections.ComparatorUtils
 
 case class User(guid: String,
                 username: String,
