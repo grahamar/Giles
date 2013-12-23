@@ -37,7 +37,7 @@ object Util {
       case (dec(x),dec(y)) => x.toInt - y.toInt
       case (x,y) if x == y =>
         compareBuildVersions(version1.substring(x.size), version2.substring(y.size))
-      case (x,y) => x compareTo y
+      case (x,y) => y compareTo x
     }
   }
 

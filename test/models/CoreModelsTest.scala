@@ -15,13 +15,13 @@ class CoreModelsTest extends Specification with Mockito {
         Build("", "", "2.33", Seq.empty, "", null),
         Build("", "", "2.3-test", Seq.empty, "", null),
         Build("", "", "2.3-abc", Seq.empty, "", null)
-      ).sorted
+      ).sorted(util.Util.BuildOrdering)
 
-      orderedList(0).version must be("1.1")
-      orderedList(1).version must be("2.3-abc")
+      orderedList(4).version must be("1.1")
+      orderedList(3).version must be("2.3-abc")
       orderedList(2).version must be("2.3-test")
-      orderedList(3).version must be("2.33")
-      orderedList(4).version must be("191")
+      orderedList(1).version must be("2.33")
+      orderedList(0).version must be("19.1")
     }
   }
 }
