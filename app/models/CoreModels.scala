@@ -2,6 +2,7 @@ package models
 
 import org.joda.time.DateTime
 import util.ResourceUtil
+import play.api.Logger
 
 case class User(guid: String,
                 username: String,
@@ -27,7 +28,7 @@ case class ApiKey(guid: String, user_guid: String, application_name: String, api
 
 object UrlKey {
   def generate(name: String): String = {
-    name.toLowerCase.trim.replaceAll("""\s+""", "-").replaceAll("""\.+""", "").
+    name.toLowerCase.trim.replaceAll("""\s+""", "-").replaceAll("""\.\.+""", ".").
       split("/").map(ResourceUtil.encodeFileName).mkString("/")
   }
 }
@@ -78,14 +79,20 @@ case class File(guid: String,
 
   // Explicit check for files that should come first (like index or readme)
   override def compare(other: File): Int = {
-    if (filename == other.filename) {
+    val otherUrlKey = other.url_key
+    if (url_key == other.url_key) {
+      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => 0")
       0
-    } else if (filename.toLowerCase.startsWith("readme")  || filename.toLowerCase.startsWith("index")) {
+    } else if (url_key.toLowerCase.endsWith("readme.md")  || url_key.toLowerCase.endsWith("index.md")) {
+      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => -1")
       -1
-    } else if (other.filename.toLowerCase.startsWith("readme") || other.filename.toLowerCase.startsWith("index")) {
+    } else if (other.url_key.toLowerCase.endsWith("readme.md") || other.url_key.toLowerCase.endsWith("index.md")) {
+      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => 1")
       1
     } else {
-      url_key.compare(other.url_key)
+      val comp = url_key.compare(other.url_key)
+      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => $comp")
+      comp
     }
   }
 

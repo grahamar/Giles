@@ -15,11 +15,9 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
 
   def projectIndex(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
-      val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
-      val filesByDirectory = TreeMap(files.groupBy(_.relative_path).toSeq.sortBy(_._1):_*)
+      val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq.sorted
       if(!files.isEmpty) {
-        Global.views.create(UUID.randomUUID().toString, files.head.guid, loggedIn.map(_.guid))
-        Ok(html.docs_main(files.head, project, projectVersion, Html(files.head.withContent.content), filesByDirectory))
+        Redirect(routes.StaticDocsController.projectDocs(projectUrlKey, projectVersion, files.head.url_key))
       } else NotFound(html.notfound(AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }

@@ -39,7 +39,7 @@ trait LuceneDocsSearcher extends DocsSearcher {
   private val LuceneVersion = LucVersion.LUCENE_43
 
   def searchAllProjects(filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body")(toProjectResult) ++ search(filter, "title")(toProjectResult)
+    search(filter, "title")(toProjectResult) ++ search(filter, "body")(toProjectResult)
   }
 
   def searchAllPublications(filter: String): Seq[PublicationSearchResult] = {
@@ -47,13 +47,13 @@ trait LuceneDocsSearcher extends DocsSearcher {
   }
 
   def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body", Some(projectUrlKey))(toProjectResult) ++
-      search(filter, "title", Some(projectUrlKey))(toProjectResult)
+    search(filter, "title", Some(projectUrlKey))(toProjectResult) ++
+      search(filter, "body", Some(projectUrlKey))(toProjectResult)
   }
 
   def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "body", Some(projectUrlKey), Some(projectVersion))(toProjectResult) ++
-      search(filter, "title", Some(projectUrlKey), Some(projectVersion))(toProjectResult)
+    search(filter, "title", Some(projectUrlKey), Some(projectVersion))(toProjectResult) ++
+      search(filter, "body", Some(projectUrlKey), Some(projectVersion))(toProjectResult)
   }
 
   private def search[T](filter: String, field: String, projectUrlKey: Option[String] = None,
