@@ -11,7 +11,7 @@ import play.api.Logger
 class FilesDao(files: MongoCollection) {
 
   def create(guid: String, project: Project, version: String, relativePath: String, filename: String, title: String, contentGuid: String): File = {
-    val urlKey = UrlKey.generate(FilenameUtils.concat(relativePath, filename))
+    val urlKey = UrlKey.generateFileUrlKey(FilenameUtils.concat(relativePath, filename))
     val file = File(guid = guid,
       project_guid = project.guid,
       version = version,

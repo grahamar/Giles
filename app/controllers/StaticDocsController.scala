@@ -8,6 +8,8 @@ import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import settings.Global
 import java.util.UUID
 import scala.collection.immutable.TreeMap
+import play.api.Logger
+import util.ResourceUtil
 
 object StaticDocsController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -22,7 +24,8 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
-  def projectDocs(projectUrlKey: String, projectVersion: String, fileUrlKey: String) = StackAction { implicit request =>
+  def projectDocs(projectUrlKey: String, projectVersion: String, fileUrl: String) = StackAction { implicit request =>
+    val fileUrlKey = ResourceUtil.decodeFileName(fileUrl)
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
       val files = Global.files.findAllByProjectGuidAndVersion(project.guid, projectVersion).toSeq
       val filesByDirectory = TreeMap(files.groupBy(_.relative_path).toSeq.sortBy(_._1):_*)
@@ -35,7 +38,8 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
 
   def pdf(projectUrlKey: String, projectVersion: String) = TODO
 
-  def swagger(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
+  def swagger(projectUrl: String, projectVersion: String) = StackAction { implicit request =>
+    val projectUrlKey = ResourceUtil.decodeFileName(projectUrl)
     Global.projects.findByUrlKey(projectUrlKey).map { project =>
       Ok(html.swagger(controllers.api.routes.SwaggerApiController.getResourceListing(project.guid, projectVersion).url, AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))

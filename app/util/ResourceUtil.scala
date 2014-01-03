@@ -18,7 +18,7 @@ object ResourceUtil {
   }
 
   def decodeFileName(filename: String): String =
-    URLDecoder.decode(filename, "UTF-8").replace(" ", "+")
+    URLDecoder.decode(filename, "UTF-8")
 
   def encodeFileName(filename: String): String =
     URLEncoder.encode(filename, "UTF-8")

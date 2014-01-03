@@ -15,6 +15,7 @@ import dao.util.FileHelper
 import dao.util.PublicationConverters._
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.DocumentationFactory
+import util.ResourceUtil
 
 object PublicationController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -48,7 +49,7 @@ object PublicationController extends Controller with OptionalAuthUser with AuthC
   }
 
   def publication(pubUrlKey: String) = StackAction { implicit request =>
-    Global.publications.findByUrlKey(UrlKey.generate(pubUrlKey)).map { pub =>
+    Global.publications.findByUrlKey(UrlKey.generateProjectUrlKey(pubUrlKey)).map { pub =>
       Ok(html.publication(pub.withContent, AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }

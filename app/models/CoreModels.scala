@@ -27,8 +27,12 @@ case class JsonUser(guid: String,
 case class ApiKey(guid: String, user_guid: String, application_name: String, api_key: String)
 
 object UrlKey {
-  def generate(name: String): String = {
+  def generateFileUrlKey(name: String): String = {
     name.trim
+  }
+  def generateProjectUrlKey(name: String): String = {
+    name.toLowerCase.trim.replaceAll("""\s+""", "-").replaceAll("""\.\.+""", ".").
+      split("/").map(ResourceUtil.encodeFileName).mkString("/")
   }
 }
 

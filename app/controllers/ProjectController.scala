@@ -23,7 +23,7 @@ import util.SwaggerUtil
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
   def project(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+    Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).map { project =>
       Ok(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), editProjectorm, AuthenticationController.loginForm))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
@@ -31,7 +31,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   def editProject(urlKey: String) = StackAction { implicit request =>
     val maybeUser = loggedIn
     maybeUser.map { loggedInUser =>
-      Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+      Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).map { project =>
         editProjectorm.bindFromRequest.fold(
           formWithErrors =>
             BadRequest(html.project(ProjectHelper.getAuthorsAndBuildsForProject(project), formWithErrors, AuthenticationController.loginForm)),
@@ -43,7 +43,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   }
 
   def favouriteProject(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).flatMap { project =>
+    Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).flatMap { project =>
       loggedIn.map { currentUser =>
         Global.favourites.create(currentUser, project)
         Ok
@@ -52,7 +52,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   }
 
   def unfavouriteProject(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).flatMap { project =>
+    Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).flatMap { project =>
       loggedIn.flatMap { currentUser =>
         Global.favourites.findByUserAndProject(currentUser, project).map { fav =>
           Global.favourites.delete(fav.guid)
@@ -63,13 +63,13 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
   }
 
   def projectVersions(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+    Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).map { project =>
       Ok(ScalaJsonUtil.mapper.writeValueAsString(project.versions)).as("application/json")
     }.getOrElse(BadRequest)
   }
 
   def pullNewVersions(urlKey: String) = StackAction { implicit request =>
-    Global.projects.findByUrlKey(UrlKey.generate(urlKey)).map { project =>
+    Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).map { project =>
       DocumentationFactory.documentsBuilder.build(project)
       Redirect(routes.ProjectController.project(urlKey))
     }.getOrElse(BadRequest)

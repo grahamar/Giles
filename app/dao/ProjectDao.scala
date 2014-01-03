@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 class ProjectDao(projects: MongoCollection) {
 
   def create(createdByUsername: String, guid: String, name: String, description: String = "", repoUrl: String, authorUsernames: Seq[String], headVersion: String = "HEAD"): Project = {
-    val urlKey = UrlKey.generate(name)
+    val urlKey = UrlKey.generateProjectUrlKey(name)
     val project = Project(guid = guid,
       name = name,
       description = description,

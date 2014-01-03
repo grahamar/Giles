@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 class PublicationDao(publications: MongoCollection) {
 
   def create(guid: String, user: User, title: String, contentGuid: String): Publication = {
-    val urlKey = UrlKey.generate(title)
+    val urlKey = UrlKey.generateProjectUrlKey(title)
     val publication = Publication(guid = guid,
       user_guid = user.guid,
       title = title,
