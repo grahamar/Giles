@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" type="text/css" media="screen" href='@routes.Assets.at("css/bootstrap-theme-3.0.2.min.css")'>
     <link rel="stylesheet" type="text/css" media="screen" href='@routes.Assets.at("css/bootstrap-3.0.2.min.css")'>
+    <link rel="stylesheet" type="text/css" media="screen" href='@routes.Assets.at("css/highlight-default.css")'>
     <link rel="stylesheet" type="text/css" media="screen" href='@routes.Assets.at("css/docs.css")'>
 
     <script type="text/javascript" src="@routes.ApplicationController.javascriptRoutes"></script>
@@ -130,7 +131,7 @@
         <div class="page-content inset">
             <div class="row">
                 <div class="col-md-12">
-                    <pre id="docs-pre-content">@content</pre>
+                    <div id="md-content">@content</div>
                 </div>
             </div>
         </div>
@@ -141,6 +142,7 @@
 <!-- JavaScript -->
 <script src='@routes.Assets.at("js/jquery-2.0.3.min.js")'></script>
 <script src='@routes.Assets.at("js/bootstrap-3.0.2.min.js")'></script>
+<script src='@routes.Assets.at("js/highlight.pack.js")'></script>
 <script src='@routes.Assets.at("js/rawdeflate.js")'></script>
 <script>
   function toggleChevron(e) {
@@ -238,5 +240,6 @@ function encode6bit(b) {
 	return '?';
 }
 </script>
+<script>hljs.initHighlightingOnLoad();</script>
 </body>
 </html>
