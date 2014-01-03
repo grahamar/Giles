@@ -5,7 +5,7 @@ import java.io.{File => JFile}
 
 import models._
 import settings.Global
-import play.api.Logger
+import play.api.{Play, Logger}
 
 sealed trait DirectoryHandler {
   def repositoryForProject(project: Project): JFile
@@ -15,7 +15,7 @@ sealed trait DirectoryHandler {
 trait DirectoryHandlerImpl extends DirectoryHandler {
 
   lazy val gitCheckoutsDir: JFile = {
-    val checkoutDir = new JFile(Global.configuration.getString("git.checkouts.dir").getOrElse {
+    val checkoutDir = new JFile(Play.current.configuration.getString("git.checkouts.dir").getOrElse {
       Logger.warn("""Unable to find "git.checkouts.dir" configuration.""")
       "./.git_checkouts"
     })
@@ -27,7 +27,7 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
   }
 
   lazy val luceneIndexDir: JFile = {
-    val indexesDir = new JFile(Global.configuration.getString("index.dir").getOrElse {
+    val indexesDir = new JFile(Play.current.configuration.getString("index.dir").getOrElse {
       Logger.warn("""Unable to find "index.dir" configuration.""")
       "./.index"
     })
