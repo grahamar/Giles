@@ -67,6 +67,21 @@ class ProjectDao(projects: MongoCollection) {
     projects.remove(MongoDBObject("guid" -> guid))
   }
 
+  def searchByName(name: String): Option[Project] = {
+    val query = ProjectQuery(name = Some(name))
+    val builder = MongoDBObject.newBuilder
+    query.name.foreach { v => builder += "name" -> ("/^"+v+"$/i") }
+
+    val sortBuilder = MongoDBObject.newBuilder
+    query.order_by.foreach { field => sortBuilder += field -> query.order_direction }
+
+    projects.find(builder.result()).
+      skip(query.pagination.offsetOrDefault).
+      sort(sortBuilder.result()).
+      limit(query.pagination.limitOrDefault).
+      toList.map(grater[Project].asObject(_)).headOption
+  }
+
   def search(query: ProjectQuery): Iterable[Project] = {
     val builder = MongoDBObject.newBuilder
     query.guid.foreach { v => builder += "guid" -> v }

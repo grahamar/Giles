@@ -2,7 +2,6 @@ package build
 
 import scala.math.Ordered
 
-import play.api.Logger
 import settings.Global
 import models._
 
@@ -14,6 +13,7 @@ import org.apache.lucene.index.{DirectoryReader, Term}
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
 import org.apache.lucene.document.Document
+import util.Util
 
 trait DocsSearcher {
   def searchAllPublications(filter: String): Seq[PublicationSearchResult]
@@ -56,10 +56,9 @@ trait LuceneDocsSearcher extends DocsSearcher {
   }
 
   private def searchProjectName(projectName: String): Seq[ProjectSearchResult] = {
-    Seq(Global.projects.findByName(projectName).map { proj =>
-      Logger.info(s"Found project for project name $projectName")
-      ProjectSearchResult(proj.url_key, proj.head_version, None, proj.name, None, Seq.empty, 1f)
-    }.orElse{Logger.info(s"No project found for project name $projectName"); None}).flatten
+    Seq(Global.projects.searchByName(projectName).map { proj =>
+      ProjectSearchResult(proj.url_key, proj.versions.sorted(Util.VersionOrdering).head, None, proj.name, None, Seq.empty, 1f)
+    }).flatten
   }
 
   private def search[T](filter: String, field: String, projectUrlKey: Option[String] = None,
