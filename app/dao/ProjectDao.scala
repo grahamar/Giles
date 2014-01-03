@@ -5,6 +5,7 @@ import models._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
+import play.api.Logger
 
 class ProjectDao(projects: MongoCollection) {
 
@@ -70,10 +71,12 @@ class ProjectDao(projects: MongoCollection) {
   def searchByName(name: String): Option[Project] = {
     val query = ProjectQuery(name = Some(name))
     val builder = MongoDBObject.newBuilder
-    query.name.foreach { v => builder += "name" -> ("/^"+v+"$/i") }
+    query.name.foreach { v => builder += "name" -> MongoDBObject("$regex" -> ("^"+v+"$"), "$options" -> "i") }
 
     val sortBuilder = MongoDBObject.newBuilder
     query.order_by.foreach { field => sortBuilder += field -> query.order_direction }
+
+    Logger.info("Search Mongo For Project => "+builder.result())
 
     projects.find(builder.result()).
       skip(query.pagination.offsetOrDefault).
