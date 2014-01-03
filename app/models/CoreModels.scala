@@ -28,7 +28,7 @@ case class ApiKey(guid: String, user_guid: String, application_name: String, api
 
 object UrlKey {
   def generate(name: String): String = {
-    name.toLowerCase.trim.split("/").map(ResourceUtil.encodeFileName).mkString("/")
+    name.trim
   }
 }
 
