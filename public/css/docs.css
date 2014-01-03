@@ -36,11 +36,6 @@
   padding: 0;
 }
 
-.sidebar-nav li.file {
-  line-height: 40px;
-  text-indent: 20px;
-}
-
 .sidebar-nav li span {
   color: #999999;
   cursor: pointer;
@@ -56,6 +51,10 @@
   color: #fff;
   background: rgba(255,255,255,0.2);
   text-decoration: none;
+}
+
+.sidebar-nav .file.panel-group .panel-default.selected li a:hover {
+  color: #000000;
 }
 
 .sidebar-nav li a:active,
@@ -98,6 +97,28 @@
   border-color: #333333;
 }
 
+
+.file.panel-group .panel {
+  background-color: #FCFCFC;
+  border-color: #333333;
+}
+
+.file.panel-group .panel-default > .panel-heading {
+  cursor: pointer;
+  border-color: #333333;
+}
+
+.file.panel-group .panel-default.unselected > .panel-heading {
+  color: #FFFFFF;
+  background-color: #333333;
+  background-image: linear-gradient(to bottom, #333333 0px, #333333 100%);
+}
+
+.file.panel-group .panel-default.selected > .panel-heading {
+  color: #404040;
+  background: none repeat scroll 0 0 #FCFCFC;
+}
+
 #footer-accordion .panel-default > .panel-heading {
   color: #FFFFFF;
   cursor: pointer;
@@ -106,8 +127,12 @@
   background-image: linear-gradient(to bottom, #333333 0px, #333333 100%);
 }
 
-#footer-accordion .panel-default > .panel-heading .panel-title {
+#footer-accordion .panel-default > .panel-heading .panel-title, .file.panel-group .panel-default > .panel-heading .panel-title {
   font-size: 14px;
+}
+
+.file.panel-group .panel-heading + .panel-collapse .panel-body {
+  border-top: 0px none;
 }
 
 #project-info {
