@@ -1,16 +1,16 @@
 package controllers
 
+import play.api.Routes
 import play.api.mvc._
 import play.api.data._
 import play.api.templates.HtmlFormat
 
 import views._
 import models._
+import settings.Global
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.{ProjectSearchResult, DocumentationFactory}
-import settings.Global
 import dao.util.ProjectHelper
-import play.api.Routes
 
 /**
  * Manage a database of computers

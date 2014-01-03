@@ -2,19 +2,18 @@ package build
 
 import scala.math.Ordered
 
+import play.api.Logger
+import settings.Global
 import models._
 
 import org.apache.lucene.queryparser.classic.QueryParser
-import org.apache.lucene.util.{Version => LucVersion, BytesRef}
+import org.apache.lucene.util.{Version => LucVersion}
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.search._
-import org.apache.lucene.index.{TermsEnum, MultiFields, DirectoryReader, Term}
+import org.apache.lucene.index.{DirectoryReader, Term}
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.search.vectorhighlight.FastVectorHighlighter
 import org.apache.lucene.document.Document
-import org.apache.commons.lang3.builder.CompareToBuilder
-import play.api.Logger
-import scala.collection.immutable.VectorBuilder
 
 trait DocsSearcher {
   def searchAllPublications(filter: String): Seq[PublicationSearchResult]
@@ -27,7 +26,7 @@ case class PublicationSearchResult(publicationUrlKey: String, publicationTitle: 
   def compare(that: PublicationSearchResult) = that.score.compareTo(this.score)
 }
 
-case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: String, fileTitle: String, filename: String, hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
+case class ProjectSearchResult(projectUrlKey: String, projectVersion: String, fileUrlKey: Option[String], fileTitle: String, filename: Option[String], hits: Seq[String], score: Float) extends Ordered[ProjectSearchResult] {
   def compare(that: ProjectSearchResult) = that.score.compareTo(this.score)
 }
 
@@ -39,21 +38,28 @@ trait LuceneDocsSearcher extends DocsSearcher {
   private val LuceneVersion = LucVersion.LUCENE_43
 
   def searchAllProjects(filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "title")(toProjectResult) ++ search(filter, "body")(toProjectResult)
+    (searchProjectName(filter) ++ search(filter, "title")(toProjectResult) ++ search(filter, "body")(toProjectResult)).sorted
   }
 
   def searchAllPublications(filter: String): Seq[PublicationSearchResult] = {
-    search(filter, "pub-body")(toPublicationResult) ++ search(filter, "pub-title")(toPublicationResult)
+    (search(filter, "pub-body")(toPublicationResult) ++ search(filter, "pub-title")(toPublicationResult)).sorted
   }
 
   def searchProject(projectUrlKey: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "title", Some(projectUrlKey))(toProjectResult) ++
-      search(filter, "body", Some(projectUrlKey))(toProjectResult)
+    (search(filter, "title", Some(projectUrlKey))(toProjectResult) ++
+      search(filter, "body", Some(projectUrlKey))(toProjectResult)).sorted
   }
 
   def searchProjectVersion(projectUrlKey: String, projectVersion: String, filter: String): Seq[ProjectSearchResult] = {
-    search(filter, "title", Some(projectUrlKey), Some(projectVersion))(toProjectResult) ++
-      search(filter, "body", Some(projectUrlKey), Some(projectVersion))(toProjectResult)
+    (search(filter, "title", Some(projectUrlKey), Some(projectVersion))(toProjectResult) ++
+      search(filter, "body", Some(projectUrlKey), Some(projectVersion))(toProjectResult)).sorted
+  }
+
+  private def searchProjectName(projectName: String): Seq[ProjectSearchResult] = {
+    Seq(Global.projects.findByName(projectName).map { proj =>
+      Logger.info(s"Found project for project name $projectName")
+      ProjectSearchResult(proj.url_key, proj.head_version, None, proj.name, None, Seq.empty, 1f)
+    }.orElse{Logger.info(s"No project found for project name $projectName"); None}).flatten
   }
 
   private def search[T](filter: String, field: String, projectUrlKey: Option[String] = None,
@@ -79,13 +85,14 @@ trait LuceneDocsSearcher extends DocsSearcher {
         if(hits.length > 0) {
           Some(func((doc, hits, result.score)))
         } else { None }
-      }.sorted
+      }
     }
   }
 
   private def toProjectResult(result: (Document, Array[String], Float)): ProjectSearchResult = {
     ProjectSearchResult(UrlKey.generateProjectUrlKey(result._1.get("project")), result._1.get("version"),
-      UrlKey.generateProjectUrlKey(result._1.get("path")), result._1.get("title"), result._1.get("filename"), result._2, result._3)
+      Option(UrlKey.generateProjectUrlKey(result._1.get("path"))), result._1.get("title"),
+      Option(result._1.get("filename")), result._2, result._3)
   }
 
   private def toPublicationResult(result: (Document, Array[String], Float)): PublicationSearchResult = {

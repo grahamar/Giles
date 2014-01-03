@@ -10,7 +10,11 @@
                     <tr class="project">
                         <td>
                             <div>
-                                <a href='@routes.StaticDocsController.projectDocs(result.projectUrlKey, result.projectVersion, result.fileUrlKey)'><strong>@result.fileTitle</strong></a>
+                                @result.fileUrlKey.map { fileUrlKey =>
+                                <a href='@routes.StaticDocsController.projectDocs(result.projectUrlKey, result.projectVersion, fileUrlKey)'><strong>@result.fileTitle</strong></a>
+                                }.getOrElse {
+                                <a href='@routes.StaticDocsController.projectIndex(result.projectUrlKey, result.projectVersion)'><strong>@result.fileTitle</strong></a>
+                                }
                                 <span class="pull-right" style="color: #0066FF">
                                     <strong>@result.projectVersion</strong>
                                 </span>
