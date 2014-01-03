@@ -33,6 +33,7 @@ GET     /projects/:projectUrlKey/pull                                       cont
 GET     /projects/:projectUrlKey/docs/:projectVersion                       controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion/*file                 controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
 GET     /projects/:projectUrlKey/pdf/:projectVersion                        controllers.StaticDocsController.pdf(projectUrlKey, projectVersion)
+GET     /projects/plantuml/:encodedSource                                   controllers.StaticDocsController.plantuml(encodedSource)
 GET     /projects/:projectUrlKey/swagger/:projectVersion                    controllers.StaticDocsController.swagger(projectUrlKey, projectVersion)
 
 GET     /dashboard                                                          controllers.ApplicationController.dashboard

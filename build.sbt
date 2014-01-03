@@ -27,6 +27,7 @@ libraryDependencies ++= Seq(
     "org.planet42"       %% "laika"                         % "0.4.0",
     "dnsjava"            %  "dnsjava"                       % "2.1.1",
     "javax.mail"         %  "mail"                          % "1.4.7",
+    "net.sourceforge.plantuml" % "plantuml"                 % "7986",
     "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.2.2",
     "com.wordnik"        %% "swagger-play2"                 % "1.3.2" exclude("org.json4s", "json4s-native_2.10"),
     "org.mockito"        %  "mockito-core"                  % "1.9.5"                   % "test",

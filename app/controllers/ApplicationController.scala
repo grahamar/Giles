@@ -75,7 +75,8 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
         routes.javascript.ProjectController.favouriteProject,
         routes.javascript.ProjectController.unfavouriteProject,
         routes.javascript.ProjectController.projectVersions,
-        routes.javascript.PublicationController.editPublication
+        routes.javascript.PublicationController.editPublication,
+        routes.javascript.StaticDocsController.plantuml
       )
     ).as("text/javascript")
   }
