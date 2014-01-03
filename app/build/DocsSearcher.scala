@@ -90,7 +90,7 @@ trait LuceneDocsSearcher extends DocsSearcher {
 
   private def toProjectResult(result: (Document, Array[String], Float)): ProjectSearchResult = {
     ProjectSearchResult(UrlKey.generateProjectUrlKey(result._1.get("project")), result._1.get("version"),
-      Option(UrlKey.generateProjectUrlKey(result._1.get("path"))), result._1.get("title"),
+      Option(UrlKey.generateFileUrlKey(result._1.get("path"))), result._1.get("title"),
       Option(result._1.get("filename")), result._2, result._3)
   }
 
