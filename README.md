@@ -2,7 +2,7 @@
 
 **Pronounced 'Jy-ils'**
 
-[![Stories in Ready](https://badge.waffle.io/grahamar/Giles.png?label=ready)](https://waffle.io/grahamar/Giles) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/grahamar/giles/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://travis-ci.org/grahamar/Giles.png)](https://travis-ci.org/grahamar/Giles) [![Stories in Ready](https://badge.waffle.io/grahamar/Giles.png?label=ready)](https://waffle.io/grahamar/Giles) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/grahamar/giles/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 ### Who Is Giles?
 Giles loves documentation, he'll look after your documentation for you. Keep it versioned and in an orderly fashion.
