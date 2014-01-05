@@ -2,7 +2,7 @@ import play.Project._
 
 name := "giles"
 
-version := "0.0.1"
+organisation := "com.gilt"
 
 scalaVersion := "2.10.2"
 
