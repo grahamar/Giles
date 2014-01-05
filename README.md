@@ -28,3 +28,7 @@ Or you can install [Docker](http://www.docker.io/) and pull the [latest image](h
 ### Copyright and license
 
 Copyright 2013 Gilt Groupe, Inc., under the [Apache v2.0](LICENSE) license
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/grahamar/giles/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
