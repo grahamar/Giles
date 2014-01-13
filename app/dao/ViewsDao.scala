@@ -5,6 +5,7 @@ import models._
 import com.novus.salat._
 import com.mongodb.casbah.Imports._
 import org.joda.time.DateTime
+import play.api.Logger
 
 /**
  * A view is essentially a page view. We de-normalise views by
@@ -49,11 +50,19 @@ class ViewsDao(views: MongoCollection, fileRollup: FileViewRollupDao, userFileRo
     userFileRollup.numberViews(userGuid, fileGuid)
   }
 
-  private def search(query: ViewQuery): Iterable[View] = {
+  def search(query: ViewQuery): Iterable[View] = {
     val builder = MongoDBObject.newBuilder
     query.guid.foreach { v => builder += "guid" -> v }
     query.file_guid.foreach { v => builder += "file_guid" -> v }
     query.user_guid.foreach { v => builder += "user_guid" -> v }
+    query.created_at.foreach { v => builder += "created_at" -> v }
+    query.start_date.foreach { start =>
+      query.end_at.foreach { end =>
+        builder += ("created_at" -> MongoDBObject("$gte" -> start))
+      }
+    }
+
+    Logger.info("=>"+builder.result())
 
     views.find(builder.result()).toList.map(grater[View].asObject(_))
   }

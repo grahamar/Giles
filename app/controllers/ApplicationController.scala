@@ -11,6 +11,7 @@ import settings.Global
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import build.{ProjectSearchResult, DocumentationFactory}
 import dao.util.ProjectHelper
+import org.joda.time.DateTime
 
 /**
  * Manage a database of computers

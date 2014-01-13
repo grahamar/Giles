@@ -61,6 +61,7 @@ PUT     /api/builds                                                         cont
 OPTIONS /api/users                                                          controllers.api.UsersApiController.getOptions
 GET     /api/users                                                          controllers.api.UsersApiController.getUsers(guid ?= null, username ?= null, email ?= null, limit ?= null, offset ?= null)
 PUT     /api/users                                                          controllers.api.UsersApiController.putUsers
+GET     /api/views                                                          controllers.api.ViewsApiController.getViews
 
 
 # API Docs

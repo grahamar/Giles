@@ -1,5 +1,7 @@
 package models
 
+import org.joda.time.DateTime
+
 case class UserQuery(guid: Option[String] = None,
                      username: Option[String] = None,
                      email: Option[String] = None,
@@ -229,16 +231,22 @@ case class FileContentsQuery(guid: Option[String] = None,
 case class ViewQuery(guid: Option[String] = None,
                      file_guid: Option[String] = None,
                      user_guid: Option[String] = None,
+                     created_at: Option[DateTime] = None,
+                     start_date: Option[DateTime] = None,
+                     end_at: Option[DateTime] = None,
                      limit: Option[Int] = None,
                      offset: Option[Int] = None) {
 
-  lazy val pagination = Pagination(limit, offset)
+lazy val pagination = Pagination(limit, offset)
 
   def params = {
     val params = scala.collection.mutable.ListBuffer[(String, Any)]()
     guid.foreach { v => params += ("guid" -> v) }
     file_guid.foreach { v => params += ("file_guid" -> v) }
     user_guid.foreach { v => params += ("user_guid" -> v) }
+    created_at.foreach { v => params += ("created_at" -> v) }
+    start_date.foreach { v => params += ("start_date" -> v) }
+    end_at.foreach { v => params += ("end_at" -> v) }
     limit.foreach { v => params += ("limit" -> v) }
     offset.foreach { v => params += ("offset" -> v) }
     params.toList
