@@ -49,12 +49,11 @@
 
 .sidebar-nav li a:hover {
   color: #fff;
-  background: rgba(255,255,255,0.2);
   text-decoration: none;
 }
 
 .sidebar-nav .file.panel-group .panel-default.selected li a:hover {
-  color: #000000;
+  color: #FFFFFF;
 }
 
 .sidebar-nav li a:active,
@@ -99,7 +98,7 @@
 
 
 .file.panel-group .panel {
-  background-color: #FCFCFC;
+  background-color: transparent;
   border-color: #333333;
 }
 

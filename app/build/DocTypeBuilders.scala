@@ -10,6 +10,7 @@ import settings.Global
 import dao.util.FileHelper
 
 import org.apache.commons.io.{FilenameUtils, FileUtils}
+import org.apache.commons.lang3.StringEscapeUtils
 
 sealed trait DocTypeBuilder {
   def supportedFileExtensions: Array[String]
@@ -47,7 +48,7 @@ object MarkdownDocsBuilder extends DocTypeBuilder {
 
   override def buildDocument(project: Project, version: String, document: JFile, filename: String, relativePath: String): Unit = {
     val htmlContent = transformer(FileUtils.readFileToString(document, "UTF-8"))
-    val fileTitle = Header.findFirstMatchIn(htmlContent).map(_.group(1)).getOrElse(filename)
+    val fileTitle = StringEscapeUtils.unescapeXml(Header.findFirstMatchIn(htmlContent).map(_.group(1)).getOrElse(filename))
 
     FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
       Global.files.create(UUID.randomUUID().toString, project, version, relativePath, filename, fileTitle, contentGuid)
