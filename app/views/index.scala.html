@@ -5,6 +5,8 @@ loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option
 
 @main("", loginForm) {
 <div class="container center" style="margin-top: 50px;">
+    <div id="views">
+    </div>
     <div>
         <h3>Popular Files</h3>
     </div>
@@ -46,5 +48,4 @@ loginForm: Form[Option[models.User]])(implicit flash: Flash, currentUser: Option
         }
     </div>
 </div>
-<script src="http://d3js.org/d3.v3.js"></script>
 }

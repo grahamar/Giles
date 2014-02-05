@@ -82,20 +82,14 @@ case class File(guid: String,
 
   // Explicit check for files that should come first (like index or readme)
   override def compare(other: File): Int = {
-    val otherUrlKey = other.url_key
     if (url_key == other.url_key) {
-      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => 0")
       0
     } else if (url_key.toLowerCase.endsWith("readme.md")  || url_key.toLowerCase.endsWith("index.md")) {
-      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => -1")
       -1
     } else if (other.url_key.toLowerCase.endsWith("readme.md") || other.url_key.toLowerCase.endsWith("index.md")) {
-      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => 1")
       1
     } else {
-      val comp = url_key.compare(other.url_key)
-      Logger.info(s"Compare File [$url_key] to [$otherUrlKey] => $comp")
-      comp
+      url_key.compare(other.url_key)
     }
   }
 

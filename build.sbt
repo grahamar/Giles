@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
     "com.jcraft"         %  "jsch.agentproxy.usocket-jna"   % "0.0.6",
     "jp.t2v"             %% "play2-auth"                    % "0.11.0",
     "org.mindrot"        %  "jbcrypt"                       % "0.3m",
-    "com.tristanhunt"    %  "knockoff_2.10"                 % "0.8.1",
+    "eu.henkelmann"      %  "actuarius_2.10.0"              % "0.2.6",
     "org.apache.lucene"  %  "lucene-core"                   % "4.3.0",
     "org.apache.lucene"  %  "lucene-analyzers-common"       % "4.3.0",
     "org.apache.lucene"  %  "lucene-queryparser"            % "4.3.0",

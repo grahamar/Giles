@@ -37,15 +37,17 @@ trait MultipleDocTypesBuilder extends AbstractDocsBuilder with DocTypeBuilder {
 
 object MarkdownDocsBuilder extends DocTypeBuilder {
 
+  import eu.henkelmann.actuarius.ActuariusTransformer
+
+  private val transformer = new ActuariusTransformer()
+
   override def supportedFileExtensions: Array[String] = Array("md", "markdown")
 
-  import com.tristanhunt.knockoff.DefaultDiscounter._
-  import com.tristanhunt.knockoff._
+  private val Header = """<h[1-6]>(.*)</h[1-6]>""".r
 
   override def buildDocument(project: Project, version: String, document: JFile, filename: String, relativePath: String): Unit = {
-    val blocks = knockoff(FileUtils.readFileToString(document, "UTF-8"))
-    val fileTitle = blocks.find(_.isInstanceOf[Header]).map(header => toText(Seq(header))).getOrElse(filename)
-    val htmlContent = toXHTML(blocks).toString()
+    val htmlContent = transformer(FileUtils.readFileToString(document, "UTF-8"))
+    val fileTitle = Header.findFirstMatchIn(htmlContent).map(_.group(1)).getOrElse(filename)
 
     FileHelper.getOrCreateContent(htmlContent) { contentGuid =>
       Global.files.create(UUID.randomUUID().toString, project, version, relativePath, filename, fileTitle, contentGuid)

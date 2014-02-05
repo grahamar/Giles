@@ -62,8 +62,6 @@ class ViewsDao(views: MongoCollection, fileRollup: FileViewRollupDao, userFileRo
       }
     }
 
-    Logger.info("=>"+builder.result())
-
     views.find(builder.result()).toList.map(grater[View].asObject(_))
   }
 

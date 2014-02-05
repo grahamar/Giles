@@ -154,10 +154,6 @@
 }
 
 #md-content, #md-content pre, #md-content code {
-  white-space: pre-wrap !important;
-  white-space: -moz-pre-wrap !important;
-  white-space: -pre-wrap !important;
-  white-space: -o-pre-wrap !important;
   word-break: normal !important;
   word-wrap: normal !important;
 }
