@@ -30,9 +30,15 @@ class ProjectDao(projects: MongoCollection) {
     project
   }
 
+  def markUpdated(project: Project) = {
+    projects.update(q = MongoDBObject("guid" -> project.guid),
+      o = MongoDBObject("$set" -> MongoDBObject("updated_at" -> new DateTime())),
+      upsert = false, multi = false)
+  }
+
   def update(project: Project) = {
     val obj = MongoDBObject("description" -> project.description, "repo_url" -> project.repo_url, "head_version" -> project.head_version,
-      "versions" -> project.versions, "author_usernames" -> project.author_usernames)
+      "versions" -> project.versions, "author_usernames" -> project.author_usernames, "updated_at" -> new DateTime())
     projects.update(q = MongoDBObject("guid" -> project.guid),
       o = MongoDBObject("$set" -> obj),
       upsert = false,
