@@ -18,6 +18,7 @@ import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
 import settings.Global
 import util.ResourceUtil
 import net.sourceforge.plantuml.{FileFormat, FileFormatOption, SourceStringReader}
+import build.DocumentationFactory
 
 object StaticDocsController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -29,6 +30,13 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
       if(!files.isEmpty) {
         Redirect(routes.StaticDocsController.projectDocs(projectUrlKey, projectVersion, files.head.url_key))
       } else NotFound(html.notfound(AuthenticationController.loginForm))
+    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
+  }
+
+  def rebuildVersion(projectUrlKey: String, projectVersion: String) = StackAction { implicit request =>
+    Global.projects.findByUrlKey(projectUrlKey).map { project =>
+      DocumentationFactory.documentsBuilder.cleanAndBuildVersion(project, projectVersion)
+      Redirect(routes.ProjectController.project(projectUrlKey))
     }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 

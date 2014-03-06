@@ -53,6 +53,9 @@
                                     <pre class="text-danger">{build.message}</pre>
                                   case _ =>
                                 }}
+                                <a href='@routes.StaticDocsController.rebuildVersion(projectAndBuilds.project.url_key, build.version)' class="btn btn-info pull-right">
+                                    Rebuild
+                                </a>
                             </td>
                         </tr>
                         }

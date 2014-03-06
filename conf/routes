@@ -30,6 +30,7 @@ POST    /projects/:projectUrlKey/edit                                       cont
 POST    /projects/:projectUrlKey/favourite                                  controllers.ProjectController.favouriteProject(projectUrlKey)
 POST    /projects/:projectUrlKey/unfavourite                                controllers.ProjectController.unfavouriteProject(projectUrlKey)
 GET     /projects/:projectUrlKey/pull                                       controllers.ProjectController.pullNewVersions(projectUrlKey)
+GET     /projects/:projectUrlKey/rebuild/:projectVersion                    controllers.StaticDocsController.rebuildVersion(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion                       controllers.StaticDocsController.projectIndex(projectUrlKey, projectVersion)
 GET     /projects/:projectUrlKey/docs/:projectVersion/*file                 controllers.StaticDocsController.projectDocs(projectUrlKey, projectVersion, file)
 GET     /projects/:projectUrlKey/pdf/:projectVersion                        controllers.StaticDocsController.pdf(projectUrlKey, projectVersion)

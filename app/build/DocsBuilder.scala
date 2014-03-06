@@ -17,6 +17,7 @@ sealed trait DocsBuilder {
 
   def build(project: Project): Try[Unit]
   def cleanBuild(project: Project, version: String): Try[Unit]
+  def cleanAndBuildVersion(project: Project, version: String): Try[Unit]
 }
 
 trait AbstractDocsBuilder extends DocsBuilder {
@@ -41,6 +42,15 @@ trait AbstractDocsBuilder extends DocsBuilder {
     }
   }
 
+  def cleanAndBuildVersion(project: Project, version: String): Try[Unit] = Try {
+    for {
+      _         <- cleanRepo(project)
+      _         <- clone(project)
+    } yield {
+      buildProjectAndVersions(project, Seq(version))
+    }
+  }
+
   private def buildProjectAndVersions(project: Project, versions: Seq[String]): Seq[Try[Build]] = {
     versions.map { version =>
       for {
@@ -62,7 +72,7 @@ trait AbstractDocsBuilder extends DocsBuilder {
   }
 
   private def updateProjectAuthors(project: Project): Unit = {
-    val topAuthors = Util.topAuthorUsernames(4, Global.builds.search(BuildQuery(project_guid = Some(project.guid))).flatMap(_.authors).toSeq)
+    val topAuthors = Util.topAuthorUsernames(6, Global.builds.search(BuildQuery(project_guid = Some(project.guid))).flatMap(_.authors).toSeq)
     Global.projects.update(project.copy(author_usernames = topAuthors))
   }
 
