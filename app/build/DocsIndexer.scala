@@ -2,26 +2,23 @@ package build
 
 import java.io.{Reader, StringReader}
 
-import scala.util.Try
-import scala.collection.JavaConverters._
-import play.api.Logger
-
 import models._
+import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.document.Field.Store
+import org.apache.lucene.document._
+import org.apache.lucene.index.FieldInfo.IndexOptions
+import org.apache.lucene.index.IndexWriterConfig.OpenMode
+import org.apache.lucene.index.{IndexWriter, IndexWriterConfig, Term}
+import org.apache.lucene.search.{BooleanClause, BooleanQuery, TermQuery}
+import org.apache.lucene.store.FSDirectory
+import org.apache.lucene.util.{Version => LucVersion}
+import org.w3c.dom.{Element, Node, NodeList, Text}
+import org.w3c.tidy.Tidy
+import play.api.Logger
 import settings.Global
 import util.ResourceUtil
-import org.apache.lucene.search.{BooleanClause, BooleanQuery, TermQuery}
-import org.apache.lucene.index.FieldInfo.IndexOptions
-import org.apache.lucene.index.Term
-import org.apache.lucene.document._
-import org.apache.lucene.index.{IndexWriter, IndexWriterConfig}
-import org.apache.lucene.document.Field.Store
-import org.apache.lucene.util.{Version => LucVersion}
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import org.apache.lucene.index.IndexWriterConfig.OpenMode
-import org.apache.lucene.store.FSDirectory
-import org.w3c.tidy.Tidy
-import org.w3c.dom.{NodeList, Node, Text, Element}
-import org.apache.lucene.analysis.util.CharArraySet
+
+import scala.util.Try
 
 trait DocsIndexer {
   def index(project: Project, version: String): Try[Unit]
@@ -44,7 +41,7 @@ object LuceneDocsIndexer {
 trait LuceneDocsIndexer extends DocsIndexer {
   self: DirectoryHandler =>
 
-  import ResourceUtil._
+  import util.ResourceUtil._
 
   def cleanProjectAndVersionFileIndex(project: Project, version: String, file: File): Try[Unit] = Try {
     val indexWriter: IndexWriter = {
@@ -109,6 +106,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
         indexFile(project, version, file, indx)
         indx.commit()
       }
+      DefaultAmazonS3Client.backupIndex(indexDir)
     }.recover {
       case e: Exception =>
         Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
@@ -126,6 +124,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
         indexProject(project, version, indx)
         indx.commit()
       }
+      DefaultAmazonS3Client.backupIndex(indexDir)
     }.recover {
       case e: Exception =>
         Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
@@ -166,6 +165,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
       }
       indx.commit()
     }
+    DefaultAmazonS3Client.backupIndex(indexDir)
   }
 
   private def indexProject(project: Project, version: String, index: IndexWriter): Unit = {

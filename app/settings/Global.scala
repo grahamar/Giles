@@ -1,12 +1,14 @@
 package settings
 
-import play.api.Application
-
-import dao.util.{Index, MongoUtil}
+import build.{DirectoryHandlerHelper, DefaultAmazonS3Client}
 import com.wordnik.swagger.config.SwaggerConfig
 import com.wordnik.swagger.core.SwaggerSpec
+import dao.util.{Index, MongoUtil}
+import play.api.Application
 
 object Global extends play.api.GlobalSettings {
+
+  DefaultAmazonS3Client.tryRestoreIndex(DirectoryHandlerHelper.indexDirFromConfig)
 
   private lazy val projectIndexes = Seq(Index(field="url_key", unique=true), Index(field="name", unique=true))
   private lazy val viewIndexes = Seq(Index(field="file_guid"), Index(field="user_guid"))

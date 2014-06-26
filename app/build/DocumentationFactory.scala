@@ -25,4 +25,8 @@ object DocumentationFactory {
     docsBuilder
   }
 
+  def indexDir = {
+    docsBuilder.indexDir
+  }
+
 }

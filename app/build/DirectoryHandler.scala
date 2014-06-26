@@ -1,11 +1,21 @@
 package build
 
-import java.io.{FileNotFoundException, File}
-import java.io.{File => JFile}
+import java.io.{FileNotFoundException, File => JFile}
 
+import com.typesafe.config.ConfigFactory
 import models._
-import settings.Global
-import play.api.{Play, Logger}
+import play.api.{Logger, Play}
+
+import scala.util.Try
+
+object DirectoryHandlerHelper {
+  def indexDirFromConfig = {
+    new JFile(Try(ConfigFactory.load("application").getString("index.dir")).toOption.filterNot(_.isEmpty).getOrElse {
+      Logger.warn("""Unable to find "index.dir" configuration.""")
+      "./.index"
+    })
+  }
+}
 
 sealed trait DirectoryHandler {
   def repositoryForProject(project: Project): JFile
@@ -27,10 +37,7 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
   }
 
   lazy val luceneIndexDir: JFile = {
-    val indexesDir = new JFile(Play.current.configuration.getString("index.dir").getOrElse {
-      Logger.warn("""Unable to find "index.dir" configuration.""")
-      "./.index"
-    })
+    val indexesDir = DirectoryHandlerHelper.indexDirFromConfig
     if(indexesDir.exists() || indexesDir.mkdirs()) {
       indexesDir
     } else {
@@ -41,5 +48,5 @@ trait DirectoryHandlerImpl extends DirectoryHandler {
   def repositoryForProject(project: Project): JFile =
     new JFile(gitCheckoutsDir, project.url_key)
 
-  def indexDir: File = luceneIndexDir
+  def indexDir: JFile = luceneIndexDir
 }

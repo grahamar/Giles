@@ -4,9 +4,10 @@ name := "giles"
 
 organization := "com.gilt"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
+    "org.apache.commons" % "commons-compress"               % "1.8.1",
     "ch.qos.logback"     %  "logback-classic"               % "1.0.13",
     "org.eclipse.jgit"   %  "org.eclipse.jgit"              % "3.1.0.201310021548-r",
     "com.jcraft"         %  "jsch.agentproxy.jsch"          % "0.0.6",
@@ -30,6 +31,7 @@ libraryDependencies ++= Seq(
     "net.sourceforge.plantuml" % "plantuml"                 % "7986",
     "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.2.2",
     "com.wordnik"        %% "swagger-play2"                 % "1.3.2" exclude("org.json4s", "json4s-native_2.10"),
+    "com.amazonaws"      %  "aws-java-sdk"                  % "1.8.0",
     "org.mockito"        %  "mockito-core"                  % "1.9.5"                   % "test",
     "org.scalacheck"     %% "scalacheck"                    % "1.10.1"                  % "test",
     "org.scalatest"      %% "scalatest"                     % "2.0"                     % "test"
