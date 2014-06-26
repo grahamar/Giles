@@ -10,12 +10,14 @@ import com.amazonaws.services.s3.model.GetObjectRequest
 import com.typesafe.config.ConfigFactory
 import play.api.Logger
 
+import scala.util.Try
+
 object DefaultAmazonS3Client {
   import util.ResourceUtil._
 
-  private val config = ConfigFactory.load("aws")
-  private val credentials = new BasicAWSCredentials(config.getString("aws.s3.accesskey"), config.getString("aws.s3.secretkey"))
-  private val amazonS3Client = new AmazonS3Client(credentials)
+  private lazy val config = ConfigFactory.load("aws")
+  private lazy val credentials = new BasicAWSCredentials(config.getString("aws.s3.accesskey"), config.getString("aws.s3.secretkey"))
+  private lazy val amazonS3Client = new AmazonS3Client(credentials)
   private val DefaultRemoteIndexFilename = "giles_index_backup.zip"
 
   /**
@@ -121,8 +123,8 @@ object DefaultAmazonS3Client {
   }
 
   def tryRestoreIndex(file: File) = {
-    val tryRestoreOnStart = ConfigFactory.load("application").getBoolean("index.tryrestoreonstart")
-    val remoteIndexExists = doesFileExist(DefaultRemoteIndexFilename)
+    val tryRestoreOnStart = Try(ConfigFactory.load("application").getBoolean("index.tryrestoreonstart")).toOption.getOrElse(false)
+    val remoteIndexExists = if(tryRestoreOnStart) doesFileExist(DefaultRemoteIndexFilename) else false
     Logger.info(s"Local Index Exists? - ${file.exists()}")
     Logger.info(s"Restore index enabled? - $tryRestoreOnStart")
     Logger.info(s"Remote index exists? - $remoteIndexExists")
