@@ -30,4 +30,4 @@ dist
 /.index
 /*.sh
 conf/aws.conf
-project/giltPublish.sbt
+publish.sbt
