@@ -28,20 +28,10 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 # Install Git
 RUN apt-get install -y git curl
 
-# Install Scala
-RUN curl -o /tmp/scala-2.10.2.tgz http://www.scala-lang.org/files/archive/scala-2.10.2.tgz
-RUN tar xzf /tmp/scala-2.10.2.tgz -C /usr/share/
-RUN ln -s /usr/share/scala-2.10.2 /usr/share/scala
+ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt
+RUN mkdir /opt/Giles
+RUN tar xzf /opt/giles-0.0.8.tgz -C /opt/Giles
 
-# Symlink scala binary to /usr/bin
-RUN for i in scala scalc fsc scaladoc scalap; do ln -s /usr/share/scala/bin/${i} /usr/bin/${i}; done
+EXPOSE 9000
 
-# Install SBT
-RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.1/sbt.deb
-RUN dpkg -i /tmp/sbt.deb
-
-# Install Giles
-RUN cd /opt/ ; git clone https://github.com/grahamar/Giles.git
-RUN cd /opt/Giles ; sbt compile
-
-ENTRYPOINT cd /opt/Giles ; sbt "run 1717"
+ENTRYPOINT /opt/Giles/bin/giles
