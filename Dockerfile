@@ -37,7 +37,7 @@ RUN ln -s /usr/share/scala-2.10.2 /usr/share/scala
 RUN for i in scala scalc fsc scaladoc scalap; do ln -s /usr/share/scala/bin/${i} /usr/bin/${i}; done
 
 # Install SBT
-RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.2/sbt.deb
+RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.1/sbt.deb
 RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
