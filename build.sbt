@@ -1,3 +1,9 @@
+import sbtrelease._
+
+import ReleaseStateTransformations._
+
+releaseSettings
+
 import play.Project._
 
 name := "giles"
@@ -40,3 +46,49 @@ libraryDependencies ++= Seq(
 playScalaSettings
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+licenses := Seq("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+
+homepage := Some(url("https://github.com/grahamar/Giles"))
+
+scmInfo := Some(ScmInfo(url("https://github.com/grahamar/Giles.git"), "scm:git:git@github.com:grahamar/Giles.git"))
+
+lazy val publishSignedAction = { st: State =>
+  val extracted = Project.extract(st)
+  val ref = extracted.get(thisProjectRef)
+  extracted.runAggregated(com.typesafe.sbt.pgp.PgpKeys.publishSigned in Global in ref, st)
+}
+
+sbtrelease.ReleasePlugin.ReleaseKeys.releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts.copy(action = publishSignedAction),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
+
+publishMavenStyle := false
+
+publishTo := {
+  val nexus = "https://nexus.gilt.com/nexus/content/repositories/"
+  val defaultIvyPattern = Patterns(
+    ivyPatterns = List("[organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/ivy-[revision].xml"),
+    artifactPatterns = List("[organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[artifact]-[revision](-[classifier]).[ext]"),
+    isMavenCompatible = true
+  )
+  if (isSnapshot.value)
+    Some(Resolver.url("gilt.snapshots", url(nexus + "gilt.snapshots"))(defaultIvyPattern))
+  else
+    Some(Resolver.url("internal-releases", url(nexus + "internal-releases"))(defaultIvyPattern))
+}
+
+credentials += Credentials(Path.userHome / ".sbt" / "nexus.gilt.credentials")
