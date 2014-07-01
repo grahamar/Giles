@@ -41,11 +41,7 @@ playScalaSettings
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-publishArtifact in Test := false
-
-pomIncludeRepository := { _ => false }
-
-licenses := Seq("Apache License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
+licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
 
 homepage := Some(url("https://github.com/grahamar/Giles"))
 
