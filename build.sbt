@@ -78,17 +78,3 @@ sbtrelease.ReleasePlugin.ReleaseKeys.releaseProcess := Seq[ReleaseStep](
 
 publishMavenStyle := false
 
-publishTo := {
-  val nexus = "https://nexus.gilt.com/nexus/content/repositories/"
-  val defaultIvyPattern = Patterns(
-    ivyPatterns = List("[organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/ivy-[revision].xml"),
-    artifactPatterns = List("[organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[artifact]-[revision](-[classifier]).[ext]"),
-    isMavenCompatible = true
-  )
-  if (isSnapshot.value)
-    Some(Resolver.url("gilt.snapshots", url(nexus + "gilt.snapshots"))(defaultIvyPattern))
-  else
-    Some(Resolver.url("internal-releases", url(nexus + "internal-releases"))(defaultIvyPattern))
-}
-
-credentials += Credentials(Path.userHome / ".sbt" / "nexus.gilt.credentials")
