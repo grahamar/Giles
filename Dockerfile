@@ -10,19 +10,17 @@ MAINTAINER Graham Rhodes (graham.a.r@gmail.com)
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/10gen.list
 
-# Hack for initctl not being available in Ubuntu
-RUN dpkg-divert --local --rename --add /sbin/initctl
-RUN ln -s /bin/true /sbin/initctl
-
 # Install MongoDB
 RUN apt-get update
-RUN apt-get install mongodb-10gen
+RUN apt-get install mongodb-org
 
 # Create the MongoDB data directory
 RUN mkdir -p /data/db
+RUN mkdir /data/.index
+RUN mkdir /data/.git_checkouts
 
 EXPOSE 27017
-ENTRYPOINT ["usr/bin/mongod"]
+ENTRYPOINT usr/bin/mongod
 
 # Install Java 6
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
@@ -39,7 +37,7 @@ RUN ln -s /usr/share/scala-2.10.2 /usr/share/scala
 RUN for i in scala scalc fsc scaladoc scalap; do ln -s /usr/share/scala/bin/${i} /usr/bin/${i}; done
 
 # Install SBT
-RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.0/sbt.deb
+RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.2/sbt.deb
 RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
