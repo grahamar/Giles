@@ -2,9 +2,9 @@
 #
 # VERSION       1.0
 
-FROM ubuntu
+FROM ubuntu:latest
 
-MAINTAINER Graham Rhodes (graham.a.r@gmail.com)
+MAINTAINER Graham Rhodes <graham.a.r@gmail.com>
 
 # Add 10gen official apt source to the sources list
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
@@ -12,7 +12,7 @@ RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 
 # Install MongoDB
 RUN apt-get update
-RUN apt-get install mongodb-org
+RUN apt-get install -y -q mongodb-org
 
 # Create the MongoDB data directory
 RUN mkdir -p /data/db
