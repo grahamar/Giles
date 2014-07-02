@@ -19,17 +19,15 @@ RUN mkdir -p /data/db
 RUN mkdir /data/.index
 RUN mkdir /data/.git_checkouts
 
-RUN /usr/bin/mongod --fork --syslog
-
 # Install Java 6
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
 
 # Install Git
-RUN apt-get install -y git curl
+RUN apt-get install -y git
 
-ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt/
-RUN tar xzf /opt/giles-0.0.8.tgz -C /opt
+ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.9.tgz /opt/
+RUN tar xzf /opt/giles-0.0.9.tgz -C /opt
 
 EXPOSE 27017 1717
 
-ENTRYPOINT nohup /opt/giles-0.0.8/bin/giles -Dhttp.port=1717 &
+ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles-0.0.9/bin/giles -Dhttp.port=1717 -Dconfig.file=conf/production.application.conf
