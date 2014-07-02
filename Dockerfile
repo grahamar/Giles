@@ -19,8 +19,7 @@ RUN mkdir -p /data/db
 RUN mkdir /data/.index
 RUN mkdir /data/.git_checkouts
 
-EXPOSE 27017
-ENTRYPOINT usr/bin/mongod
+CMD ["usr/bin/mongod","--fork"]
 
 # Install Java 6
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
@@ -28,10 +27,10 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 # Install Git
 RUN apt-get install -y git curl
 
-ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt
+ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt/
 RUN mkdir /opt/Giles
 RUN tar xzf /opt/giles-0.0.8.tgz -C /opt/Giles
 
-EXPOSE 9000
+EXPOSE 27017 9000
 
 ENTRYPOINT /opt/Giles/bin/giles
