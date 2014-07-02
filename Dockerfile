@@ -30,6 +30,6 @@ RUN apt-get install -y git curl
 ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt/
 RUN tar xzf /opt/giles-0.0.8.tgz -C /opt
 
-EXPOSE 27017 9000
+EXPOSE 27017 1717
 
-ENTRYPOINT /opt/giles-0.0.8/bin/giles
+ENTRYPOINT /opt/giles-0.0.8/bin/giles -Dhttp.port=1717 & disown
