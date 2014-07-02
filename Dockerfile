@@ -30,4 +30,4 @@ RUN tar xzf /opt/giles-0.0.9.tgz -C /opt
 
 EXPOSE 27017 1717
 
-ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles-0.0.9/bin/giles -Dhttp.port=1717 -Dconfig.file=conf/production.application.conf
+ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles-0.0.9/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.9/conf/production.application.conf
