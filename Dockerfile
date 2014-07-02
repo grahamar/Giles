@@ -28,9 +28,8 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 RUN apt-get install -y git curl
 
 ADD https://github.com/grahamar/Giles/releases/download/v0.0.8/giles-0.0.8.tgz /opt/
-RUN mkdir /opt/Giles
-RUN tar xzf /opt/giles-0.0.8.tgz -C /opt/Giles
+RUN tar xzf /opt/giles-0.0.8.tgz -C /opt
 
 EXPOSE 27017 9000
 
-ENTRYPOINT /opt/Giles/bin/giles
+ENTRYPOINT /opt/giles-0.0.8/bin/giles
