@@ -32,4 +32,4 @@ RUN tar xzf /opt/giles-0.0.8.tgz -C /opt
 
 EXPOSE 27017 1717
 
-ENTRYPOINT /opt/giles-0.0.8/bin/giles -Dhttp.port=1717 & disown
+ENTRYPOINT nohup /opt/giles-0.0.8/bin/giles -Dhttp.port=1717 &
