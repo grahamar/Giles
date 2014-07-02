@@ -19,7 +19,7 @@ RUN mkdir -p /data/db
 RUN mkdir /data/.index
 RUN mkdir /data/.git_checkouts
 
-CMD ["usr/bin/mongod","--fork"]
+RUN /usr/bin/mongod --fork
 
 # Install Java 6
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
