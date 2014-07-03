@@ -23,10 +23,24 @@ RUN mkdir /data/.git_checkouts
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
 
 # Install Git
-RUN apt-get install -y git
+RUN apt-get install -y git curl
+
+# Install SBT
+RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.0/sbt.deb
+RUN dpkg -i /tmp/sbt.deb
+
+# Install Giles
+RUN mkdir /data/giles_repo
+RUN cd /data/giles_repo ; git clone https://github.com/grahamar/giles.git
+
+WORKDIR /data/giles_repo/giles
+
+RUN sbt stage
 
 ADD target/universal/stage /opt/giles/
 
+WORKDIR /opt/giles
+
 EXPOSE 27017 1717
 
-ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles/conf/production.application.conf
+ENTRYPOINT /usr/bin/mongod --fork --syslog & bin/giles -Dhttp.port=1717 -Dconfig.file=conf/production.application.conf
