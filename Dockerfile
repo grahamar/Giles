@@ -26,7 +26,7 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 RUN apt-get install -y git curl
 
 # Install SBT
-RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.0/sbt.deb
+RUN curl -o /tmp/sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
 RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
@@ -37,7 +37,7 @@ WORKDIR /data/giles_repo/giles
 
 RUN sbt stage
 
-ADD target/universal/stage /opt/giles/
+ADD /data/giles_repo/giles/target/universal/stage/ /opt/giles/
 
 WORKDIR /opt/giles
 
