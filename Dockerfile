@@ -23,11 +23,11 @@ RUN mkdir /data/.git_checkouts
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
 
 # Install Git
-RUN apt-get install -y git curl
+RUN apt-get install -y git wget
 
 # Install SBT
-RUN curl -o /tmp/sbt-0.13.2.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
-RUN dpkg -i /tmp/sbt-0.13.2.deb
+RUN wget -o /tmp/sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
+RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
 RUN mkdir /data/giles_repo
