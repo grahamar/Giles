@@ -1,12 +1,13 @@
 package dao.util
 
-import scala.collection.JavaConverters._
-import play.api.Play.{current, resource}
+import java.io.File
 
 import com.mongodb._
-import com.mongodb.casbah.{MongoCollection, MongoConnection, MongoDB}
 import com.mongodb.casbah.commons.MongoDBObject
-import com.typesafe.config.{ConfigFactory, Config}
+import com.mongodb.casbah.{MongoCollection, MongoConnection, MongoDB}
+import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.collection.JavaConverters._
 
 case class Index(field: String, unique: Boolean=false)
 
@@ -29,7 +30,8 @@ object MongoUtil {
 }
 
 object MongoInit extends MongoInit {
-  override val mongoConfig = ConfigFactory.parseURL(resource("mongodb.yml").get)
+  private lazy val ConfigFile = new File(sys.props.get("config.file").getOrElse("conf/application.conf"))
+  override val mongoConfig = ConfigFactory.parseFile(ConfigFile)
 }
 
 object TestMongoInit extends MongoInit {
@@ -45,13 +47,13 @@ private[util] trait MongoInit {
 
   lazy val mongo: Mongo = {
     val connsPerHost = 16
-    val hosts = mongoConfig.getStringList("hosts").asScala
+    val hosts = mongoConfig.getStringList("db.hosts").asScala
     val servers = hosts.map(_.split(":")).map((hp: Array[String]) => new ServerAddress(hp(0), hp(1).toInt))
     new MongoClient(servers.toList.asJava,  MongoClientOptions.builder().connectionsPerHost(connsPerHost).build())
   }
 
   lazy val mongoDb: MongoDB = {
-    new MongoConnection(mongo).getDB(mongoConfig.getString("dbname"))
+    new MongoConnection(mongo).getDB(mongoConfig.getString("db.name"))
   }
 
   def safeEnsureIndexes(collection: MongoCollection, indexes: Seq[(String, Boolean)]): Unit = {
@@ -67,7 +69,7 @@ private[util] trait MongoInit {
       MongoDBObject(indexedAttributes.toList.map(attr => (attr.key, if (attr.ascending) 1 else -1)))
     }
 
-    if (mongoConfig.getBoolean("ensureIndex")) {
+    if (mongoConfig.getBoolean("db.ensureIndex")) {
       indexes.foreach { index =>
         val Index(indexedAttributes, name, isUnique) = index
         collection.ensureIndex(getIndexObject(indexedAttributes), name, unique = isUnique)

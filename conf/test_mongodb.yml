@@ -1,5 +1,5 @@
-hosts=["localhost:27017"]
-dbname=giles_test
-autoUpdate=true
-writeConcern=Safe
-ensureIndex=true
+db.hosts=["localhost:27017"]
+db.name=giles_test
+db.autoUpdate=true
+db.writeConcern=Safe
+db.ensureIndex=true
