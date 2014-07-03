@@ -25,9 +25,9 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 # Install Git
 RUN apt-get install -y git
 
-ADD https://github.com/grahamar/Giles/releases/download/v0.0.9/giles-0.0.9.tgz /opt/
-RUN tar xzf /opt/giles-0.0.9.tgz -C /opt
+ADD https://github.com/grahamar/Giles/releases/download/v0.0.10/giles-0.0.10.tgz /opt/
+RUN tar xzf /opt/giles-0.0.10.tgz -C /opt
 
 EXPOSE 27017 1717
 
-ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles-0.0.9/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.9/conf/production.application.conf
+ENTRYPOINT /usr/bin/mongod --fork --syslog & /opt/giles-0.0.10/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.10/conf/production.application.conf
