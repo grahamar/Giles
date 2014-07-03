@@ -38,9 +38,9 @@ WORKDIR /data/giles_repo/giles
 
 RUN sbt stage
 
-RUN ls /data/giles_repo/giles/target/universal/stage
+RUN ls target/universal/stage
 
-ADD /data/giles_repo/giles/target/universal/stage /opt/giles/
+ADD target/universal/stage /opt/giles/
 
 WORKDIR /opt/giles
 
