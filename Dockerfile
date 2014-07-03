@@ -31,17 +31,16 @@ RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
 RUN mkdir /data/giles_repo
+RUN mkdir /opt/giles
 RUN cd /data/giles_repo ; git clone https://github.com/grahamar/giles.git
 
 WORKDIR /data/giles_repo/giles
 
 RUN sbt stage
 
-RUN ls /data/giles_repo/giles
-RUN ls /data/giles_repo/giles/target
-RUN ls /data/giles_repo/giles/universal
+RUN ls /data/giles_repo/giles/target/universal/stage
 
-ADD /data/giles_repo/giles/target/universal/stage/ /opt/giles/
+ADD /data/giles_repo/giles/target/universal/stage /opt/giles/
 
 WORKDIR /opt/giles
 
