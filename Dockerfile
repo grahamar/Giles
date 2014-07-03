@@ -23,10 +23,10 @@ RUN mkdir /data/.git_checkouts
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
 
 # Install Git
-RUN apt-get install -y git wget
+RUN apt-get install -y git curl
 
 # Install SBT
-RUN wget -o /tmp/sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
+RUN curl -o /tmp/sbt.deb http://scalasbt.artifactoryonline.com/scalasbt/sbt-native-packages/org/scala-sbt/sbt/0.13.0/sbt.deb
 RUN dpkg -i /tmp/sbt.deb
 
 # Install Giles
