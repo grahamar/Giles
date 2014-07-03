@@ -13,7 +13,6 @@ RUN apt-get update
 
 # Create the MongoDB data directory
 RUN mkdir -p /data/db
-RUN mkdir /data/.index
 RUN mkdir /data/.git_checkouts
 
 # Install Java 6
