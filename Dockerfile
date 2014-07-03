@@ -26,8 +26,8 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 RUN apt-get install -y git curl
 
 # Install SBT
-RUN curl -o /tmp/sbt.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
-RUN dpkg -i /tmp/sbt.deb
+RUN curl -o /tmp/sbt-0.13.2.deb http://dl.bintray.com/sbt/debian/sbt-0.13.2.deb
+RUN dpkg -i /tmp/sbt-0.13.2.deb
 
 # Install Giles
 RUN mkdir /data/giles_repo
