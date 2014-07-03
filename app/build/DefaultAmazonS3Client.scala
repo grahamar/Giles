@@ -18,7 +18,7 @@ object DefaultAmazonS3Client {
   private lazy val config = ConfigFactory.load("aws")
   private lazy val credentials = new BasicAWSCredentials(config.getString("aws.s3.accesskey"), config.getString("aws.s3.secretkey"))
   private lazy val amazonS3Client = new AmazonS3Client(credentials)
-  private val DefaultRemoteIndexFilename = "giles_index_backup.zip"
+  private val DefaultRemoteIndexFilename = DirectoryHandlerHelper.Config.getString("index.remote.filename")
 
   /**
    * Upload a file to standard bucket on S3
