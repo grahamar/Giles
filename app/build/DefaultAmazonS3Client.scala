@@ -122,7 +122,7 @@ object DefaultAmazonS3Client {
   }
 
   def tryRestoreIndex(file: File) = {
-    val tryRestoreOnStart = Try(ConfigFactory.load("application").getBoolean("index.tryrestoreonstart")).getOrElse(false)
+    val tryRestoreOnStart = Try(DirectoryHandlerHelper.Config.getBoolean("index.tryrestoreonstart")).getOrElse(false)
     val remoteIndexExists = if(tryRestoreOnStart) doesFileExist(DefaultRemoteIndexFilename) else false
     println(s"Local Index Exists? - ${file.exists()}")
     println(s"Restore index enabled? - $tryRestoreOnStart")
