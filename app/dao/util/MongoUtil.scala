@@ -6,6 +6,7 @@ import com.mongodb._
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.{MongoCollection, MongoConnection, MongoDB}
 import com.typesafe.config.{Config, ConfigFactory}
+import play.api.Logger
 
 import scala.collection.JavaConverters._
 
@@ -48,6 +49,9 @@ private[util] trait MongoInit {
   lazy val mongo: Mongo = {
     val connsPerHost = 16
     val hosts = mongoConfig.getStringList("db.hosts").asScala
+
+    Logger.info(s"Using mongo hosts '$hosts'")
+
     val servers = hosts.map(_.split(":")).map((hp: Array[String]) => new ServerAddress(hp(0), hp(1).toInt))
     new MongoClient(servers.toList.asJava,  MongoClientOptions.builder().connectionsPerHost(connsPerHost).build())
   }
