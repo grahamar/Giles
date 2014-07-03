@@ -23,7 +23,7 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 RUN apt-get install -y git
 
 ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.12/giles_2.10-0.0.12.tgz /opt/
-RUN tar xzf /opt/giles-0.0.12.tgz -C /opt
+RUN tar xzf /opt/giles_2.10-0.0.12.tgz -C /opt
 
 EXPOSE 1717
 
