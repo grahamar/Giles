@@ -32,3 +32,4 @@ dist
 conf/aws.conf
 conf/client_secrets.json
 publish.sbt
+Dockerfile
