@@ -2,18 +2,26 @@ package build
 
 import java.io.{FileNotFoundException, File => JFile}
 
+import play.api.Logger
+
 import com.typesafe.config.ConfigFactory
 import models._
-import play.api.{Logger, Play}
 
 import scala.util.Try
 
 object DirectoryHandlerHelper {
+
+  private lazy val ConfigFile = new JFile(sys.props.get("config.file").getOrElse("conf/application.conf"))
+  lazy val Config = ConfigFactory.parseFile(ConfigFile)
+
   def indexDirFromConfig = {
-    new JFile(Try(ConfigFactory.load("application").getString("index.dir")).toOption.filterNot(_.isEmpty).getOrElse {
-      Logger.warn("""Unable to find "index.dir" configuration.""")
-      "./.index"
-    })
+    new JFile(Try {
+        Config.getString("index.dir")
+      }.toOption.filterNot(_.isEmpty).getOrElse {
+        Logger.warn("""Unable to find "index.dir" configuration.""")
+        "./.index"
+      }
+    )
   }
 }
 
@@ -23,9 +31,10 @@ sealed trait DirectoryHandler {
 }
 
 trait DirectoryHandlerImpl extends DirectoryHandler {
+  import build.DirectoryHandlerHelper._
 
   lazy val gitCheckoutsDir: JFile = {
-    val checkoutDir = new JFile(Play.current.configuration.getString("git.checkouts.dir").getOrElse {
+    val checkoutDir = new JFile(Try(Config.getString("git.checkouts.dir")).getOrElse {
       Logger.warn("""Unable to find "git.checkouts.dir" configuration.""")
       "./.git_checkouts"
     })
