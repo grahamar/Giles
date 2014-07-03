@@ -30,4 +30,5 @@ dist
 /.index
 /*.sh
 conf/aws.conf
+conf/client_secrets.json
 publish.sbt

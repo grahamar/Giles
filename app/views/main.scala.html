@@ -19,7 +19,7 @@
         @flash.get("success").map { message =>
         <p class="form-group text-success">@message</p>
         }
-        <a href="@routes.AuthenticationController.loginWithGoogle" class="zocial google">Sign in with Google</a>
+        <a href="@routes.AuthenticationController.loginWithGoogle" class="zocial googleplus">Sign in with Google+</a>
         <a href="@routes.AuthenticationController.signUp" class="btn btn-primary navbar-btn" type="submit">Sign Up!</a>
         <div class="form-group">
             <input type="email" class="form-control" placeholder="Email" name="email" value='@loginForm("email").value'>

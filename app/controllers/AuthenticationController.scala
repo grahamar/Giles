@@ -1,24 +1,47 @@
 package controllers
 
-import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
+import java.io.{FileInputStream, InputStreamReader}
+import java.util.UUID
 
-import play.api.mvc._
+import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.mvc._
+import play.api.templates.HtmlFormat
 
 import views._
 import models._
 import controllers.auth._
-import settings.Global
 import dao.util.ProjectHelper
-import play.api.libs.openid.OpenID
-import org.apache.commons.lang3.RandomStringUtils
-import java.util.UUID
-import play.api.templates.HtmlFormat
+import settings.Global
 import util.HashingUtils
+import org.apache.commons.lang3.RandomStringUtils
+import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow, GoogleClientSecrets}
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.plus.model.Person
+import com.google.api.services.plus.{Plus, PlusScopes}
 
 object AuthenticationController extends Controller with LoginLogout with OptionalAuthUser with AuthConfigImpl {
+  import play.api.Play.current
+
+  private val ApplicationName = "Gilt-Giles/1.0"
+  private val JsonFactory = GsonFactory.getDefaultInstance
+  private val HttpTransport = GoogleNetHttpTransport.newTrustedTransport()
+  private lazy val ClientSecrets = GoogleClientSecrets.load(JsonFactory,
+    new InputStreamReader(new FileInputStream(current.getFile("conf/client_secrets.json")))
+  )
+  private lazy val GoogleFlow = new GoogleAuthorizationCodeFlow.Builder(
+    HttpTransport,
+    JsonFactory,
+    ClientSecrets,
+    Seq(PlusScopes.USERINFO_EMAIL, PlusScopes.USERINFO_PROFILE).asJavaCollection
+  ).build()
+  private val GoogleOAuthRedirectUrl = { (request: RequestHeader) =>
+    routes.AuthenticationController.oauth2callback(None, None).absoluteURL()(request)
+  }
 
   val loginForm = Form {
     mapping("email" -> email, "password" -> text)(Global.users.authenticate)(_.map(u => (u.email, "")))
@@ -46,35 +69,40 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
     ApplicationController.Home
   }
 
-  def loginWithGoogle = AsyncStack { implicit request =>
-    OpenID.redirectURL("https://www.google.com/accounts/o8/id", routes.AuthenticationController.openIDCallback.absoluteURL(),
-      Seq("email" -> "http://schema.openid.net/contact/email",
-        "first_name" -> "http://axschema.org/namePerson/first",
-        "last_name" -> "http://axschema.org/namePerson/last",
-        "username" -> "http://schema.openid.net/namePerson/friendly")).
-      map(Redirect(_)).recover {
-        case e: Exception => ApplicationController.Home
-      }
+  def loginWithGoogle = StackAction { implicit request =>
+    Redirect(GoogleFlow.newAuthorizationUrl().
+      setRedirectUri(GoogleOAuthRedirectUrl(request)).
+      build())
   }
 
-  def openIDCallback = AsyncStack { implicit request =>
-    for {
-      user <- createGoogleUser
-      result <- gotoLoginSucceeded(user.guid)
-    } yield result
+  def oauth2callback(code: Option[String], error: Option[String]) = AsyncStack { implicit request =>
+    code.map { c =>
+      val tokenResponse = GoogleFlow.newTokenRequest(c).
+        setRedirectUri(GoogleOAuthRedirectUrl(request)).execute()
+      val credentials = GoogleFlow.createAndStoreCredential(tokenResponse, null)
+      val plus = new Plus.Builder(HttpTransport, JsonFactory, credentials).setApplicationName(ApplicationName).build()
+      val profile = plus.people().get("me").execute()
+      Option(profile.getEmails).map(_.asScala.head).map(_.getValue).map { email =>
+        for {
+          user <- createGoogleUser(email, profile)
+          result <- gotoLoginSucceeded(user.guid)
+        } yield result
+      }.getOrElse {
+        Future.successful(Redirect(routes.ApplicationController.index()))
+      }
+    }.getOrElse {
+      Future.successful(Redirect(routes.ApplicationController.index()))
+    }
   }
 
-  def createGoogleUser()(implicit request: Request[_]): Future[User] = {
-    OpenID.verifiedId.map { info =>
-      val email =  info.attributes.getOrElse("email", "guest@giles.io")
-      Global.users.findByEmail(email).getOrElse {
-        val userGuid = UUID.randomUUID().toString
-        val username = email.toLowerCase.takeWhile((ch: Char) => !'@'.equals(ch))
-        val password = RandomStringUtils.randomAlphabetic(20)
-        val firstname = info.attributes.get("first_name")
-        val lastname = info.attributes.get("last_name")
-        Global.users.create(userGuid, username, email, password, firstname, lastname)
-      }
+  def createGoogleUser(email: String, profile: Person)(implicit request: Request[_]): Future[User] = Future {
+    Global.users.findByEmail(email).getOrElse {
+      val userGuid = UUID.randomUUID().toString
+      val username = email.toLowerCase.takeWhile((ch: Char) => !'@'.equals(ch))
+      val password = RandomStringUtils.randomAlphabetic(20)
+      val firstname = Option(profile.getName.getGivenName)
+      val lastname = Option(profile.getName.getFamilyName)
+      Global.users.create(userGuid, username, email, password, firstname, lastname)
     }
   }
 
@@ -135,5 +163,4 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
   }
 
   private class UserIdNotSetException extends RuntimeException
-
 }
