@@ -1,9 +1,10 @@
 package controllers
 
-import play.api.Routes
+import play.api.{Logger, Routes}
 import play.api.mvc._
 import play.api.data._
 import play.api.templates.HtmlFormat
+import util.Timer
 
 import views._
 import models._
@@ -43,7 +44,9 @@ object ApplicationController extends Controller with OptionalAuthUser with AuthC
       }
     }
 
-    html.index(ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq, popularFiles, userFavourites, loginForm)
+    val authorsBuildsAndProjects = ProjectHelper.getAuthorsAndBuildsForProjects(projects).toSeq
+
+    html.index(authorsBuildsAndProjects, popularFiles, userFavourites, loginForm)
   }
 
   def search(filter: String) = StackAction { implicit request =>

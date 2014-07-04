@@ -12,12 +12,15 @@ object ProjectHelper {
     new ProjectAndAuthors(project, project.author_usernames.map(Global.users.findByUsername).flatten)
   }
 
-  def getAuthorsAndBuildsForProjects(projects: Iterable[Project]): Iterable[ProjectAuthorsAndBuilds] =
+  def getAuthorsAndBuildsForProjects(projects: Iterable[Project]): Iterable[ProjectAuthorsAndBuilds] = {
     projects.map(getAuthorsAndBuildsForProject)
+  }
 
   def getAuthorsAndBuildsForProject(project: Project): ProjectAuthorsAndBuilds = {
-    new ProjectAuthorsAndBuilds(project, project.author_usernames.map(Global.users.findByUsername).flatten,
-      Global.builds.findLatestByProject(project).toSeq)
+    val authors = project.author_usernames.map(Global.users.findByUsername).flatten
+    val latestBuilds = Global.builds.findLatestByProject(project).toSeq
+
+    new ProjectAuthorsAndBuilds(project, authors, latestBuilds)
   }
 
   def getFavouriteProjectsForUser(user: User): Iterable[ProjectAuthorsAndBuilds] = {

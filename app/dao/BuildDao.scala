@@ -2,10 +2,9 @@ package dao
 
 import java.util.UUID
 
-import models._
-
-import com.novus.salat._
 import com.mongodb.casbah.Imports._
+import com.novus.salat._
+import models._
 import org.joda.time.DateTime
 
 class BuildDao(builds: MongoCollection) {
@@ -35,9 +34,13 @@ class BuildDao(builds: MongoCollection) {
   }
 
   def findLatestByProject(project: Project): Iterable[Build] = {
-    val builds = project.versions.flatMap(v => search(BuildQuery(project_guid = Some(project.guid), version = Some(v))))
-    val latestBuildByVersion: Map[String, DateTime] = builds.groupBy(_.version).toMap.mapValues{ buildsForVersion =>
-      buildsForVersion.map(_.created_at).sorted(Ordering.fromLessThan((ths: DateTime, tht: DateTime) => tht.isBefore(ths))).head
+    val builds: Seq[Build] = {
+      search(BuildQuery(project_guid = Some(project.guid))).toSeq
+    }
+    val latestBuildByVersion: Map[String, DateTime] = {
+      builds.groupBy(_.version).toMap.mapValues{ buildsForVersion =>
+        buildsForVersion.map(_.created_at).sorted(Ordering.fromLessThan((ths: DateTime, tht: DateTime) => tht.isBefore(ths))).head
+      }
     }
 
     import _root_.util.Util._
