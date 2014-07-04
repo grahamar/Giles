@@ -18,8 +18,8 @@ RUN mkdir /data/.git_checkouts
 # Install Java 6
 RUN apt-get -y install openjdk-6-jdk && apt-get clean
 
-# Install Git
-RUN apt-get install -y git
+# Install Git & Graphviz
+RUN apt-get install -y git graphviz
 
 ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.17/giles_2.10-0.0.17.tgz /opt/
 RUN tar xzf /opt/giles_2.10-0.0.17.tgz -C /opt
