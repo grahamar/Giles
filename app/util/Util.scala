@@ -25,7 +25,7 @@ object Util {
     else str.takeWhile(!_.isDigit)
   }
 
-  private val dec="""(\d+)""".r
+  private val dec="""(\d{1,9})""".r
 
   def compareBuildVersions(version2: String, version1: String): Int = {
     (groupIt(version1), groupIt(version2)) match {
