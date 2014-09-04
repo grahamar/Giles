@@ -4,7 +4,7 @@ name := "giles"
 
 organization := "com.gilt"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
   "com.google.http-client"  % "google-http-client-gson"   % "1.18.0-rc",
@@ -12,7 +12,15 @@ libraryDependencies ++= Seq(
   "com.google.apis"    % "google-api-services-plus"       % "v1-rev128-1.18.0-rc",
   "org.apache.commons" % "commons-compress"               % "1.8.1",
   "ch.qos.logback"     %  "logback-classic"               % "1.0.13",
-  "org.eclipse.jgit"   %  "org.eclipse.jgit"              % "3.1.0.201310021548-r",
+  "org.eclipse.jgit"   %  "org.eclipse.jgit"              % "3.3.2.201404171909-r",
+  "org.eclipse.jgit"   % "org.eclipse.jgit.archive"       % "3.3.2.201404171909-r",
+  "com.typesafe.activator" % "activator-templates-cache"  % "1.0-f2a4b1221f2ff7ef8d5e5651416a8438a7e01181" excludeAll(
+    ExclusionRule(organization = "com.typesafe.akka", name = "akka-actor_2.11"),
+    ExclusionRule(organization = "org.scala-lang"),
+    ExclusionRule(organization = "org.scala-lang.modules"),
+    ExclusionRule(organization = "org.scala-sbt")
+  ),
+  "org.scala-sbt"      %  "io"                            % "0.13.5",
   "com.jcraft"         %  "jsch.agentproxy.jsch"          % "0.0.6",
   "com.jcraft"         %  "jsch.agentproxy.sshagent"      % "0.0.6",
   "com.jcraft"         %  "jsch.agentproxy.usocket-jna"   % "0.0.6",
@@ -26,7 +34,7 @@ libraryDependencies ++= Seq(
   "net.sf.jtidy"       %  "jtidy"                         % "r938",
   "com.ocpsoft"        %  "ocpsoft-pretty-time"           % "1.0.7",
   "commons-io"         %  "commons-io"                    % "2.4",
-  "org.json4s"         %  "json4s-native_2.10"            % "3.2.4",
+  "org.json4s"         %%  "json4s-native"                % "3.2.4",
   "com.novus"          %% "salat-core"                    % "1.9.4" exclude("org.json4s", "json4s-native_2.10"),
   "org.planet42"       %% "laika"                         % "0.4.0",
   "dnsjava"            %  "dnsjava"                       % "2.1.1",
@@ -49,4 +57,3 @@ licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"
 homepage := Some(url("https://github.com/grahamar/Giles"))
 
 scmInfo := Some(ScmInfo(url("https://github.com/grahamar/Giles.git"), "scm:git:git@github.com:grahamar/Giles.git"))
-

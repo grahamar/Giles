@@ -73,6 +73,17 @@ GET     /api-docs/api/builds                                                cont
 GET     /api-docs/api/users                                                 controllers.ApiHelpController.getResource(path = "/api/users")
 
 
+# Activator templates
+GET     /activator                                                                      controllers.ActivatorTemplatesController.index
+
+POST    /activator/template                                                             controllers.ActivatorTemplatesController.template
+
+GET     /activator/templates/:firstBit/:secondBit/:id/:activatorVersion/:templateName   controllers.ActivatorTemplatesController.templateBundle(firstBit, secondBit, id, activatorVersion, templateName)
+GET     /activator/templates/:firstBit/:secondBit/$templateName<.*\.zip>                controllers.ActivatorTemplatesController.templateFile(firstBit, secondBit, templateName: String)
+
+GET     /activator/index/v2/current.properties                                          controllers.ActivatorTemplatesController.currentIndexFile
+GET     /activator/index/v2/$indexFile<index-.*\.zip>                                   controllers.ActivatorTemplatesController.indexFile(indexFile: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /favicon.ico                                                        controllers.Assets.at(path="/public", file="favicon.ico")

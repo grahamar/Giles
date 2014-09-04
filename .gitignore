@@ -28,7 +28,9 @@ dist
 /.builds
 /.git_checkouts
 /.index
+/.activator-cache
 /*.sh
-conf/aws.conf
+conf/activator-aws.conf
+conf/giles-aws.conf
 conf/client_secrets.json
 publish.sbt

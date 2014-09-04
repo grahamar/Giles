@@ -130,13 +130,8 @@ object AuthenticationController extends Controller with LoginLogout with Optiona
   }
 
   def profile(username: String) = StackAction { implicit request =>
-    val maybeBoom = loggedIn
-    maybeBoom.filter(boom => "rsetti".equals(boom.username)).map { _ =>
-      new Status(418)(html.boom(AuthenticationController.loginForm))
-    }.getOrElse {
-      Global.users.findByUsername(username).map(usr => Ok(profilePage(usr))).
-        getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
-    }
+    Global.users.findByUsername(username).map(usr => Ok(profilePage(usr))).
+      getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
   }
 
   def profilePage(user: User, apiKeyForm: Form[ApiKeyData] = createApiKeyForm)(implicit flash: Flash, currentUser: Option[models.User]): HtmlFormat.Appendable = {

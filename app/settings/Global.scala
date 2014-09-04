@@ -1,6 +1,9 @@
 package settings
 
+import java.io.{File => JFile}
+
 import build.{DirectoryHandlerHelper, DefaultAmazonS3Client}
+import com.typesafe.config.ConfigFactory
 import com.wordnik.swagger.config.SwaggerConfig
 import com.wordnik.swagger.core.SwaggerSpec
 import dao.util.{Index, MongoUtil}
@@ -8,7 +11,25 @@ import play.api.Application
 
 object Global extends play.api.GlobalSettings {
 
-  DefaultAmazonS3Client.tryRestoreIndex(DirectoryHandlerHelper.indexDirFromConfig)
+  val gilesS3Client = DefaultAmazonS3Client(ConfigFactory.load("giles-aws"))
+  gilesS3Client.tryRestoreIndex(DirectoryHandlerHelper.indexDirFromConfig)
+
+  val ActivatorCacheBaseFile: JFile = {
+    val f = new JFile(DirectoryHandlerHelper.Config.getString("activator.cache.dir")).getAbsoluteFile
+    if(!f.exists() && !f.mkdirs())
+      sys.error(s"Unable to create '${f.getAbsolutePath}'")
+    else
+      f
+  }
+  val ActivatorCacheIndexDir: JFile = {
+    val f = new JFile(ActivatorCacheBaseFile, "index")
+    if(!f.exists() && !f.mkdirs())
+      sys.error(s"Unable to create '${f.getAbsolutePath}'")
+    else
+      f
+  }
+  val activatorS3Client = DefaultAmazonS3Client(ConfigFactory.load("activator-aws"))
+  activatorS3Client.tryRestoreIndex(ActivatorCacheIndexDir)
 
   private lazy val projectIndexes = Seq(Index(field="url_key", unique=true), Index(field="name", unique=true), Index(field="updated_at"))
   private lazy val viewIndexes = Seq(Index(field="file_guid"), Index(field="user_guid"))

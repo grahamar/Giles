@@ -106,7 +106,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
         indexFile(project, version, file, indx)
         indx.commit()
       }
-      DefaultAmazonS3Client.backupIndex(indexDir)
+      Global.gilesS3Client.backupIndex(indexDir)
     }.recover {
       case e: Exception =>
         Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
@@ -124,7 +124,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
         indexProject(project, version, indx)
         indx.commit()
       }
-      DefaultAmazonS3Client.backupIndex(indexDir)
+      Global.gilesS3Client.backupIndex(indexDir)
     }.recover {
       case e: Exception =>
         Global.builds.createFailure(project.guid, version, "Index failed - "+ e.getMessage)
@@ -165,7 +165,7 @@ trait LuceneDocsIndexer extends DocsIndexer {
       }
       indx.commit()
     }
-    DefaultAmazonS3Client.backupIndex(indexDir)
+    Global.gilesS3Client.backupIndex(indexDir)
   }
 
   private def indexProject(project: Project, version: String, index: IndexWriter): Unit = {

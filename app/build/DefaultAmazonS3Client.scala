@@ -7,14 +7,19 @@ import com.amazonaws.AmazonServiceException
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.GetObjectRequest
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.util.Try
 
 object DefaultAmazonS3Client {
+  def apply(config: Config) = {
+    new DefaultAmazonS3Client(config)
+  }
+}
+
+class DefaultAmazonS3Client(config: Config) {
   import util.ResourceUtil._
 
-  private lazy val config = ConfigFactory.load("aws")
   private lazy val credentials = new BasicAWSCredentials(config.getString("aws.s3.accesskey"), config.getString("aws.s3.secretkey"))
   private lazy val amazonS3Client = new AmazonS3Client(credentials)
   private val DefaultRemoteIndexFilename = DirectoryHandlerHelper.Config.getString("index.remote.filename")
@@ -137,3 +142,5 @@ object DefaultAmazonS3Client {
   }
 
 }
+
+
