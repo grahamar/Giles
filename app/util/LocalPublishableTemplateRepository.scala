@@ -11,7 +11,7 @@ import activator.cache.CacheProperties
 import activator.templates.repository.{PublishableTemplateRepository, UriRemoteTemplateRepository}
 import play.api.Logger
 
-class LocalPublishableTemplateRepository(log: akka.event.LoggingAdapter, baseUri: URI) extends UriRemoteTemplateRepository("giles-local", baseUri, log) with PublishableTemplateRepository {
+class LocalPublishableTemplateRepository(log: akka.event.LoggingAdapter, baseUri: URI) extends UriRemoteTemplateRepository(baseUri, log) with PublishableTemplateRepository {
 
   override def publishIndex(indexZip: File, serial: Long): ProcessResult[Unit] = {
     for {

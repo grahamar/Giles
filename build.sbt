@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback"     %  "logback-classic"               % "1.0.13",
   "org.eclipse.jgit"   %  "org.eclipse.jgit"              % "3.3.2.201404171909-r",
   "org.eclipse.jgit"   % "org.eclipse.jgit.archive"       % "3.3.2.201404171909-r",
-  "com.typesafe.activator" % "activator-templates-cache"  % "1.0-f2a4b1221f2ff7ef8d5e5651416a8438a7e01181" excludeAll(
+  "com.typesafe.activator" % "activator-templates-cache"  % "1.0-7e765bfb36a2121e7dbd33e81d92b8a13f294a6d" excludeAll(
     ExclusionRule(organization = "com.typesafe.akka", name = "akka-actor_2.11"),
     ExclusionRule(organization = "org.scala-lang"),
     ExclusionRule(organization = "org.scala-lang.modules"),

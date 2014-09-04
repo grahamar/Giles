@@ -33,9 +33,13 @@ object ActivatorGitUtils {
         IO.withTemporaryFile(s"${git.describe().call()}", "zip") { tmpZipFile =>
           Logger.info(s"Tmp Zip: ${tmpZipFile.getAbsolutePath}")
           IO.write(tmpZipFile, zipOut.toByteArray)
-          val id = UUID.randomUUID()
-          LocalRepo.publishTemplate(id, tmpZipFile)
-          gitArchiveToMetadata(id, repoData.repo, new ZipFile(tmpZipFile))
+          val template = Global.activatorTemplates.findByRepo(repoData.repo).getOrElse {
+            Logger.info(s"Creating new record for repo '${repoData.repo}'")
+            Global.activatorTemplates.create(repoData.repo)
+          }
+          val metadata = gitArchiveToMetadata(template.guid, repoData.repo, new ZipFile(tmpZipFile))
+          LocalRepo.publishTemplate(UUID.fromString(metadata.id), tmpZipFile)
+          metadata
         }
       } finally {
         zipOut.close()
@@ -44,12 +48,12 @@ object ActivatorGitUtils {
     }
   }
 
-  private def gitArchiveToMetadata(id: UUID, repo: String, template: ZipFile): IndexStoredTemplateMetadata = {
+  private def gitArchiveToMetadata(id: String, repo: String, template: ZipFile): IndexStoredTemplateMetadata = {
     val metaEntry = template.getEntry(Constants.METADATA_FILENAME)
     val props = new Properties()
     props.load(template.getInputStream(metaEntry))
     val metadata = IndexStoredTemplateMetadata(
-      id = id.toString,
+      id = id,
       timeStamp = new Date().getTime,
       featured = false,
       usageCount = None,

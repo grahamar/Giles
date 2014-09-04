@@ -13,6 +13,8 @@ import util.ActivatorGitUtils
 import activator.cache.{CacheProperties, IndexDbProvider}
 import activator._
 
+import scala.util.Try
+
 object ActivatorTemplatesController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
   private lazy val IndexProvider = IndexDbProvider.default
@@ -38,11 +40,24 @@ object ActivatorTemplatesController extends Controller with OptionalAuthUser wit
         },
         data => {
           val metadata = ActivatorGitUtils.cacheTemplateFromRepo(data)
-          val writer = IndexProvider.write(Global.ActivatorCacheIndexDir)
-          try {
-            writer.insert(metadata)
-          } finally {
-            writer.close()
+          val existsInIndex = Try {
+            val reader = IndexProvider.open(Global.ActivatorCacheIndexDir)
+            try {
+              reader.metadata.exists(_.id == metadata.id)
+            } finally {
+              reader.close()
+            }
+          }.getOrElse(false)
+          if (!existsInIndex) {
+            Logger.info(s"Template '${metadata.name}' doesn't already exist. Creating...")
+            val writer = IndexProvider.write(Global.ActivatorCacheIndexDir)
+            try {
+              writer.insert(metadata)
+            } finally {
+              writer.close()
+            }
+          } else {
+            Logger.warn(s"Template '${metadata.name}' already exists, keeping metadata the same, uploading new template files.")
           }
           Global.activatorS3Client.backupIndex(Global.ActivatorCacheIndexDir)
           Redirect(routes.ActivatorTemplatesController.index())

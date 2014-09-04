@@ -39,6 +39,7 @@ object Global extends play.api.GlobalSettings {
   private lazy val favouriteIndexes = Seq(Index(field="user_guid"))
   private lazy val publicationIndexes = Seq(Index(field="user_guid"), Index(field="url_key", unique=true))
   private lazy val apiKeysIndexes = Seq(Index(field="user_guid"), Index(field="application_name"))
+  private lazy val activatorTemplatesIndexes = Seq(Index(field="repo"))
 
   lazy val projects = new dao.ProjectDao(MongoUtil.collectionWithIndexes("projects", projectIndexes))
   lazy val favourites = new dao.FavouriteDao(MongoUtil.collectionWithIndexes("favourites", favouriteIndexes))
@@ -52,6 +53,7 @@ object Global extends play.api.GlobalSettings {
   lazy val publications = new dao.PublicationDao(MongoUtil.collectionWithIndexes("publications", publicationIndexes))
   lazy val apiKeys = new dao.ApiKeysDao(MongoUtil.collectionWithIndexes("api_keys", apiKeysIndexes))
   lazy val swaggerApiFiles = new dao.SwaggerApiDao(MongoUtil.collectionWithIndexes("swagger_api_files"))
+  lazy val activatorTemplates = new dao.ActivatorTemplatesDao(MongoUtil.collectionWithIndexes("activator_templates", activatorTemplatesIndexes))
 
   override def onStart(app: Application) {
 
