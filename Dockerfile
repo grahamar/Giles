@@ -21,9 +21,9 @@ RUN apt-get -y install openjdk-6-jdk && apt-get clean
 # Install Git & Graphviz
 RUN apt-get install -y git graphviz
 
-ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.18/giles_2.10-0.0.18.tgz /opt/
-RUN tar xzf /opt/giles_2.10-0.0.18.tgz -C /opt
+ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.19/giles_2.10-0.0.19.tgz /opt/
+RUN tar xzf /opt/giles_2.10-0.0.19.tgz -C /opt
 
 EXPOSE 1717
 
-ENTRYPOINT /opt/giles-0.0.18/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.18/conf/production.application.conf
+ENTRYPOINT /opt/giles-0.0.19/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.19/conf/production.application.conf
