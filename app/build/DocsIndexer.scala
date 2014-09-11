@@ -4,11 +4,12 @@ import java.io.{Reader, StringReader}
 
 import models._
 import org.apache.lucene.analysis.standard.StandardAnalyzer
+import org.apache.lucene.codecs.Codec
 import org.apache.lucene.document.Field.Store
 import org.apache.lucene.document._
 import org.apache.lucene.index.FieldInfo.IndexOptions
 import org.apache.lucene.index.IndexWriterConfig.OpenMode
-import org.apache.lucene.index.{IndexWriter, IndexWriterConfig, Term}
+import org.apache.lucene.index.{CheckIndex, IndexWriter, IndexWriterConfig, Term}
 import org.apache.lucene.search.{BooleanClause, BooleanQuery, TermQuery}
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.{Version => LucVersion}
@@ -19,6 +20,7 @@ import settings.Global
 import util.ResourceUtil
 
 import scala.util.Try
+import scala.collection.JavaConverters._
 
 trait DocsIndexer {
   def index(project: Project, version: String): Try[Unit]
@@ -27,6 +29,8 @@ trait DocsIndexer {
   def cleanPublicationIndex(publication: Publication): Try[Unit]
   def cleanProjectAndVersionIndex(project: Project, version: String): Try[Unit]
   def cleanProjectAndVersionFileIndex(project: Project, version: String, file: File): Try[Unit]
+
+  def checkIndex: Try[Unit]
 }
 
 object LuceneDocsIndexer {
@@ -166,6 +170,23 @@ trait LuceneDocsIndexer extends DocsIndexer {
       indx.commit()
     }
     Global.gilesS3Client.backupIndex(indexDir)
+  }
+
+  def checkIndex: Try[Unit] = Try {
+    doWith(FSDirectory.open(indexDir)) { dir =>
+      val indexCheck = new CheckIndex(dir)
+      indexCheck.setCrossCheckTermVectors(true)
+      indexCheck.setInfoStream(System.out, true)
+
+      val result = indexCheck.checkIndex()
+      if(!result.clean) {
+        Logger.warn(s"${result.totLoseDocCount} documents will be lost")
+        Logger.warn(s"NOTE: will write new segments file; this will remove ${result.totLoseDocCount} docs from the index.")
+        indexCheck.fixIndex(result, Codec.getDefault)
+        Logger.info(s"Wrote new segments file '${result.segmentsFileName}'")
+        Global.gilesS3Client.backupIndex(indexDir)
+      }
+    }
   }
 
   private def indexProject(project: Project, version: String, index: IndexWriter): Unit = {

@@ -63,7 +63,7 @@ OPTIONS /api/users                                                          cont
 GET     /api/users                                                          controllers.api.UsersApiController.getUsers(guid ?= null, username ?= null, email ?= null, limit ?= null, offset ?= null)
 PUT     /api/users                                                          controllers.api.UsersApiController.putUsers
 GET     /api/views                                                          controllers.api.ViewsApiController.getViews
-
+GET     /api/system/check-index                                             controllers.api.SystemApiController.checkIndex
 
 # API Docs
 GET     /api-docs                                                           controllers.ApiHelpController.getResources
