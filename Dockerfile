@@ -23,9 +23,9 @@ RUN apt-get install -y git graphviz
 
 WORKDIR /opt
 
-ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.19/giles_2.10-0.0.19.tgz /opt/
-RUN tar xzfv /opt/giles_2.10-0.0.19.tgz
+ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/0.0.20/giles_2.10-0.0.20.tgz /opt/
+RUN tar xzfv /opt/giles_2.10-0.0.20.tgz
 
 EXPOSE 1717
 
-ENTRYPOINT /opt/giles-0.0.19/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.19/conf/production.application.conf
+ENTRYPOINT /opt/giles-0.0.20/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-0.0.20/conf/production.application.conf
