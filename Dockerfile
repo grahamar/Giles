@@ -11,23 +11,14 @@ RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
 
 RUN apt-get update
 
-# Create the MongoDB data directory
-RUN mkdir -p /data/db
-RUN mkdir /data/.git_checkouts
-
-# Install Java 6
-RUN apt-get -y install openjdk-6-jdk && apt-get clean
-
-# Install Git & Graphviz
-RUN apt-get install -y git graphviz
+# Create the MongoDB data directory and install dependencies
+RUN mkdir -p /data/db && mkdir /data/.git_checkouts && \
+  apt-get -y install openjdk-6-jdk git graphviz && apt-get clean
 
 WORKDIR /opt
 
 ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/1.0.2/giles_2.10-1.0.2.tgz /opt/
 RUN tar xfv /opt/giles_2.10-1.0.2.tgz
-
-# This is to fix that weird extracting issue... hack!
-RUN mv /*.jar /opt/giles-1.0.2/lib/
 
 EXPOSE 1717
 
