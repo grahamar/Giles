@@ -27,7 +27,7 @@ ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt
 RUN tar xfv /opt/giles_2.10-1.0.1.tgz
 
 # This is to fix that weird extracting issue... hack!
-RUN mv /com.typesafe.activator.* /opt/giles-1.0.1/lib/
+RUN mv /*.jar /opt/giles-1.0.1/lib/
 
 EXPOSE 1717
 
