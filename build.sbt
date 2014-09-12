@@ -7,13 +7,13 @@ organization := "com.gilt"
 scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
-  "com.google.http-client"  % "google-http-client-gson"        % "1.18.0-rc",
-  "com.google.oauth-client" % "google-oauth-client-java6"      % "1.18.0-rc",
-  "com.google.apis"         % "google-api-services-plus"       % "v1-rev128-1.18.0-rc",
-  "org.apache.commons"      % "commons-compress"               % "1.8.1",
+  "com.google.http-client"  %  "google-http-client-gson"       % "1.18.0-rc",
+  "com.google.oauth-client" %  "google-oauth-client-java6"     % "1.18.0-rc",
+  "com.google.apis"         %  "google-api-services-plus"      % "v1-rev128-1.18.0-rc",
+  "org.apache.commons"      %  "commons-compress"              % "1.8.1",
   "org.eclipse.jgit"        %  "org.eclipse.jgit"              % "3.3.2.201404171909-r",
-  "org.eclipse.jgit"        % "org.eclipse.jgit.archive"       % "3.3.2.201404171909-r",
-  "com.typesafe.activator"  % "activator-templates-cache"      % "1.0-7e765bfb36a2121e7dbd33e81d92b8a13f294a6d" excludeAll(
+  "org.eclipse.jgit"        %  "org.eclipse.jgit.archive"      % "3.3.2.201404171909-r",
+  "com.typesafe.activator"  %  "activator-templates-cache"     % "1.0-7e765bfb36a2121e7dbd33e81d92b8a13f294a6d" excludeAll(
     ExclusionRule(organization = "com.typesafe.akka", name = "akka-actor_2.11"),
     ExclusionRule(organization = "org.scala-lang"),
     ExclusionRule(organization = "org.scala-lang.modules"),
@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
   "com.jcraft"              %  "jsch.agentproxy.usocket-jna"   % "0.0.6",
   "jp.t2v"                  %% "play2-auth"                    % "0.11.0", // 0.12.0 for play 2.3
   "org.mindrot"             %  "jbcrypt"                       % "0.3m",
-  "net.redhogs.actuarius"   %%  "actuarius"                    % "0.2.7", // Need to cross compile myself
+  "net.redhogs.actuarius"   %% "actuarius"                     % "0.2.7", // Need to cross compile myself
   "org.apache.lucene"       %  "lucene-core"                   % "4.3.0",
   "org.apache.lucene"       %  "lucene-analyzers-common"       % "4.3.0",
   "org.apache.lucene"       %  "lucene-queryparser"            % "4.3.0",
