@@ -24,7 +24,7 @@ RUN apt-get install -y git graphviz
 WORKDIR /opt
 
 ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/1.0.0/giles_2.10-1.0.0.tgz /opt/
-RUN tar xzfv /opt/giles_2.10-1.0.0.tgz
+RUN tar xfv /opt/giles_2.10-1.0.0.tgz
 
 EXPOSE 1717
 
