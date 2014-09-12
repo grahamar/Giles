@@ -23,9 +23,12 @@ RUN apt-get install -y git graphviz
 
 WORKDIR /opt
 
-ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/1.0.0/giles_2.10-1.0.0.tgz /opt/
-RUN tar xfv /opt/giles_2.10-1.0.0.tgz
+ADD https://nexus.gilt.com/nexus/content/repositories/internal-releases/com/gilt/giles_2.10/1.0.1/giles_2.10-1.0.1.tgz /opt/
+RUN tar xfv /opt/giles_2.10-1.0.1.tgz
+
+# This is to fix that weird extracting issue... hack!
+RUN mv /com.typesafe.activator.* /opt/giles-1.0.1/lib/
 
 EXPOSE 1717
 
-ENTRYPOINT /opt/giles-1.0.0/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-1.0.0/conf/production.application.conf
+ENTRYPOINT /opt/giles-1.0.1/bin/giles -Dhttp.port=1717 -Dconfig.file=/opt/giles-1.0.1/conf/production.application.conf
