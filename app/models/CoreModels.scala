@@ -97,8 +97,6 @@ case class File(guid: String,
 
 case class Publication(guid: String, user_guid: String, title: String, url_key: String, content_guid: String, created_at: DateTime)
 
-case class SwaggerApiFile(guid: String, project_guid: String, version: String, listing: Boolean, path: String, content_guid: String, created_at: DateTime)
-
 case class FileContent(guid: String, hash_key: String, content_size: Long, content: Array[Byte])
 
 case class FileWithContent(file: File, content: String)

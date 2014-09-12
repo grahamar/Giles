@@ -83,12 +83,12 @@ private[util] trait MongoInit {
         val Index(indexedAttributes, name, _) = index
         val indexObject = getIndexObject(indexedAttributes)
 
-        collection.getIndexInfo().find { dbo =>
+        collection.getIndexInfo.find { dbo =>
           dbo.get("key") match {
             case key: DBObject => indexObject == key
             case _ => false
           }
-        }.getOrElse(sys.error("required mongo index '%s' on collection '%s' not found".format(name, collection.getFullName())))
+        }.getOrElse(sys.error("required mongo index '%s' on collection '%s' not found".format(name, collection.getFullName)))
       }
 
       indexes.foreach(checkIndexExists)

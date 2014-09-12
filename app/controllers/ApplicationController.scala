@@ -1,18 +1,15 @@
 package controllers
 
-import play.api.{Logger, Routes}
-import play.api.mvc._
-import play.api.data._
-import play.api.templates.HtmlFormat
-import util.Timer
-
-import views._
-import models._
-import settings.Global
+import build.{DocumentationFactory, ProjectSearchResult}
 import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
-import build.{ProjectSearchResult, DocumentationFactory}
 import dao.util.ProjectHelper
-import org.joda.time.DateTime
+import models._
+import play.api.Routes
+import play.api.data._
+import play.api.mvc._
+import play.api.templates.HtmlFormat
+import settings.Global
+import views._
 
 /**
  * Manage a database of computers

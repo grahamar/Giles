@@ -190,30 +190,6 @@ case class PublicationQuery(guid: Option[String] = None,
 
 }
 
-case class SwaggerApiFileQuery(guid: Option[String] = None,
-                            project_guid: Option[String] = None,
-                            version: Option[String] = None,
-                            listing: Option[Boolean] = None,
-                            path: Option[String] = None,
-                            limit: Option[Int] = None,
-                            offset: Option[Int] = None) {
-
-  lazy val pagination = Pagination(limit, offset)
-
-  def params = {
-    val params = scala.collection.mutable.ListBuffer[(String, Any)]()
-    guid.foreach { v => params += ("guid" -> v) }
-    project_guid.foreach { v => params += ("project_guid" -> v) }
-    version.foreach { v => params += ("version" -> v) }
-    listing.foreach { v => params += ("listing" -> v) }
-    path.foreach { v => params += ("path" -> v) }
-    limit.foreach { v => params += ("limit" -> v) }
-    offset.foreach { v => params += ("offset" -> v) }
-    params.toList
-  }
-
-}
-
 case class FileContentsQuery(guid: Option[String] = None,
                      hash_key: Option[String] = None,
                      content_size: Option[Long] = None) {

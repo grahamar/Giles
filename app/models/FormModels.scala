@@ -24,5 +24,3 @@ case class PublicationData(title: String, content: String)
 case class ProjectImportData(name: String, description: String, repoUrl: String, headVersion: String)
 
 case class ProjectEditData(repo_url: String, head_version: String)
-
-case class SwaggerImportData(project: String, version: String, json: String)

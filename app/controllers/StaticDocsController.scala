@@ -82,11 +82,4 @@ object StaticDocsController extends Controller with OptionalAuthUser with AuthCo
     }
   }
 
-  def swagger(projectUrl: String, projectVersion: String) = StackAction { implicit request =>
-    val projectUrlKey = ResourceUtil.decodeFileName(projectUrl)
-    Global.projects.findByUrlKey(projectUrlKey).map { project =>
-      Ok(html.swagger(controllers.api.routes.SwaggerApiController.getResourceListing(project.guid, projectVersion).url, AuthenticationController.loginForm))
-    }.getOrElse(NotFound(html.notfound(AuthenticationController.loginForm)))
-  }
-
 }

@@ -4,8 +4,6 @@ import java.io.{File => JFile}
 
 import build.{DirectoryHandlerHelper, DefaultAmazonS3Client}
 import com.typesafe.config.ConfigFactory
-import com.wordnik.swagger.config.SwaggerConfig
-import com.wordnik.swagger.core.SwaggerSpec
 import dao.util.{Index, MongoUtil}
 import play.api.Application
 
@@ -52,7 +50,6 @@ object Global extends play.api.GlobalSettings {
   lazy val views = new dao.ViewsDao(MongoUtil.collectionWithIndexes("views", viewIndexes), fileRollup, userFileRollup)
   lazy val publications = new dao.PublicationDao(MongoUtil.collectionWithIndexes("publications", publicationIndexes))
   lazy val apiKeys = new dao.ApiKeysDao(MongoUtil.collectionWithIndexes("api_keys", apiKeysIndexes))
-  lazy val swaggerApiFiles = new dao.SwaggerApiDao(MongoUtil.collectionWithIndexes("swagger_api_files"))
   lazy val activatorTemplates = new dao.ActivatorTemplatesDao(MongoUtil.collectionWithIndexes("activator_templates", activatorTemplatesIndexes))
 
   override def onStart(app: Application) {
@@ -61,8 +58,6 @@ object Global extends play.api.GlobalSettings {
 
     RegisterJodaTimeConversionHelpers()
     RegisterConversionHelpers()
-
-    com.wordnik.swagger.config.ConfigFactory.setConfig(new SwaggerConfig("0.1", SwaggerSpec.version, "http://localhost:9000", "/api"))
 
   }
 

@@ -1,7 +1,5 @@
 package controllers.api.value
 
-import javax.xml.bind.annotation._
-
 object ApiResponse {
   val ERROR = 1
   val WARNING = 2
@@ -15,15 +13,10 @@ object ApiResponse {
  * @param code the HTTP status code
  * @param message the response message
  */
-@XmlRootElement
-class ApiResponse(@XmlElement var code: Int, @XmlElement var message: String) {
+case class ApiResponse(code: Int, message: String) {
   def this() = this(0, null)
 
-  @XmlTransient
-  def getCode: Int = code
-  def setCode(code: Int) = this.code = code
-
-  def getType: String = code match {
+  val `type` = code match {
     case ApiResponse.ERROR => "error"
     case ApiResponse.WARNING => "warning"
     case ApiResponse.INFO => "info"
@@ -31,8 +24,5 @@ class ApiResponse(@XmlElement var code: Int, @XmlElement var message: String) {
     case ApiResponse.TOO_BUSY => "too busy"
     case _ => "unknown"
   }
-  def setType(`type`: String) = {}
 
-  def getMessage: String = message
-  def setMessage(message: String) = this.message = message
 }

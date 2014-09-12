@@ -1,24 +1,20 @@
 package controllers
 
-import scala.concurrent.{ExecutionContext, Future}
-import ExecutionContext.Implicits.global
+import java.util.UUID
 
-import play.api.mvc._
+import build.DocumentationFactory
+import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
+import dao.util.ProjectHelper
+import models.{ProjectImportData, ProjectQuery, _}
 import play.api.data.Form
 import play.api.data.Forms._
-
-import views._
-import models._
-import controllers.auth.{AuthConfigImpl, OptionalAuthUser}
-import build.DocumentationFactory
+import play.api.libs.json.Json
+import play.api.mvc.{SimpleResult, _}
 import settings.Global
-import dao.util.{FileHelper, ProjectHelper}
-import java.util.UUID
-import play.api.mvc.SimpleResult
-import models.ProjectQuery
-import models.ProjectImportData
-import com.wordnik.swagger.core.util.ScalaJsonUtil
-import util.SwaggerUtil
+import views._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 object ProjectController extends Controller with OptionalAuthUser with AuthConfigImpl {
 
@@ -64,7 +60,7 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
 
   def projectVersions(urlKey: String) = StackAction { implicit request =>
     Global.projects.findByUrlKey(UrlKey.generateProjectUrlKey(urlKey)).map { project =>
-      Ok(ScalaJsonUtil.mapper.writeValueAsString(project.versions)).as("application/json")
+      Ok(Json.toJson(project.versions)).as("application/json")
     }.getOrElse(BadRequest)
   }
 
@@ -87,60 +83,6 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
     maybeUser.map{ usr =>
       Ok(html.importProject(AuthenticationController.loginForm, importProjectForm))
     }.getOrElse(ApplicationController.Home)
-  }
-
-  def importSwagger = StackAction { implicit request =>
-    val maybeUser = loggedIn
-    maybeUser.map{ usr =>
-      val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
-      Ok(html.importSwaggerDocs(importProjectResourceForm, importProjectApiForm, projects.toSeq, AuthenticationController.loginForm))
-    }.getOrElse(ApplicationController.Home)
-  }
-
-  def createProjectSwaggerResource = StackAction { implicit request =>
-    val maybeUser = loggedIn
-    maybeUser.map { usr =>
-      importProjectResourceForm.bindFromRequest.fold(
-        formWithErrors => {
-          val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
-          BadRequest(html.importSwaggerDocs(formWithErrors, importProjectApiForm, projects.toSeq, AuthenticationController.loginForm))
-        },
-        data => createResource(data, listing = true)
-      )
-    }.getOrElse(ApplicationController.Home)
-  }
-
-  def createProjectSwaggerApi = StackAction { implicit request =>
-    val maybeUser = loggedIn
-    maybeUser.map { usr =>
-      importProjectResourceForm.bindFromRequest.fold(
-        formWithErrors => {
-          val projects = (Global.projects.findByAuthorUsername(usr.username) ++ Global.projects.findByCreatedBy(usr.username)).toSet
-          BadRequest(html.importSwaggerDocs(formWithErrors, importProjectApiForm, projects.toSeq, AuthenticationController.loginForm))
-        },
-        data => createResource(data, listing = false)
-      )
-    }.getOrElse(ApplicationController.Home)
-  }
-
-  def createResource(data: SwaggerImportData, listing: Boolean)(implicit request: RequestHeader, currentUser: Option[User]): SimpleResult = {
-    Global.projects.findByUrlKey(data.project).map { project =>
-      val relativePath = if(listing) None else Some(SwaggerUtil.parseApiListing(data.json).resourcePath)
-      Global.swaggerApiFiles.findByProjectAndVersion(project.guid, data.version, relativePath) match {
-        case None => {
-          FileHelper.getOrCreateContent(data.json) { contentGuid =>
-            Global.swaggerApiFiles.create(project.guid, data.version, relativePath, contentGuid)
-          }
-        }
-        case Some(existingFile: SwaggerApiFile) => {
-          FileHelper.getOrCreateContent(data.json) { contentGuid =>
-            Global.swaggerApiFiles.update(existingFile.copy(content_guid = contentGuid))
-            FileHelper.cleanupContent(existingFile.content_guid)
-          }
-        }
-      }
-      Redirect(routes.ProjectController.importSwagger).flashing("success" -> "Imported Swagger JSON")
-    }.getOrElse(NotFound)
   }
 
   def createProject = AsyncStack { implicit request =>
@@ -183,22 +125,6 @@ object ProjectController extends Controller with OptionalAuthUser with AuthConfi
       "repo" -> nonEmptyText,
       "head_version" -> nonEmptyText
     )(ProjectImportData.apply)(ProjectImportData.unapply)
-  }
-
-  val importProjectResourceForm = Form {
-    mapping(
-      "project" -> nonEmptyText.verifying(Global.projects.findByUrlKey(_).isDefined),
-      "version" -> nonEmptyText,
-      "json" -> nonEmptyText
-    )(SwaggerImportData.apply)(SwaggerImportData.unapply)
-  }
-
-  val importProjectApiForm = Form {
-    mapping(
-      "project" -> nonEmptyText.verifying(Global.projects.findByUrlKey(_).isDefined),
-      "version" -> nonEmptyText,
-      "json" -> nonEmptyText
-    )(SwaggerImportData.apply)(SwaggerImportData.unapply)
   }
 
   val editProjectorm = Form {

@@ -1,7 +1,5 @@
 package controllers.api
 
-import javax.ws.rs.QueryParam
-
 import play.api.mvc._
 import play.api.data.Form
 import play.api.data.Forms._
@@ -10,44 +8,30 @@ import models._
 import settings.Global
 import dao.util.FileHelper
 import build.DocumentationFactory
-import com.wordnik.swagger.annotations._
 
-@Api(value = "/api/files", description = "Operations for project files")
 object FilesApiController extends BaseApiController {
 
-  @ApiOperation(value = "Find files", notes = "Returns a list of files", response = classOf[File], responseContainer = "List", httpMethod = "GET")
-  def getFiles(@ApiParam(value = "GUID of the file to fetch", required = false) @QueryParam("guid") guid: String,
-               @ApiParam(value = "GUID of the file's project to fetch", required = true) @QueryParam("project_guid") project_guid: String,
-               @ApiParam(value = "Filename of the file to fetch", required = false) @QueryParam("filename") filename: String,
-               @ApiParam(value = "Version of the file to fetch", required = true) @QueryParam("version") version: String,
-               @ApiParam(value = "Title of the file to fetch", required = false) @QueryParam("title") title: String,
-               @ApiParam(value = "Url key of the file to fetch", required = false) @QueryParam("url_key") url_key: String,
-               @ApiParam(value = "Number of builds to return", required = false) @QueryParam("limit") limit: String,
-               @ApiParam(value = "Page offset of the build to fetch", required = false) @QueryParam("offset") offset: String) = Action { implicit request =>
+  def getFiles(guid: String,
+               project_guid: String,
+               filename: String,
+               version: String,
+               title: String,
+               url_key: String,
+               limit: String,
+               offset: String) = Action { implicit request =>
     if(project_guid.isEmpty) {
-      JsonResponse(new value.ApiResponse(400, "Invalid project_guid value"))
+      jsonResponse(new value.ApiResponse(400, "Invalid project_guid value"))
     } else if(version.isEmpty) {
-      JsonResponse(new value.ApiResponse(400, "Invalid version value"))
+      jsonResponse(new value.ApiResponse(400, "Invalid version value"))
     } else {
       val fileQuery =
         FileQuery(guid = Option(guid), filename = Option(filename), url_key = Option(url_key),
           project_guid = Option(project_guid), version = Option(version), title = Option(title),
           limit = Option(limit).map(_.toInt), offset = Option(offset).map(_.toInt))
-      JsonResponse(Global.files.search(fileQuery).toList)
+      jsonResponse(Global.files.search(fileQuery).toList)
     }
   }
 
-  @ApiOperation(value = "Add/Update a file", response = classOf[File], httpMethod = "PUT", authorizations = "apiKey")
-  @ApiResponses(Array(new ApiResponse(code = 400, message = "Validation exception")))
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(value = "Unique GUID for the new file", name = "guid", required = true, dataType = "UUID", paramType = "body"),
-    new ApiImplicitParam(value = "Project GUID of the new file", name = "project_guid", required = true, dataType = "String", paramType = "body"),
-    new ApiImplicitParam(value = "Version of the file", name = "version", required = true, dataType = "String", paramType = "body"),
-    new ApiImplicitParam(value = "The title/header of the file", name = "title", required = true, dataType = "String", paramType = "body"),
-    new ApiImplicitParam(value = "The filename of the file", name = "filename", required = true, dataType = "String", paramType = "body"),
-    new ApiImplicitParam(value = "The file path relative to the repository root", name = "relative_path", required = false, dataType = "String", paramType = "body"),
-    new ApiImplicitParam(value = "The HTML content of the file", name = "html", required = true, dataType = "String", paramType = "body")
-  ))
   def putFiles = Action { implicit request =>
     withApiKeyProtection { userGuid =>
       putFileForm.bindFromRequest.fold(
@@ -84,14 +68,14 @@ object FilesApiController extends BaseApiController {
               val fileAndContent = FileWithContent(file, data.html)
               DocumentationFactory.indexService.index(project, data.version, fileAndContent)
             }
-            JsonResponse(Global.files.findByGuid(data.guid))
+            jsonResponse(Global.files.findByGuid(data.guid))
           }
           case Some(existingFile: File) => {
             FileHelper.getOrCreateContent(data.html) { contentGuid =>
               Global.files.update(existingFile.copy(content_guid = contentGuid))
               FileHelper.cleanupContent(existingFile.content_guid)
             }
-            JsonResponse(Global.files.findByGuid(data.guid))
+            jsonResponse(Global.files.findByGuid(data.guid))
           }
         }
       }
